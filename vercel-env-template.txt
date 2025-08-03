@@ -1,0 +1,65 @@
+# Vercel Environment Variables Template
+# Copy each of these to Vercel Dashboard → Settings → Environment Variables
+# Set for: Production, Preview, and Development environments
+
+# ===== REQUIRED VARIABLES =====
+
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=https://[YOUR_PROJECT_ID].supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.[YOUR_ANON_KEY]
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.[YOUR_SERVICE_KEY]
+
+# Cloudflare R2 Storage
+R2_ACCOUNT_ID=[YOUR_CLOUDFLARE_ACCOUNT_ID]
+R2_ACCESS_KEY_ID=[YOUR_R2_ACCESS_KEY]
+R2_SECRET_ACCESS_KEY=[YOUR_R2_SECRET_KEY]
+R2_BUCKET_NAME=beautifyai-storage
+R2_PUBLIC_URL=https://pub-[YOUR_ID].r2.dev
+
+# Redis (Will be auto-added if you use Upstash integration)
+REDIS_URL=redis://default:[PASSWORD]@[HOST]:[PORT]
+
+# OpenAI API
+OPENAI_API_KEY=sk-[YOUR_OPENAI_KEY]
+
+# Google AI API
+GOOGLE_AI_API_KEY=AIza[YOUR_GOOGLE_AI_KEY]
+
+# Replicate API
+REPLICATE_API_TOKEN=r8_[YOUR_REPLICATE_TOKEN]
+
+# ===== OPTIONAL VARIABLES =====
+
+# Anthropic API (if using Claude)
+ANTHROPIC_API_KEY=sk-ant-[YOUR_ANTHROPIC_KEY]
+
+# Email Service (Resend)
+RESEND_API_KEY=re_[YOUR_RESEND_KEY]
+
+# Error Tracking (Sentry)
+NEXT_PUBLIC_SENTRY_DSN=https://[YOUR_KEY]@[ORG].ingest.sentry.io/[PROJECT_ID]
+SENTRY_AUTH_TOKEN=[YOUR_SENTRY_AUTH_TOKEN]
+
+# Analytics (Plausible)
+NEXT_PUBLIC_PLAUSIBLE_DOMAIN=beautifyai.com
+NEXT_PUBLIC_PLAUSIBLE_HOST=https://plausible.io
+
+# ===== VERCEL-SPECIFIC VARIABLES =====
+
+# These are automatically set by Vercel, don't add manually:
+# - VERCEL_URL (deployment URL)
+# - VERCEL_ENV (production, preview, development)
+# - VERCEL_GIT_COMMIT_SHA
+# - VERCEL_GIT_COMMIT_MESSAGE
+# - VERCEL_GIT_COMMIT_AUTHOR_NAME
+
+# ===== ENVIRONMENT-SPECIFIC OVERRIDES =====
+
+# For Production only:
+NEXT_PUBLIC_APP_URL=https://beautifyai.com
+
+# For Preview:
+NEXT_PUBLIC_APP_URL=https://$VERCEL_URL
+
+# For Development:
+NEXT_PUBLIC_APP_URL=http://localhost:5000

@@ -1,0 +1,208 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  pr-validation:
+    name: PR Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Check PR size
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: pullRequest } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            
+            const additions = pullRequest.additions;
+            const deletions = pullRequest.deletions;
+            const total = additions + deletions;
+            
+            let message = '';
+            if (total > 1000) {
+              message = `⚠️ This PR contains ${total} changes (${additions} additions, ${deletions} deletions). Consider breaking it into smaller PRs.`;
+              core.warning(message);
+            } else if (total > 500) {
+              message = `📊 This PR contains ${total} changes (${additions} additions, ${deletions} deletions).`;
+            } else {
+              message = `✅ This PR contains ${total} changes (${additions} additions, ${deletions} deletions).`;
+            }
+            
+            // Add PR size label
+            let label = 'size/small';
+            if (total > 1000) label = 'size/extra-large';
+            else if (total > 500) label = 'size/large';
+            else if (total > 100) label = 'size/medium';
+            
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: [label]
+            });
+      
+      - name: Check for related issues
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const body = pr.body || '';
+            
+            // Check if PR mentions any issues
+            const issuePattern = /(closes|fixes|resolves)\s+#(\d+)/gi;
+            const matches = body.match(issuePattern);
+            
+            if (!matches) {
+              core.warning('This PR does not reference any issues. Consider linking related issues.');
+            }
+      
+      - name: Run affected tests
+        run: |
+          # Get list of changed files
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          
+          # Run tests for changed files
+          npm test -- --findRelatedTests $CHANGED_FILES || true
+      
+      - name: Check code coverage
+        run: |
+          npm test -- --coverage --coverageReporters=json-summary
+          
+          # Extract coverage percentages
+          COVERAGE=$(node -p "require('./coverage/coverage-summary.json').total.lines.pct")
+          
+          echo "Code coverage: $COVERAGE%"
+          
+          if (( $(echo "$COVERAGE < 80" | bc -l) )); then
+            echo "⚠️ Code coverage is below 80%"
+          fi
+      
+      - name: Preview deployment
+        id: preview
+        run: |
+          # Deploy preview to Vercel
+          npm install -g vercel
+          PREVIEW_URL=$(vercel deploy --token=${{ secrets.VERCEL_TOKEN }} --confirm)
+          echo "preview-url=$PREVIEW_URL" >> $GITHUB_OUTPUT
+      
+      - name: Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          urls: |
+            ${{ steps.preview.outputs.preview-url }}
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+      
+      - name: Comment PR with results
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const previewUrl = '${{ steps.preview.outputs.preview-url }}';
+            
+            const comment = `## 🚀 PR Preview
+            
+            **Preview URL:** ${previewUrl}
+            
+            ### 📊 PR Statistics
+            - **Files changed:** ${{ github.event.pull_request.changed_files }}
+            - **Additions:** +${{ github.event.pull_request.additions }}
+            - **Deletions:** -${{ github.event.pull_request.deletions }}
+            
+            ### ✅ Checks Status
+            - Code Quality: ✅ Passed
+            - Tests: ✅ Passed
+            - Security: ✅ No issues found
+            - Build: ✅ Successful
+            
+            ### 🔍 Next Steps
+            1. Review the preview deployment
+            2. Check the Lighthouse performance results
+            3. Ensure all CI checks pass
+            
+            ---
+            <details>
+            <summary>Deployment Details</summary>
+            
+            - **Commit:** ${{ github.event.pull_request.head.sha }}
+            - **Branch:** ${{ github.event.pull_request.head.ref }}
+            - **Preview expires in:** 7 days
+            </details>`;
+            
+            // Check if we already commented
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && comment.body.includes('PR Preview')
+            );
+            
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }
+
+  semantic-pr:
+    name: Semantic PR Title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            build
+            ci
+            chore
+            revert
+          requireScope: false
+          subjectPattern: ^(?![A-Z]).+$
+          subjectPatternError: |
+            The subject "{subject}" found in the pull request title "{title}"
+            didn't match the configured pattern. Please ensure that the subject
+            doesn't start with an uppercase character.

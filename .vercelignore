@@ -1,0 +1,65 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+.nyc_output
+test-output/
+__tests__/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Local env files
+.env*.local
+.env.development
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Misc
+.DS_Store
+*.pem
+.vscode/
+.idea/
+.cursor/
+.claude/
+.roo/
+.taskmaster/
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Scripts (except build scripts)
+scripts/test-*.ts
+scripts/test-*.js
+scripts/setup-*.sh
+scripts/run-*.js
+
+# Development files
+.eslintcache
+.prettierignore
+jest.config.js
+jest.setup.js
+__mocks__/
+
+# Git
+.git/
+.gitignore
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Task management
+tasks/
+.roomodes
+.windsurfrules

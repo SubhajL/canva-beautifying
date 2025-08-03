@@ -1,0 +1,11 @@
+# Task ID: 6
+# Title: Implement File Upload Component
+# Status: pending
+# Dependencies: 2, 5
+# Priority: high
+# Description: Create a reusable file upload component using react-dropzone.
+# Details:
+Implement drag-and-drop file upload using react-dropzone. Support multiple file selection. Add file type validation for images and PDFs. Integrate with Cloudflare R2 for actual file storage.
+
+# Test Strategy:
+Test drag-and-drop and click-to-upload functionality. Verify multiple file handling. Check file type restrictions and error messages. Ensure successful upload to R2 storage.

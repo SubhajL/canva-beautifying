@@ -1,0 +1,224 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    /* Core Colors */
+    --background: 0 0% 100%;
+    --foreground: 224 71.4% 4.1%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 71.4% 4.1%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71.4% 4.1%;
+    
+    /* Brand Colors */
+    --primary: 239 84% 67%; /* #6366F1 Indigo */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 158 64% 52%; /* #10B981 Emerald */
+    --secondary-foreground: 0 0% 100%;
+    --accent: 38 92% 50%; /* #F59E0B Amber */
+    --accent-foreground: 0 0% 0%;
+    
+    /* Semantic Colors */
+    --success: 158 64% 52%; /* #10B981 */
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%; /* #F59E0B */
+    --warning-foreground: 0 0% 0%;
+    --error: 0 84.2% 60.2%; /* #EF4444 */
+    --error-foreground: 0 0% 98%;
+    --info: 199 89% 48%; /* #0EA5E9 */
+    --info-foreground: 0 0% 100%;
+    
+    /* UI Colors */
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 239 84% 67%;
+    
+    /* Gray Scale */
+    --gray-50: 210 20% 98%;
+    --gray-100: 220 14.3% 95.9%;
+    --gray-200: 220 13% 91%;
+    --gray-300: 216 12.2% 83.9%;
+    --gray-400: 218 11% 65%;
+    --gray-500: 220 8.9% 46.1%;
+    --gray-600: 215 13.8% 34.1%;
+    --gray-700: 217 19.1% 26.7%;
+    --gray-800: 215 27.9% 16.9%;
+    --gray-900: 224 71.4% 4.1%;
+    
+    /* Spacing & Sizing */
+    --radius: 0.5rem;
+    --radius-sm: 0.25rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    --radius-2xl: 1.5rem;
+    --radius-full: 9999px;
+    
+    /* Typography */
+    --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+    
+    /* Animations */
+    --animation-fast: 150ms;
+    --animation-base: 250ms;
+    --animation-slow: 350ms;
+    --animation-slower: 500ms;
+  }
+
+  .dark {
+    /* Core Colors */
+    --background: 224 71.4% 4.1%;
+    --foreground: 210 20% 98%;
+    --card: 224 71.4% 4.1%;
+    --card-foreground: 210 20% 98%;
+    --popover: 224 71.4% 4.1%;
+    --popover-foreground: 210 20% 98%;
+    
+    /* Brand Colors */
+    --primary: 239 84% 67%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 158 64% 52%;
+    --secondary-foreground: 0 0% 100%;
+    --accent: 38 92% 50%;
+    --accent-foreground: 0 0% 0%;
+    
+    /* Semantic Colors */
+    --success: 158 64% 52%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 0%;
+    --error: 0 62.8% 30.6%;
+    --error-foreground: 210 20% 98%;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+    
+    /* UI Colors */
+    --muted: 215 27.9% 16.9%;
+    --muted-foreground: 217.9 10.6% 64.9%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --ring: 239 84% 67%;
+    
+    /* Gray Scale - Dark Mode */
+    --gray-50: 224 71.4% 4.1%;
+    --gray-100: 215 27.9% 16.9%;
+    --gray-200: 217 19.1% 26.7%;
+    --gray-300: 215 13.8% 34.1%;
+    --gray-400: 220 8.9% 46.1%;
+    --gray-500: 218 11% 65%;
+    --gray-600: 216 12.2% 83.9%;
+    --gray-700: 220 13% 91%;
+    --gray-800: 220 14.3% 95.9%;
+    --gray-900: 210 20% 98%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Mobile-specific utilities */
+@layer utilities {
+  /* Safe area padding for devices with notches */
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .safe-left {
+    padding-left: env(safe-area-inset-left);
+  }
+  .safe-right {
+    padding-right: env(safe-area-inset-right);
+  }
+  
+  /* Touch-friendly tap targets */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  /* Mobile-optimized scrolling */
+  .touch-scroll {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  
+  /* Prevent text selection on interactive elements */
+  .no-select {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  /* Mobile-friendly focus styles */
+  .mobile-focus {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background;
+  }
+  
+  /* Responsive text that scales smoothly */
+  .text-responsive {
+    font-size: clamp(0.875rem, 2vw, 1rem);
+  }
+  
+  /* Hide scrollbar on mobile */
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Responsive typography adjustments */
+@layer components {
+  /* Mobile-optimized heading sizes */
+  .h1-mobile {
+    @apply text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight;
+  }
+  .h2-mobile {
+    @apply text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight;
+  }
+  .h3-mobile {
+    @apply text-xl sm:text-2xl md:text-3xl font-semibold;
+  }
+  .h4-mobile {
+    @apply text-lg sm:text-xl md:text-2xl font-medium;
+  }
+  
+  /* Mobile-friendly containers */
+  .container-mobile {
+    @apply container mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  /* Touch-friendly card component */
+  .card-mobile {
+    @apply rounded-lg border bg-card p-4 sm:p-6 shadow-sm transition-shadow hover:shadow-md active:scale-[0.98] touch-target;
+  }
+}

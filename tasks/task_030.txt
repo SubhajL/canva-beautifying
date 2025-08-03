@@ -1,0 +1,11 @@
+# Task ID: 30
+# Title: Develop Referral System
+# Status: pending
+# Dependencies: 3, 14, 26
+# Priority: low
+# Description: Create a user referral system to encourage growth.
+# Details:
+Design and implement a referral program with unique referral codes. Create a reward system for successful referrals. Implement tracking of referral sign-ups and conversions. Integrate with the email system for referral invitations.
+
+# Test Strategy:
+Test generation and uniqueness of referral codes. Verify proper tracking and attribution of referrals. Check accurate reward distribution for successful referrals.

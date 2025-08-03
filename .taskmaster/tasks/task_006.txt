@@ -1,0 +1,20 @@
+# Task ID: 6
+# Title: Implement Canva URL Import
+# Status: pending
+# Dependencies: 5
+# Priority: medium
+# Description: Develop functionality to import documents directly from Canva URLs (FR-006).
+# Details:
+1. Create Canva URL input field
+2. Implement URL validation for Canva links
+3. Create instructions for manual export from Canva
+4. Implement URL parsing to extract document ID
+5. Create utility for downloading document from Canva URL
+6. Add error handling for invalid or inaccessible URLs
+7. Implement progress tracking for URL imports
+8. Create success/failure notifications
+9. Add recently imported URLs history
+10. Implement clear documentation for users on the Canva export process
+
+# Test Strategy:
+Test importing documents from various Canva URLs. Verify error handling for invalid URLs. Test the complete flow from Canva export to import. Verify progress tracking and notifications work correctly.

@@ -1,0 +1,11 @@
+# Task ID: 17
+# Title: Implement Analytics with Plausible
+# Status: pending
+# Dependencies: 1, 11
+# Priority: low
+# Description: Integrate Plausible for privacy-friendly analytics.
+# Details:
+Set up Plausible analytics account. Integrate Plausible script in the Next.js app. Configure custom events for key user actions. Implement dashboard for viewing analytics data.
+
+# Test Strategy:
+Verify proper tracking of pageviews and custom events. Check accuracy of reported data in Plausible dashboard. Test impact on page load performance.

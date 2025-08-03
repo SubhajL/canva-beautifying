@@ -1,0 +1,11 @@
+# Task ID: 15
+# Title: Implement Usage Tracking and Limits
+# Status: pending
+# Dependencies: 3, 14
+# Priority: high
+# Description: Create a system to track user usage and enforce tier-based limits.
+# Details:
+Implement a usage tracking mechanism in the database. Create middleware to check and enforce usage limits based on user subscription tier. Develop a notification system for approaching limits.
+
+# Test Strategy:
+Test usage tracking accuracy across different operations. Verify enforcement of tier-based limits. Check notifications for approaching usage limits.

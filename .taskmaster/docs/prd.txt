@@ -1,0 +1,688 @@
+Product Requirements Document (PRD)
+BeautifyAI: AI-Powered Document Enhancement Platform
+Document Version
+Version: 1.0
+Date: June 2025
+Status: Final for MVP
+Target Audience: Development Team, Stakeholders, TaskMaster MCP
+
+1. Executive Summary
+1.1 Product Vision
+BeautifyAI is an AI-powered platform that automatically enhances and beautifies educational worksheets and business documents from Canva, Google Docs, and other platforms. Using advanced vision AI models, the platform analyzes design flaws and applies intelligent enhancements to create visually appealing, pedagogically sound, and professional-looking documents.
+1.2 Problem Statement
+Primary Problem: 4.5M teachers in the US spend 10+ hours weekly creating worksheets that look bland and fail to engage students
+Secondary Problem: Small businesses create unprofessional marketing materials due to lack of design skills
+Current Solutions: Manual design work or expensive designers
+Gap: No automated solution for enhancing existing designs
+1.3 Solution Overview
+An automated platform that:
+Analyzes uploaded worksheets/documents using AI vision models
+Identifies design issues (layout, colors, typography, engagement)
+Automatically enhances designs based on target audience
+Exports enhanced versions back to original platforms
+Provides both instant automation and agentic capabilities for complex projects
+1.4 Success Metrics
+MVP Goals (3 months):
+100 beta users
+70% retention after 30 days
+$1K MRR
+<30 second enhancement time
+Year 1 Goals:
+8,000 users
+$27K MRR
+95% user satisfaction
+10M documents enhanced
+
+2. User Personas
+2.1 Primary Persona: Elementary School Teacher
+Name: Sarah Chen
+Age: 32
+Tech Savvy: Medium
+Pain Points:
+Spends 2 hours creating each worksheet
+Limited design skills
+Students find worksheets boring
+Tight budget ($20/month max)
+Goals:
+Create engaging materials quickly
+Save time for actual teaching
+Improve student engagement
+Usage Pattern: 10-20 worksheets/week
+2.2 Secondary Persona: Small Business Owner
+Name: Marcus Johnson
+Age: 45
+Tech Savvy: Low-Medium
+Pain Points:
+DIY marketing materials look unprofessional
+Can't afford designer
+Losing customers due to poor presentation
+Goals:
+Professional-looking materials
+Quick turnaround
+Brand consistency
+Usage Pattern: 5-10 documents/month
+2.3 Tertiary Persona: Course Creator
+Name: Lisa Patel
+Age: 28
+Tech Savvy: High
+Pain Points:
+Needs cohesive course materials
+Time-consuming to maintain consistency
+Wants to scale course creation
+Goals:
+Automated enhancement pipeline
+API access for integration
+Batch processing
+Usage Pattern: 50+ documents/month
+
+3. Functional Requirements
+3.1 Core Features (MVP)
+3.1.1 User Management
+FR-001: User registration with email/Google/Microsoft auth
+FR-002: Subscription management (Free, Basic, Pro, Premium tiers)
+FR-003: Usage tracking and limits enforcement
+FR-004: Basic user dashboard showing enhancement history
+3.1.2 Document Upload & Analysis
+FR-005: Support image formats (PNG, JPG, PDF)
+FR-006: Direct Canva URL import (manual export initially)
+FR-007: Batch upload up to 10 files
+FR-008: Automatic format detection
+FR-009: Progress tracking for each upload
+3.1.3 AI Analysis Engine
+FR-010: Layout analysis (spacing, alignment, hierarchy)
+FR-011: Color harmony detection
+FR-012: Typography effectiveness scoring
+FR-013: Age-appropriateness detection
+FR-014: Subject matter identification
+FR-015: Engagement factor scoring (1-10)
+3.1.4 Enhancement Engine
+FR-016: Automatic color palette optimization
+FR-017: Typography improvements (font, size, spacing)
+FR-018: Layout restructuring suggestions
+FR-019: Background generation/replacement
+FR-020: Decorative element additions
+FR-021: Interactive element suggestions
+3.1.5 Export & Download
+FR-022: Enhanced image download (PNG, JPG)
+FR-023: PDF export with vectors preserved
+FR-024: Canva-compatible format (manual import)
+FR-025: Enhancement report generation
+3.2 Advanced Features (Post-MVP)
+3.2.1 Platform Integrations
+FR-026: Canva API integration for direct import/export
+FR-027: Google Docs/Slides integration
+FR-028: Microsoft PowerPoint support
+FR-029: Adobe Creative Suite compatibility
+3.2.2 Agentic AI Capabilities
+FR-030: Workbook coherence analysis
+FR-031: Progressive difficulty adjustment
+FR-032: Multi-document brand consistency
+FR-033: Autonomous enhancement iterations
+FR-034: Custom style learning
+3.2.3 Collaboration Features
+FR-035: Team workspaces
+FR-036: Shared enhancement templates
+FR-037: Comment and feedback system
+FR-038: Version control
+FR-039: Real-time collaboration
+3.2.4 API & Developer Tools
+FR-040: RESTful API access
+FR-041: Webhook notifications
+FR-042: SDK for major languages
+FR-043: Batch processing API
+FR-044: Custom model training
+
+4. Non-Functional Requirements
+4.1 Performance Requirements
+NFR-001: Enhancement completion <30 seconds for single document
+NFR-002: Support 100 concurrent users
+NFR-003: 99.9% uptime SLA for paid tiers
+NFR-004: <200ms API response time
+NFR-005: Support documents up to 50MB
+4.2 Security Requirements
+NFR-006: SOC 2 Type II compliance
+NFR-007: GDPR/CCPA compliant data handling
+NFR-008: Encryption at rest and in transit
+NFR-009: Secure API key management
+NFR-010: Regular security audits
+4.3 Scalability Requirements
+NFR-011: Horizontal scaling to 10,000 concurrent users
+NFR-012: Queue system for handling peak loads
+NFR-013: Auto-scaling based on demand
+NFR-014: CDN for global content delivery
+4.4 Usability Requirements
+NFR-015: Mobile-responsive web interface
+NFR-016: Support for screen readers
+NFR-017: Maximum 3 clicks to enhancement
+NFR-018: Intuitive UI requiring no training
+NFR-019: Multi-language support (English first)
+
+5. Technical Architecture
+5.1 Technology Stack
+5.1.1 Frontend
+Framework: Next.js 14 with TypeScript
+UI Library: Tailwind CSS + Shadcn/ui
+State Management: Zustand + React Query
+Real-time Updates: Socket.io
+File Upload: react-dropzone + Cloudflare R2
+Analytics: Plausible
+Error Tracking: Sentry
+
+5.1.2 Backend
+Runtime: Node.js 20+ 
+API Framework: Next.js API Routes
+Queue System: BullMQ with Redis
+Database: PostgreSQL via Supabase
+Cache: Redis via Upstash
+File Storage: Cloudflare R2
+Authentication: Supabase Auth
+
+5.1.3 AI Services
+Vision Models:
+  Free Tier: Gemini 2.0 Flash ($0.00015/image)
+  Basic Tier: GPT-4.1 Mini ($0.0005/image)
+  Pro Tier: Claude 3.5 Sonnet ($0.004/image)
+  Premium Tier: Claude 4 Sonnet + GPT-4.1 ($0.006/image)
+
+Image Generation:
+  Primary: Stable Diffusion XL via Replicate
+  Backup: DALL-E 3 for premium features
+
+5.1.4 Infrastructure
+Hosting: Vercel (Frontend) + Railway (Workers)
+CDN: Cloudflare
+Monitoring: Better Stack + Sentry
+CI/CD: GitHub Actions
+Container Registry: GitHub Container Registry
+
+5.2 System Architecture
+5.2.1 Microservices Architecture
+1. Web Service (Next.js)
+   - User interface
+   - API gateway
+   - Authentication
+
+2. Analysis Service (Python/Node)
+   - Image processing
+   - AI model orchestration
+   - Result aggregation
+
+3. Enhancement Service (Python)
+   - Design generation
+   - Asset creation
+   - Style application
+
+4. Export Service (Node)
+   - Format conversion
+   - Platform integration
+   - Delivery
+
+5. Notification Service (Node)
+   - Email notifications
+   - Webhook delivery
+   - Real-time updates
+
+5.2.2 Data Flow
+1. User uploads document → Web Service
+2. Web Service → Queue → Analysis Service
+3. Analysis Service → AI Models → Enhancement Service
+4. Enhancement Service → Asset Generation → Export Service
+5. Export Service → Storage → Notification Service
+6. Notification Service → User (email/webhook/websocket)
+
+
+6. AI Model Strategy
+6.1 Model Selection Logic
+def select_model(user_tier, document_complexity, processing_priority):
+    if user_tier == "free":
+        return "gemini-2.0-flash"  # Fastest, cheapest
+    
+    if user_tier == "basic":
+        return "gpt-4.1-mini"  # Good balance
+    
+    if user_tier == "pro":
+        if document_complexity > 7:
+            return "claude-3.5-sonnet"  # Best for complex
+        return "gpt-4.1-mini"  # Cost optimization
+    
+    if user_tier == "premium":
+        # Ensemble approach
+        return ["claude-4-sonnet", "gpt-4.1"]
+
+6.2 Enhancement Pipeline
+1. Initial Analysis (Vision Model)
+   - Extract text and layout
+   - Identify design issues
+   - Score current design
+
+2. Enhancement Planning (LLM)
+   - Generate improvement strategy
+   - Select appropriate enhancements
+   - Plan asset generation
+
+3. Asset Generation (Diffusion Models)
+   - Create backgrounds
+   - Generate decorative elements
+   - Produce educational graphics
+
+4. Final Composition (Processing)
+   - Apply enhancements
+   - Merge assets
+   - Optimize output
+
+6.3 Agentic AI Features (Premium)
+1. Multi-Document Coherence
+   - Analyze entire workbook
+   - Ensure progressive difficulty
+   - Maintain consistent style
+
+2. Iterative Enhancement
+   - Generate multiple versions
+   - Self-evaluate quality
+   - Select best outcome
+
+3. Custom Style Learning
+   - Analyze user preferences
+   - Build style profile
+   - Apply to future enhancements
+
+
+7. User Interface Design
+7.1 Key Screens
+7.1.1 Dashboard
+Enhancement history grid
+Usage statistics
+Quick upload button
+Recent enhancements carousel
+7.1.2 Upload Interface
+Drag-and-drop zone
+Batch upload support
+Format detection indicator
+Upload progress bars
+7.1.3 Enhancement Wizard
+Step 1: Upload documents
+Step 2: Select target audience/grade
+Step 3: Choose enhancement style
+Step 4: Review and confirm
+Step 5: Download results
+7.1.4 Results Page
+Before/after comparison slider
+Enhancement report
+Download options
+Share functionality
+7.2 Design System
+Colors:
+  Primary: #6366F1 (Indigo)
+  Secondary: #10B981 (Emerald)
+  Accent: #F59E0B (Amber)
+  Neutral: Gray scale
+  
+Typography:
+  Headers: Inter
+  Body: Inter
+  Code: JetBrains Mono
+
+Components:
+  - Buttons (Primary, Secondary, Ghost)
+  - Cards (Enhancement, Pricing, Feature)
+  - Forms (Upload, Settings, Feedback)
+  - Modals (Preview, Confirm, Success)
+
+
+8. API Specification
+8.1 Authentication
+POST /api/v1/auth/login
+POST /api/v1/auth/logout
+POST /api/v1/auth/refresh
+GET  /api/v1/auth/user
+
+8.2 Enhancement Endpoints
+POST   /api/v1/enhance
+GET    /api/v1/enhance/{id}
+GET    /api/v1/enhance/history
+DELETE /api/v1/enhance/{id}
+
+8.3 Webhook Events
+{
+  "event": "enhancement.complete",
+  "data": {
+    "enhancementId": "enh_123",
+    "status": "success",
+    "results": {
+      "originalUrl": "https://...",
+      "enhancedUrl": "https://...",
+      "improvements": [...],
+      "score": 8.5
+    }
+  }
+}
+
+
+9. Database Schema
+9.1 Core Tables
+-- Users table
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email VARCHAR(255) UNIQUE NOT NULL,
+  name VARCHAR(255),
+  subscription_tier VARCHAR(50) DEFAULT 'free',
+  subscription_status VARCHAR(50) DEFAULT 'active',
+  usage_count INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Enhancements table
+CREATE TABLE enhancements (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id),
+  original_url TEXT NOT NULL,
+  enhanced_url TEXT,
+  status VARCHAR(50) DEFAULT 'pending',
+  analysis_data JSONB,
+  enhancement_data JSONB,
+  model_used VARCHAR(100),
+  processing_time INTEGER,
+  created_at TIMESTAMP DEFAULT NOW(),
+  completed_at TIMESTAMP
+);
+
+-- Enhancement_assets table
+CREATE TABLE enhancement_assets (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  enhancement_id UUID REFERENCES enhancements(id),
+  asset_type VARCHAR(50),
+  asset_url TEXT,
+  metadata JSONB,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+
+10. Integration Requirements
+10.1 Canva Integration
+Phase 1: Manual export/import with instructions
+Phase 2: Canva Connect API integration
+Requirements:
+OAuth 2.0 authentication
+Design import/export
+Asset library access
+Template creation
+10.2 Google Workspace
+Scope: Docs and Slides
+Method: Google Workspace API
+Features:
+Direct document access
+In-place enhancement
+Collaborative editing
+10.3 Payment Integration
+Provider: Stripe
+Features:
+Subscription management
+Usage-based billing
+Invoice generation
+Payment method management
+
+11. Development Phases
+11.1 Phase 1: MVP (Weeks 1-5)
+Week 1: Infrastructure Setup
+- Development environment configuration
+- Next.js 14 project initialization
+- Supabase database setup and schema creation
+- Authentication system implementation
+- Cloudflare R2 storage configuration
+- Git repository and CI/CD pipeline setup
+
+Week 2: Core AI Integration & Models
+- AI model API integrations (Gemini, GPT-4.1, Claude)
+- Model selection logic implementation
+- Rate limiting and API key management
+- Basic image processing pipeline
+- Error handling and fallback mechanisms
+- Cost tracking system
+
+Week 3: Analysis Engine Development
+- Image upload and validation system
+- Vision model analysis implementation
+- Layout and design scoring algorithms
+- Color harmony detection
+- Typography analysis
+- Age-appropriateness detection
+- Analysis result storage
+
+Week 4: Enhancement Engine & UI
+- Enhancement algorithm implementation
+- Basic UI components (upload, dashboard)
+- Real-time progress tracking
+- WebSocket integration for live updates
+- Enhancement preview interface
+- Download functionality
+- Basic responsive design
+
+Week 5: MVP Polish & Beta Launch
+- Stripe payment integration
+- Usage tracking and limits
+- Email notification system (Resend)
+- Landing page creation
+- Basic analytics setup (Plausible)
+- Security audit and fixes
+- Beta user onboarding flow
+- Initial deployment to production
+
+11.2 Phase 2: Core Features & Scale (Weeks 6-10)
+Week 6: Batch Processing & Optimization
+- Queue system optimization (BullMQ)
+- Batch upload interface (up to 10 files)
+- Parallel processing implementation
+- Progress tracking for multiple files
+- Performance optimization
+- Caching layer implementation
+- Database query optimization
+
+Week 7: Export Options & Formats
+- Multiple export format support
+- PDF generation with vectors
+- Canva-compatible format export
+- Enhancement report generation
+- Batch download functionality
+- Export preset templates
+- File compression optimization
+
+Week 8: Advanced AI Features
+- Multi-model ensemble implementation
+- Enhancement quality iterations
+- Custom style preferences
+- Subject-specific enhancements
+- Feedback loop implementation
+- A/B testing framework
+- Model performance monitoring
+
+Week 9: Platform Integrations (Basic)
+- Canva manual workflow optimization
+- Google Docs basic integration
+- Webhook system implementation
+- API documentation (v1)
+- Integration testing suite
+- Partner platform research
+- OAuth flow preparation
+
+Week 10: Growth Features & Marketing
+- Referral system implementation
+- Social sharing features
+- Before/after gallery
+- User testimonials system
+- SEO optimization
+- Content marketing setup
+- Product Hunt launch preparation
+- Early user feedback integration
+
+11.3 Phase 3: Advanced Features & Enterprise (Weeks 11-20)
+Week 11-12: Agentic AI Capabilities
+- Workbook coherence analysis
+- Multi-document processing
+- Progressive difficulty adjustment
+- Autonomous enhancement iterations
+- Brand consistency engine
+- Custom AI training pipeline
+
+Week 13-14: Team & Collaboration
+- Team workspace creation
+- Shared templates library
+- Commenting system
+- Version control for enhancements
+- Permission management
+- Activity tracking
+
+Week 15-16: Full Platform Integration
+- Canva Connect API integration
+- Google Workspace full integration
+- Microsoft Office support
+- Adobe Creative Suite basics
+- Zapier integration
+- API v2 with SDKs
+
+Week 17-18: Enterprise Features
+- SSO implementation
+- Advanced security features
+- SLA monitoring
+- Custom deployment options
+- White-label capabilities
+- Enterprise onboarding
+
+Week 19-20: Performance & Scale
+- Auto-scaling implementation
+- Global CDN deployment
+- Advanced caching strategies
+- Database sharding preparation
+- Load testing & optimization
+- Disaster recovery planning
+
+11.4 Phase 4: Market Leadership (Weeks 21-26)
+Week 21-22: Mobile & Expansion
+- Mobile app development kickoff
+- International market preparation
+- Multi-language support
+- Currency localization
+- Regional AI model selection
+- Compliance updates (GDPR, CCPA)
+
+Week 23-24: Advanced Analytics & AI
+- User behavior analytics
+- Predictive enhancement suggestions
+- Custom model fine-tuning
+- Industry-specific templates
+- AI-powered pricing optimization
+- Competitive analysis features
+
+Week 25-26: Ecosystem Development
+- Template marketplace launch
+- Developer program initiation
+- Partner API program
+- Educational content platform
+- Community forum launch
+- First annual user conference planning
+
+
+Development Velocity Metrics
+Phase 1 (Weeks 1-5) Deliverables:
+✅ Functional MVP with core enhancement capability
+✅ Support for 3 AI models
+✅ Basic payment processing
+✅ 100 beta users onboarded
+✅ <30 second enhancement time achieved
+Phase 2 (Weeks 6-10) Deliverables:
+✅ Batch processing (10 files)
+✅ 3 export formats supported
+✅ API v1 documented and live
+✅ Referral system operational
+✅ $1,000 MRR target achieved
+
+
+12. Testing Strategy
+12.1 Testing Types
+Unit Testing: 80% code coverage target
+Integration Testing: API endpoint testing
+E2E Testing: Critical user flows
+Performance Testing: Load and stress testing
+Security Testing: Penetration testing
+Usability Testing: With target personas
+12.2 Quality Metrics
+Bug Density: <5 bugs per 1000 lines
+Test Coverage: >80% for critical paths
+Performance: <30s enhancement time
+Reliability: 99.9% uptime
+User Satisfaction: >4.5/5 rating
+
+13. Risk Analysis
+13.1 Technical Risks
+Risk
+Impact
+Probability
+Mitigation
+AI API rate limits
+High
+Medium
+Multiple provider fallbacks
+Scaling issues
+High
+Low
+Auto-scaling architecture
+Model quality degradation
+Medium
+Low
+Regular quality monitoring
+Platform API changes
+Medium
+Medium
+Abstraction layers
+
+13.2 Business Risks
+Risk
+Impact
+Probability
+Mitigation
+Low user adoption
+High
+Medium
+Free tier, marketing
+Competition from platforms
+High
+Medium
+Unique features, integrations
+Pricing sensitivity
+Medium
+High
+Multiple tiers, value prop
+Regulatory changes
+Low
+Low
+Compliance monitoring
+
+
+14. Success Criteria
+14.1 MVP Success Metrics
+[ ] 100 beta users within 2 weeks
+[ ] 70% user retention after 30 days
+[ ] <30 second average enhancement time
+[ ] 4.0+ user satisfaction rating
+[ ] $1,000 MRR within 3 months
+14.2 Year 1 Success Metrics
+[ ] 8,000 active users
+[ ] $27,000 MRR
+[ ] 10M documents enhanced
+[ ] 3 major platform integrations
+[ ] 95% uptime maintained
+
+15. Appendices
+15.1 Glossary
+Enhancement: The process of improving a document's visual appeal
+Workbook Coherence: Maintaining consistency across multiple documents
+Agentic AI: AI that can make autonomous decisions and iterations
+Vision Model: AI model capable of analyzing images
+Tier: Subscription level (Free, Basic, Pro, Premium)
+15.2 References
+Canva API Documentation
+OpenAI GPT-4.1 Vision Guide
+Anthropic Claude Documentation
+Google Gemini API Reference
+Stripe Subscription Guide
+

@@ -1,0 +1,11 @@
+# Task ID: 16
+# Title: Setup Error Tracking with Sentry
+# Status: pending
+# Dependencies: 1
+# Priority: medium
+# Description: Integrate Sentry for error tracking and monitoring.
+# Details:
+Set up Sentry project and integrate SDK with Next.js. Configure error boundaries in React components. Implement custom error logging for critical operations.
+
+# Test Strategy:
+Trigger various error scenarios and verify proper logging in Sentry. Check error grouping and stack trace accuracy. Test performance impact of Sentry integration.

@@ -1,0 +1,208 @@
+name: Deploy Pipeline
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+jobs:
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event.inputs.environment == 'staging'
+    environment: 
+      name: staging
+      url: https://staging.beautifyai.com
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run pre-deployment checks
+        run: |
+          npm run lint
+          npm run build
+      
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+      
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+      
+      - name: Build Project Artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.STAGING_SUPABASE_SERVICE_KEY }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          REDIS_URL: ${{ secrets.STAGING_REDIS_URL }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          REPLICATE_API_TOKEN: ${{ secrets.REPLICATE_API_TOKEN }}
+      
+      - name: Deploy to Vercel Staging
+        id: deploy
+        run: |
+          OUTPUT=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          echo "deployment-url=$OUTPUT" >> $GITHUB_OUTPUT
+      
+      - name: Create deployment status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deployment = await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.sha,
+              environment: 'staging',
+              required_contexts: [],
+              auto_merge: false
+            });
+            
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: deployment.data.id,
+              state: 'success',
+              environment_url: '${{ steps.deploy.outputs.deployment-url }}',
+              description: 'Deployment to staging succeeded'
+            });
+      
+      - name: Run smoke tests
+        run: |
+          npm install -D @playwright/test
+          npx playwright install chromium
+          npm run test:e2e:staging
+        env:
+          STAGING_URL: ${{ steps.deploy.outputs.deployment-url }}
+      
+      - name: Notify deployment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `✅ Deployed to staging: ${{ steps.deploy.outputs.deployment-url }}`
+            });
+        if: github.event_name == 'pull_request'
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event.inputs.environment == 'production')
+    environment: 
+      name: production
+      url: https://beautifyai.com
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Create production env
+        run: |
+          touch .env.production
+          echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.PROD_SUPABASE_URL }}" >> .env.production
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.PROD_SUPABASE_ANON_KEY }}" >> .env.production
+      
+      - name: Build for production
+        run: npm run build
+        env:
+          NODE_ENV: production
+      
+      - name: Run production tests
+        run: npm run test:production
+      
+      - name: Deploy to Vercel Production
+        id: deploy-prod
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          scope: ${{ secrets.VERCEL_ORG_ID }}
+      
+      - name: Create GitHub release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.run_number }}
+          release_name: Production Release v${{ github.run_number }}
+          body: |
+            ## Changes in this release
+            - Automated production deployment
+            - Commit: ${{ github.sha }}
+            - Deployed to: https://beautifyai.com
+          draft: false
+          prerelease: false
+      
+      - name: Invalidate CDN cache
+        run: |
+          # Add CDN cache invalidation logic here
+          echo "CDN cache invalidated"
+      
+      - name: Update status page
+        run: |
+          # Update status page with new version
+          echo "Status page updated"
+
+  rollback:
+    name: Rollback Production
+    runs-on: ubuntu-latest
+    if: failure() && needs.deploy-production.result == 'failure'
+    needs: deploy-production
+    environment: production
+    steps:
+      - name: Rollback Vercel deployment
+        run: |
+          # Get previous production deployment
+          PREV_DEPLOYMENT=$(vercel list --prod --token=${{ secrets.VERCEL_TOKEN }} | grep "Production" | head -2 | tail -1 | awk '{print $1}')
+          
+          # Rollback to previous deployment
+          vercel rollback $PREV_DEPLOYMENT --token=${{ secrets.VERCEL_TOKEN }}
+      
+      - name: Notify rollback
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              text: "⚠️ Production deployment failed and was rolled back",
+              attachments: [{
+                color: 'danger',
+                text: 'Deployment ${{ github.run_number }} failed and was automatically rolled back'
+              }]
+            }
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        if: always()

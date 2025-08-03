@@ -1,0 +1,11 @@
+# Task ID: 5
+# Title: Setup Cloudflare R2 for File Storage
+# Status: pending
+# Dependencies: 1
+# Priority: high
+# Description: Integrate Cloudflare R2 for secure and scalable file storage.
+# Details:
+Set up Cloudflare R2 bucket. Implement server-side SDK for R2 interactions. Create utility functions for file upload, retrieval, and deletion.
+
+# Test Strategy:
+Test file upload, download, and deletion operations. Verify correct URL generation for stored files. Check error handling for storage operations.

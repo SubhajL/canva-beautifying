@@ -1,0 +1,20 @@
+# Task ID: 4
+# Title: Set Up Cloudflare R2 for File Storage
+# Status: done
+# Dependencies: 1
+# Priority: high
+# Description: Configure Cloudflare R2 for storing original and enhanced documents as specified in the technical architecture.
+# Details:
+1. Create Cloudflare R2 bucket
+2. Configure CORS settings for web access
+3. Set up access policies and permissions
+4. Create signed URL generation utility
+5. Implement file upload utility functions
+6. Create file download utility functions
+7. Set up folder structure for organizing files
+8. Implement file deletion functionality
+9. Configure file expiration policies
+10. Create environment variables for R2 credentials
+
+# Test Strategy:
+Test file upload and download functionality. Verify signed URLs work correctly. Test file organization and retrieval. Ensure proper error handling for failed uploads or downloads.

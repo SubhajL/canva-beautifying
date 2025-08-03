@@ -1,0 +1,11 @@
+# Task ID: 1
+# Title: Setup Next.js 14 Project with TypeScript
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Initialize the Next.js 14 project with TypeScript support for the frontend and API routes.
+# Details:
+Use create-next-app to set up a new Next.js 14 project with TypeScript. Configure ESLint and Prettier for code quality. Set up the project structure for pages, components, and API routes.
+
+# Test Strategy:
+Verify successful project creation and TypeScript compilation. Run lint checks and ensure all initial tests pass.
