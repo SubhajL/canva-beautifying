@@ -1,0 +1,59 @@
+name: Database Migration
+
+on:
+  push:
+    paths:
+      - 'supabase/migrations/**'
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  migrate:
+    name: Run Database Migrations
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Run migrations on staging
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_STAGING_DB_PASSWORD }}
+        run: |
+          supabase link --project-ref ${{ secrets.SUPABASE_STAGING_PROJECT_REF }} --password $SUPABASE_DB_PASSWORD
+          supabase db push
+
+      - name: Test staging after migration
+        run: |
+          curl -f https://canva-beautify-staging.vercel.app/api/health || exit 1
+
+      - name: Run migrations on production
+        if: success()
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_PROD_DB_PASSWORD }}
+        run: |
+          supabase link --project-ref ${{ secrets.SUPABASE_PROD_PROJECT_REF }} --password $SUPABASE_DB_PASSWORD
+          supabase db push
+
+      - name: Notify migration complete
+        if: success()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          message: |
+            ✅ Database Migration Complete
+            
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            
+            Staging: ✅ Migrated
+            Production: ✅ Migrated

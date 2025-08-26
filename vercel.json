@@ -1,32 +1,26 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
   "framework": "nextjs",
   "regions": ["iad1"],
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "build": {
-    "env": {
-      "NEXT_PUBLIC_APP_URL": "@app_url",
-      "NEXT_PUBLIC_SUPABASE_URL": "@supabase_url",
-      "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase_anon_key"
+  "functions": {
+    "app/api/v1/enhance/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/enhance/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/webhook/enhancement/route.ts": {
+      "maxDuration": 30
     }
+  },
+  "env": {
+    "NEXT_TELEMETRY_DISABLED": "1",
+    "NODE_ENV": "production"
   },
   "headers": [
     {
       "source": "/api/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0"
-        }
-      ]
-    },
-    {
-      "source": "/(.*)",
       "headers": [
         {
           "key": "X-Content-Type-Options",
@@ -41,26 +35,25 @@
           "value": "1; mode=block"
         }
       ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' *.vercel-scripts.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.replicate.com https://api.openai.com;"
+        }
+      ]
     }
   ],
   "rewrites": [
     {
-      "source": "/api/v1/:path*",
-      "destination": "/api/v1/:path*"
-    }
-  ],
-  "functions": {
-    "app/api/v1/enhance/route.ts": {
-      "maxDuration": 60
-    },
-    "app/api/v1/export/route.ts": {
-      "maxDuration": 60
-    }
-  },
-  "crons": [
-    {
-      "path": "/api/cron/cleanup",
-      "schedule": "0 2 * * *"
+      "source": "/socket.io/(.*)",
+      "destination": "https://canva-beautify-websocket.railway.app/socket.io/$1"
     }
   ]
 }

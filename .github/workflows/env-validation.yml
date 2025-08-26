@@ -1,0 +1,85 @@
+name: Environment Validation
+
+on:
+  push:
+    paths:
+      - '.env.example'
+      - '.env.production'
+      - '.env.development'
+  pull_request:
+    paths:
+      - '.env.example'
+      - '.env.production'
+      - '.env.development'
+
+jobs:
+  validate-env-vars:
+    name: Validate Environment Variables
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+
+      - name: Create validation script
+        run: |
+          cat > validate-env.js << 'EOF'
+          const fs = require('fs');
+          const path = require('path');
+          
+          // Required environment variables for production
+          const requiredEnvVars = [
+            'NEXT_PUBLIC_SUPABASE_URL',
+            'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+            'SUPABASE_SERVICE_KEY',
+            'CLOUDFLARE_ACCOUNT_ID',
+            'CLOUDFLARE_ACCESS_KEY_ID',
+            'CLOUDFLARE_SECRET_ACCESS_KEY',
+            'R2_BUCKET_NAME',
+            'R2_PUBLIC_URL',
+            'REDIS_URL',
+            'GOOGLE_GEMINI_API_KEY',
+            'OPENAI_API_KEY',
+            'ANTHROPIC_API_KEY',
+            'REPLICATE_API_TOKEN',
+            'DALLE_API_KEY',
+            'NEXT_PUBLIC_APP_URL',
+            'NEXT_PUBLIC_WEBSOCKET_URL',
+            'SMTP_HOST',
+            'SMTP_PORT',
+            'SMTP_USER',
+            'SMTP_PASSWORD',
+            'SMTP_FROM_EMAIL',
+            'SMTP_FROM_NAME',
+            'SENTRY_DSN',
+            'SENTRY_AUTH_TOKEN',
+            'SENTRY_ORG',
+            'SENTRY_PROJECT'
+          ];
+          
+          // Check if .env.example exists and contains all required vars
+          const envExamplePath = path.join(process.cwd(), '.env.example');
+          if (fs.existsSync(envExamplePath)) {
+            const envContent = fs.readFileSync(envExamplePath, 'utf-8');
+            const missingVars = requiredEnvVars.filter(varName => !envContent.includes(varName));
+            
+            if (missingVars.length > 0) {
+              console.error('Missing environment variables in .env.example:');
+              missingVars.forEach(varName => console.error(`  - ${varName}`));
+              process.exit(1);
+            }
+            
+            console.log('✅ All required environment variables are documented in .env.example');
+          } else {
+            console.error('❌ .env.example file not found');
+            process.exit(1);
+          }
+          EOF
+
+      - name: Validate environment variables
+        run: node validate-env.js
