@@ -126,3 +126,7 @@ The project follows a phased approach defined in the PRD:
 - Phase 4: Enterprise features
 
 Development is tracked using TaskMaster AI with 40 defined tasks. Current focus is completing Phase 1 infrastructure before moving to the enhancement engine.
+
+## Task Master AI Instructions
+**Import Task Master's development workflow commands and guidelines, treat as if import is in the main CLAUDE.md file.**
+@./.taskmaster/CLAUDE.md
