@@ -6,6 +6,7 @@ import { Slider } from '@/components/ui/slider'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight, Maximize2, X } from 'lucide-react'
 import Image from 'next/image'
+import { Loading } from '@/components/ui/loading';
 
 interface BeforeAfterSliderProps {
   beforeUrl: string
@@ -171,7 +172,7 @@ export function BeforeAfterSlider({ beforeUrl, afterUrl, documentType }: BeforeA
         {/* Loading indicator */}
         {(!imageLoaded.before || !imageLoaded.after) && !isPDF && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <Loading size="xl" text="Loading images..." />
           </div>
         )}
       </div>

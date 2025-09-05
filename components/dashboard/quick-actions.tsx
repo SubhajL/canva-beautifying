@@ -58,11 +58,20 @@ export function QuickActions() {
         
         const cardContent = (
           <Card 
-            className="group cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.02]"
+            className="group cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.02] focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2"
             onClick={action.onClick}
+            role="button"
+            tabIndex={isInternalLink ? 0 : -1}
+            onKeyDown={isInternalLink ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                action.onClick?.();
+              }
+            } : undefined}
+            aria-label={`${action.title}: ${action.description}`}
           >
             <div className="p-6">
-              <div className={`inline-flex p-3 rounded-lg ${action.bgColor} mb-4`}>
+              <div className={`inline-flex p-3 rounded-lg ${action.bgColor} mb-4`} aria-hidden="true">
                 <Icon className={`h-6 w-6 ${action.color}`} />
               </div>
               <h3 className="font-semibold text-sm mb-1 group-hover:text-primary transition-colors">

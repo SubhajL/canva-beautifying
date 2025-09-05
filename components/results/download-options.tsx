@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Download, FileText, Package, CheckCircle } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { Loading } from '@/components/ui/loading';
 
 interface DownloadOptionsProps {
   enhancementId: string
@@ -129,7 +130,7 @@ export function DownloadOptions({
               <span>Enhanced Version</span>
             </div>
             {downloading === 'enhanced' && (
-              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary"></div>
+              <Loading size="xs" inline />
             )}
           </div>
         </DropdownMenuItem>
@@ -144,7 +145,7 @@ export function DownloadOptions({
               <span>Original Version</span>
             </div>
             {downloading === 'original' && (
-              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary"></div>
+              <Loading size="xs" inline />
             )}
           </div>
         </DropdownMenuItem>
@@ -160,7 +161,7 @@ export function DownloadOptions({
                 <span>Enhancement Report</span>
               </div>
               {downloading === 'report' && (
-                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary"></div>
+                <Loading size="xs" inline />
               )}
             </div>
           </DropdownMenuItem>
@@ -178,7 +179,7 @@ export function DownloadOptions({
               <span>Download All</span>
             </div>
             {downloading === 'all' && (
-              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary"></div>
+              <Loading size="xs" inline />
             )}
           </div>
         </DropdownMenuItem>

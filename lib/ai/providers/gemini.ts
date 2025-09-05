@@ -5,9 +5,10 @@ import {
   EnhancementRequest, 
   AIProviderResponse 
 } from '../types'
+import { SecureAPIClient } from '../utils/secure-client'
 
 export class GeminiProvider extends BaseAIProvider {
-  private baseUrl = 'https://generativelanguage.googleapis.com/v1beta'
+  private baseUrl = process.env.GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta'
   
   get model(): AIModel {
     return 'gemini-2.0-flash'
@@ -26,36 +27,34 @@ export class GeminiProvider extends BaseAIProvider {
 
     try {
       const response = await this.retryWithBackoff(async () => {
-        const res = await fetch(
-          `${this.baseUrl}/models/gemini-2.0-flash-latest:generateContent?key=${this.config.apiKey}`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              contents: [{
-                parts: [
-                  {
-                    text: this.buildAnalysisPrompt(request)
-                  },
-                  {
-                    inline_data: {
-                      mime_type: 'image/jpeg',
-                      data: await this.fetchImageAsBase64(imageUrl)
-                    }
+        const res = await SecureAPIClient.request({
+          url: `${this.baseUrl}/models/gemini-2.0-flash-latest:generateContent`,
+          method: 'POST',
+          apiKey: this.config.apiKey,
+          provider: 'gemini',
+          body: {
+            contents: [{
+              parts: [
+                {
+                  text: this.buildAnalysisPrompt(request)
+                },
+                {
+                  inline_data: {
+                    mime_type: 'image/jpeg',
+                    data: await this.fetchImageAsBase64(imageUrl)
                   }
-                ]
-              }],
-              generationConfig: {
-                temperature: this.config.temperature || 0.7,
-                maxOutputTokens: this.config.maxTokens || 2048,
-                responseMimeType: "application/json"
-              }
-            }),
-            signal: AbortSignal.timeout(this.config.timeout || 30000)
-          }
-        )
+                }
+              ]
+            }],
+            generationConfig: {
+              temperature: this.config.temperature || 0.7,
+              maxOutputTokens: this.config.maxTokens || 2048,
+              responseMimeType: "application/json"
+            }
+          },
+          timeout: this.config.timeout || 30000,
+          maxRetries: this.config.maxRetries || 3
+        })
 
         if (!res.ok) {
           const error = await res.json()
@@ -99,27 +98,25 @@ export class GeminiProvider extends BaseAIProvider {
 
     try {
       const response = await this.retryWithBackoff(async () => {
-        const res = await fetch(
-          `${this.baseUrl}/models/gemini-2.0-flash-latest:generateContent?key=${this.config.apiKey}`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              contents: [{
-                parts: [{
-                  text: this.buildEnhancementPrompt(analysis, request)
-                }]
-              }],
-              generationConfig: {
-                temperature: this.config.temperature || 0.8,
-                maxOutputTokens: this.config.maxTokens || 1024,
-              }
-            }),
-            signal: AbortSignal.timeout(this.config.timeout || 30000)
-          }
-        )
+        const res = await SecureAPIClient.request({
+          url: `${this.baseUrl}/models/gemini-2.0-flash-latest:generateContent`,
+          method: 'POST',
+          apiKey: this.config.apiKey,
+          provider: 'gemini',
+          body: {
+            contents: [{
+              parts: [{
+                text: this.buildEnhancementPrompt(analysis, request)
+              }]
+            }],
+            generationConfig: {
+              temperature: this.config.temperature || 0.8,
+              maxOutputTokens: this.config.maxTokens || 1024,
+            }
+          },
+          timeout: this.config.timeout || 30000,
+          maxRetries: this.config.maxRetries || 3
+        })
 
         if (!res.ok) {
           const error = await res.json()

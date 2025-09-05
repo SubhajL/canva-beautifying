@@ -1,4 +1,5 @@
 import { WebhookPayload, webhookPayloadSchema } from './validation'
+import { createWebhookSignature } from './webhooks/signature'
 
 interface WebhookDeliveryResult {
   success: boolean
@@ -17,9 +18,10 @@ export async function sendWebhook(
     timeout?: number
     retries?: number
     secret?: string
+    headers?: Record<string, string>
   } = {}
 ): Promise<WebhookDeliveryResult> {
-  const { timeout = 10000, retries = 3, secret } = options
+  const { timeout = 10000, retries = 3, secret, headers: customHeaders } = options
   
   // Validate payload
   try {
@@ -35,12 +37,13 @@ export async function sendWebhook(
     'User-Agent': 'BeautifyAI/1.0',
     'X-BeautifyAI-Event': payload.event,
     'X-BeautifyAI-Timestamp': payload.timestamp,
+    ...customHeaders
   }
   
   // Add HMAC signature if secret is provided
   if (secret) {
-    const signature = await generateHmacSignature(JSON.stringify(payload), secret)
-    headers['X-BeautifyAI-Signature'] = signature
+    const { headers: signatureHeaders } = createWebhookSignature(payload, secret)
+    Object.assign(headers, signatureHeaders)
   }
   
   // Attempt delivery with retries
@@ -107,29 +110,6 @@ export async function sendWebhook(
   return { success: false, error: 'Max retries exceeded', retryable: true }
 }
 
-/**
- * Generates HMAC signature for webhook payload
- */
-async function generateHmacSignature(payload: string, secret: string): Promise<string> {
-  const encoder = new TextEncoder()
-  const key = await crypto.subtle.importKey(
-    'raw',
-    encoder.encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
-  )
-  
-  const signature = await crypto.subtle.sign(
-    'HMAC',
-    key,
-    encoder.encode(payload)
-  )
-  
-  return Array.from(new Uint8Array(signature))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('')
-}
 
 /**
  * Creates webhook payloads for different events
@@ -200,20 +180,43 @@ export const webhookEvents = {
 export async function queueWebhookDelivery(
   url: string,
   payload: WebhookPayload,
-  enhancementId: string
-): Promise<void> {
-  // In production, this should be queued through BullMQ
-  // For now, we'll send it directly with error handling
-  try {
-    const result = await sendWebhook(url, payload)
-    
-    if (!result.success) {
-      console.error(`Webhook delivery failed for enhancement ${enhancementId}:`, result.error)
-      
-      // In production, store failed webhooks for retry/debugging
-      // await storeFailedWebhook(enhancementId, url, payload, result)
+  enhancementId: string,
+  options?: {
+    secret?: string
+    headers?: Record<string, string>
+    retryPolicy?: {
+      max_attempts?: number
+      initial_delay_ms?: number
+      backoff_multiplier?: number
+      max_delay_ms?: number
     }
-  } catch (error) {
-    console.error(`Webhook delivery error for enhancement ${enhancementId}:`, error)
   }
+): Promise<void> {
+  const { getQueue } = await import('@/lib/queue/client')
+  const queue = getQueue('webhook')
+  
+  await queue.add(
+    'deliver-webhook',
+    {
+      webhookId: enhancementId, // Using enhancement ID as webhook ID for now
+      url,
+      secret: options?.secret || '',
+      headers: options?.headers || {},
+      retryPolicy: {
+        max_attempts: options?.retryPolicy?.max_attempts || 3,
+        initial_delay_ms: options?.retryPolicy?.initial_delay_ms || 1000,
+        backoff_multiplier: options?.retryPolicy?.backoff_multiplier || 2,
+        max_delay_ms: options?.retryPolicy?.max_delay_ms || 30000
+      },
+      eventType: payload.event as any,
+      payload
+    },
+    {
+      attempts: options?.retryPolicy?.max_attempts || 3,
+      backoff: {
+        type: 'exponential',
+        delay: options?.retryPolicy?.initial_delay_ms || 1000
+      }
+    }
+  )
 }

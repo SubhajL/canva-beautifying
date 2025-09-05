@@ -9,6 +9,9 @@ import { Loader2, Check, X } from 'lucide-react';
 import { SUBSCRIPTION_TIERS } from '@/lib/stripe/config';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
+import { FeatureErrorBoundary } from '@/components/error-boundaries/FeatureErrorBoundary';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
+import { toast } from 'sonner';
 
 type SubscriptionDetails = {
   id: string;
@@ -32,6 +35,7 @@ export default function BillingPage() {
   const searchParams = useSearchParams();
   const { userDetails, refreshUserDetails } = useAuth();
   const { toast } = useToast();
+  const { handleAsyncError } = useErrorHandler();
   const [loading, setLoading] = useState(false);
   const [subscription, setSubscription] = useState<SubscriptionDetails | null>(null);
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
@@ -54,18 +58,23 @@ export default function BillingPage() {
 
   useEffect(() => {
     fetchSubscription();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchSubscription = async () => {
-    try {
-      const response = await fetch('/api/stripe/subscription');
-      const data = await response.json();
-      if (data.subscription) {
-        setSubscription(data.subscription);
+    await handleAsyncError(
+      async () => {
+        const response = await fetch('/api/stripe/subscription');
+        const data = await response.json();
+        if (data.subscription) {
+          setSubscription(data.subscription);
+        }
+      },
+      { 
+        retryOnFailure: true,
+        fallbackValue: undefined 
       }
-    } catch (error) {
-      console.error('Failed to fetch subscription:', error);
-    }
+    );
   };
 
   const handleSubscribe = async (tier: typeof SUBSCRIPTION_TIERS[keyof typeof SUBSCRIPTION_TIERS]) => {
@@ -124,7 +133,36 @@ export default function BillingPage() {
   };
 
   const handleCancelSubscription = async () => {
-    if (!confirm('Are you sure you want to cancel your subscription?')) return;
+    const confirmed = await new Promise<boolean>((resolve) => {
+      toast.custom((t) => (
+        <div className="bg-background p-4 rounded-lg shadow-lg">
+          <p className="mb-4">Are you sure you want to cancel your subscription?</p>
+          <div className="flex gap-2 justify-end">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                toast.dismiss(t);
+                resolve(false);
+              }}
+            >
+              Keep Subscription
+            </Button>
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={() => {
+                toast.dismiss(t);
+                resolve(true);
+              }}
+            >
+              Cancel Subscription
+            </Button>
+          </div>
+        </div>
+      ), { duration: Infinity });
+    });
+    if (!confirmed) return;
     
     setLoading(true);
     try {
@@ -189,14 +227,15 @@ export default function BillingPage() {
   const currentTierDetails = SUBSCRIPTION_TIERS[currentTier.toUpperCase() as keyof typeof SUBSCRIPTION_TIERS];
 
   return (
-    <div className="space-y-8">
-      <Card>
-        <CardHeader>
-          <CardTitle>Current Plan</CardTitle>
-          <CardDescription>
-            Your subscription details and usage
-          </CardDescription>
-        </CardHeader>
+    <FeatureErrorBoundary featureName="Billing Settings">
+      <div className="space-y-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Current Plan</CardTitle>
+            <CardDescription>
+              Your subscription details and usage
+            </CardDescription>
+          </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
@@ -334,5 +373,6 @@ export default function BillingPage() {
         </div>
       </div>
     </div>
+    </FeatureErrorBoundary>
   );
 }

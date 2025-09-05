@@ -94,3 +94,40 @@ export interface CostTracking {
   userId: string
   documentId: string
 }
+
+// Health Monitoring Types
+export type HealthStatus = 'healthy' | 'degraded' | 'unhealthy'
+
+export interface HealthMetric {
+  timestamp: number
+  responseTime: number
+  success: boolean
+  error?: string
+}
+
+export interface HealthCheckResult {
+  provider: AIModel
+  status: HealthStatus
+  responseTime: number
+  lastChecked: Date
+  errorRate: number
+  averageLatency: number
+  recentMetrics: HealthMetric[]
+  consecutiveFailures: number
+}
+
+export interface HealthMonitorConfig {
+  checkInterval: number // milliseconds
+  healthyThreshold: number // response time in ms
+  degradedThreshold: number // response time in ms
+  failureThreshold: number // consecutive failures before unhealthy
+  metricsWindowSize: number // number of recent metrics to keep
+  errorRateThreshold: number // percentage (0-1)
+}
+
+export type HealthChangeCallback = (
+  model: AIModel,
+  oldStatus: HealthStatus,
+  newStatus: HealthStatus,
+  result: HealthCheckResult
+) => void

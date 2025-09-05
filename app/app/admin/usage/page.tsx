@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Download, Search, RefreshCw } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { Database } from '@/lib/supabase/database.types';
+import { Loading } from '@/components/ui/loading';
 
 type UserUsage = {
   id: string;
@@ -149,7 +150,7 @@ export default function AdminUsagePage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <Loading size="xl" text="Loading usage data..." />
           <p className="mt-4 text-muted-foreground">Loading...</p>
         </div>
       </div>

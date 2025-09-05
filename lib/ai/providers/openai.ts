@@ -5,9 +5,10 @@ import {
   EnhancementRequest, 
   AIProviderResponse 
 } from '../types'
+import { SecureAPIClient } from '../utils/secure-client'
 
 export class OpenAIProvider extends BaseAIProvider {
-  private baseUrl = 'https://api.openai.com/v1'
+  private baseUrl = process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1'
   
   get model(): AIModel {
     return 'gpt-4o-mini'
@@ -27,13 +28,12 @@ export class OpenAIProvider extends BaseAIProvider {
 
     try {
       const response = await this.retryWithBackoff(async () => {
-        const res = await fetch(`${this.baseUrl}/chat/completions`, {
+        const res = await SecureAPIClient.request({
+          url: `${this.baseUrl}/chat/completions`,
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.config.apiKey}`,
-          },
-          body: JSON.stringify({
+          apiKey: this.config.apiKey,
+          provider: 'openai',
+          body: {
             model: 'gpt-4o-mini',
             messages: [
               {
@@ -60,8 +60,9 @@ export class OpenAIProvider extends BaseAIProvider {
             temperature: this.config.temperature || 0.7,
             max_tokens: this.config.maxTokens || 2048,
             response_format: { type: 'json_object' }
-          }),
-          signal: AbortSignal.timeout(this.config.timeout || 30000)
+          },
+          timeout: this.config.timeout || 30000,
+          maxRetries: this.config.maxRetries || 3
         })
 
         if (!res.ok) {

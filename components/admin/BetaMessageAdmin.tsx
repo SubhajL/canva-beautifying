@@ -18,6 +18,7 @@ import { CalendarIcon, Plus, Edit, Trash2, Eye, BarChart3 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { Loading } from '@/components/ui/loading';
 
 interface BetaMessage {
   id: string;
@@ -134,7 +135,36 @@ export function BetaMessageAdmin() {
   };
 
   const handleDelete = async (messageId: string) => {
-    if (!confirm('Are you sure you want to delete this message?')) return;
+    const confirmed = await new Promise<boolean>((resolve) => {
+      toast.custom((t) => (
+        <div className="bg-background p-4 rounded-lg shadow-lg">
+          <p className="mb-4">Are you sure you want to delete this message?</p>
+          <div className="flex gap-2 justify-end">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                toast.dismiss(t);
+                resolve(false);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={() => {
+                toast.dismiss(t);
+                resolve(true);
+              }}
+            >
+              Delete
+            </Button>
+          </div>
+        </div>
+      ), { duration: Infinity });
+    });
+    if (!confirmed) return;
 
     try {
       const response = await fetch(`/api/admin/beta/messages/${messageId}`, {
@@ -200,7 +230,7 @@ export function BetaMessageAdmin() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <Loading size="lg" text="Loading messages..." />
       </div>
     );
   }

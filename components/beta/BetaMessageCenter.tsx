@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Bell, MessageSquare, Bug, Star, Wrench, HelpCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { Loading } from '@/components/ui/loading';
 
 interface BetaMessage {
   id: string;
@@ -176,7 +177,7 @@ export function BetaMessageCenter() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <Loading size="lg" />
       </div>
     );
   }

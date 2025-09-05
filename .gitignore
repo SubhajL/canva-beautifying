@@ -38,24 +38,145 @@ next-env.d.ts
 # test outputs
 /test-output/
 
-# Logs
-logs
+# ========================================
+# COMPREHENSIVE EXCLUSIONS
+# ========================================
+
+# Documentation - ALL docs/doc folders at any level
+**/docs/
+**/doc/
+**/*.md
+!README.md
+!CLAUDE.md
+!.taskmaster/CLAUDE.md
+
+# Test files and folders - ALL test-related content
+**/__tests__/
+**/__mocks__/
+**/test/
+**/tests/
+**/e2e/
+**/test-results/
+**/coverage/
+**/*.test.ts
+**/*.test.js
+**/*.spec.ts
+**/*.spec.js
+**/*.test.tsx
+**/*.test.jsx
+jest*.js
+jest*.config.js
+playwright*.config.ts
+playwright-report/
+.test-storage/
+test-*.js
+test-*.ts
+
+# Scripts - ALL scripts folders
+**/scripts/
+script*.sh
+*.sh
+
+# Build and compilation outputs
+**/build/
+**/dist/
+**/out/
+**/.next/
+*.tsbuildinfo
+
+# Logs and temporary files
 *.log
-dev-debug.log
-# Dependency directories
-node_modules/
-# Environment variables
+**/logs/
+**/*.log
+**/tmp/
+**/temp/
+**/.tmp/
+cookies.txt
+*.bak
+*.backup
+*.old
+
+# Environment files
 .env
-# Editor directories and files
-.idea
-.vscode
+.env.*
+!.env.example
+
+# Editor and IDE
+.idea/
+.vscode/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-# OS specific
+*.sublime-*
 
-# Task files
+# OS specific
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Dependency directories
+node_modules/
+.pnp
+.pnp.js
+.yarn/
+
+# Docker and deployment
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+helm/
+k8s/
+kubernetes/
+terraform/
+migrations/
+
+# CI/CD
+.github/workflows/
+.github/actions/
+
+# Monitoring and observability
+grafana/
+monitoring/
+load-tests/
+
+# Reports and generated files
+*-report.md
+*-report.json
+screenshots/
+security-improvements-summary.md
+
+# Miscellaneous generated files
+*.pem
+.vercel
+next-env.d.ts
+claude-squad
+cleanup-claude.sh
+start-dev.sh
+design-*.md
+gemini.md
+AGENTS.md
+CLAUDE_INSTANCE_TEMPLATE.md
+CLAUDE_SQUAD_SETUP_GUIDE.md
+claude-squad-setup-generator.sh
+e2e-test-fixes-summary.md
+
+# Package manager files that shouldn't be committed
+beautifyai-app@0.1.0
+
+# Temporary and backup files
+middleware.backup.ts
+middleware-*.ts
+!middleware.ts
+
+# Config files that might be generated
+config/
+!config/default.json
+
+# Supabase migrations (if you want to exclude them)
+supabase/migrations/
+
+# Task files (uncomment if needed)
 # tasks.json
 # tasks/ 

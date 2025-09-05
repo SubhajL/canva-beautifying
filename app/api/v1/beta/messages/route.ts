@@ -1,9 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
+import { documentRoute } from '@/lib/api/openapi/decorators';
+import { routeRegistry } from '@/lib/api/openapi/registry';
+import { z } from 'zod';
+
+// Response schemas
+const betaMessageSchema = z.object({
+  id: z.string().uuid(),
+  title: z.string(),
+  content: z.string(),
+  type: z.string(),
+  category: z.string().nullable(),
+  priority: z.number(),
+  action_url: z.string().nullable(),
+  action_text: z.string().nullable(),
+  metadata: z.any().nullable(),
+  publish_at: z.string(),
+  expires_at: z.string().nullable(),
+  created_at: z.string(),
+  is_read: z.boolean()
+});
+
+const messagesResponseSchema = z.object({
+  messages: z.array(betaMessageSchema),
+  unread_count: z.number(),
+  pagination: z.object({
+    limit: z.number(),
+    offset: z.number(),
+    total: z.number()
+  })
+});
 
 // GET /api/v1/beta/messages - Fetch beta messages for current user
-export async function GET(request: NextRequest) {
+const getMessagesHandler = async (request: NextRequest) => {
   try {
     const supabase = createRouteHandlerClient({ cookies });
     
@@ -90,3 +120,62 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+export const GET = documentRoute(
+  getMessagesHandler,
+  {
+    method: 'GET',
+    path: '/api/v1/beta/messages',
+    operationId: 'getBetaMessages',
+    summary: 'Get beta messages',
+    description: 'Fetch beta messages for the current user with filtering and pagination',
+    tags: ['Beta'],
+    security: [{ bearer: [] }],
+    parameters: [
+      {
+        name: 'category',
+        in: 'query',
+        required: false,
+        schema: { type: 'string' },
+        description: 'Filter messages by category'
+      },
+      {
+        name: 'unread_only',
+        in: 'query',
+        required: false,
+        schema: { type: 'boolean', default: false },
+        description: 'Show only unread messages'
+      },
+      {
+        name: 'limit',
+        in: 'query',
+        required: false,
+        schema: { type: 'integer', minimum: 1, maximum: 100, default: 20 },
+        description: 'Number of messages to return'
+      },
+      {
+        name: 'offset',
+        in: 'query',
+        required: false,
+        schema: { type: 'integer', minimum: 0, default: 0 },
+        description: 'Number of messages to skip'
+      }
+    ]
+  },
+  undefined,
+  {
+    200: {
+      description: 'Messages retrieved successfully',
+      schema: messagesResponseSchema
+    },
+    401: {
+      description: 'Unauthorized'
+    },
+    500: {
+      description: 'Internal server error'
+    }
+  }
+)
+
+// Register routes
+routeRegistry.registerRoute('/api/v1/beta/messages', 'GET')

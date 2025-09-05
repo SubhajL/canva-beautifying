@@ -12,7 +12,8 @@ import {
   Settings,
   LogOut,
   Menu,
-  FlaskConical
+  FlaskConical,
+  Activity
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -80,6 +81,12 @@ export function AppHeader() {
                   Beta
                 </Link>
               )}
+              {user?.subscription_tier === 'admin' && (
+                <Link href="/monitoring" className="text-sm font-medium text-gray-700 hover:text-primary transition-colors flex items-center gap-1">
+                  <Activity className="h-4 w-4" />
+                  Monitoring
+                </Link>
+              )}
             </div>
           </div>
           
@@ -131,6 +138,14 @@ export function AppHeader() {
                     <Link href="/beta/dashboard" className="cursor-pointer">
                       <FlaskConical className="mr-2 h-4 w-4" />
                       Beta Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                {user?.subscription_tier === 'admin' && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/monitoring" className="cursor-pointer">
+                      <Activity className="mr-2 h-4 w-4" />
+                      Monitoring
                     </Link>
                   </DropdownMenuItem>
                 )}

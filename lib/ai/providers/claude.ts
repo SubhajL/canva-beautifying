@@ -8,7 +8,7 @@ import {
 } from '../types'
 
 export class ClaudeProvider extends BaseAIProvider {
-  private baseUrl = 'https://api.anthropic.com/v1'
+  private baseUrl = process.env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com/v1'
   private modelVersion: 'claude-3.5-sonnet' | 'claude-4-sonnet'
   
   constructor(config: AIModelConfig, modelVersion: 'claude-3.5-sonnet' | 'claude-4-sonnet' = 'claude-3.5-sonnet') {

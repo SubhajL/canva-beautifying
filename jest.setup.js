@@ -1,5 +1,6 @@
 // Learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom'
+import 'jest-extended/all'
 
 // Add TransformStream polyfill for Node.js
 if (typeof TransformStream === 'undefined') {
@@ -38,32 +39,39 @@ process.env.R2_BUCKET_NAME = 'test-bucket'
 process.env.R2_PUBLIC_URL = 'https://test-public-r2.com'
 process.env.STRIPE_SECRET_KEY = 'sk_test_123'
 process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test_123'
+process.env.REDIS_URL = 'redis://localhost:6379'
 
-// Mock window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: jest.fn().mockImplementation(query => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: jest.fn(), // deprecated
-    removeListener: jest.fn(), // deprecated
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
-  })),
-})
-
-// Mock IntersectionObserver
-global.IntersectionObserver = class IntersectionObserver {
-  constructor() {}
-  disconnect() {}
-  observe() {}
-  unobserve() {}
+// Mock window.matchMedia only in browser environment
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: jest.fn().mockImplementation(query => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: jest.fn(), // deprecated
+      removeListener: jest.fn(), // deprecated
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    })),
+  })
 }
 
-// Mock fetch
-global.fetch = jest.fn()
+// Mock IntersectionObserver only in browser environment
+if (typeof window !== 'undefined') {
+  global.IntersectionObserver = class IntersectionObserver {
+    constructor() {}
+    disconnect() {}
+    observe() {}
+    unobserve() {}
+  }
+}
+
+// Mock fetch - only for unit tests, not integration tests
+if (!process.env.JEST_INTEGRATION_TEST) {
+  global.fetch = jest.fn()
+}
 
 // Mock Request and Response for Next.js
 global.Request = class Request {
@@ -99,6 +107,7 @@ global.Response = class Response {
     this.status = init.status || 200
     this.statusText = init.statusText || 'OK'
     this.headers = new Map(Object.entries(init.headers || {}))
+    this.ok = this.status >= 200 && this.status < 300
   }
   
   async json() {
@@ -107,6 +116,21 @@ global.Response = class Response {
   
   async text() {
     return typeof this.body === 'string' ? this.body : JSON.stringify(this.body)
+  }
+  
+  async blob() {
+    if (this.body instanceof Buffer) {
+      return new Blob([this.body])
+    }
+    return new Blob([typeof this.body === 'string' ? this.body : JSON.stringify(this.body)])
+  }
+  
+  async arrayBuffer() {
+    if (this.body instanceof Buffer) {
+      return this.body.buffer.slice(this.body.byteOffset, this.body.byteOffset + this.body.byteLength)
+    }
+    const text = typeof this.body === 'string' ? this.body : JSON.stringify(this.body)
+    return new TextEncoder().encode(text).buffer
   }
   
   static json(body, init = {}) {
@@ -415,7 +439,8 @@ jest.mock('@aws-sdk/client-s3', () => ({
   GetObjectCommand: jest.fn(),
   DeleteObjectCommand: jest.fn(),
   HeadObjectCommand: jest.fn(),
-  ListObjectsV2Command: jest.fn()
+  ListObjectsV2Command: jest.fn(),
+  CreateBucketCommand: jest.fn()
 }))
 
 // Mock AWS S3 Request Presigner

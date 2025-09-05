@@ -6,6 +6,8 @@ import { z } from 'zod';
 import { RateLimiter } from '@/lib/utils/validation';
 import { securityLogger } from '@/lib/utils/security-logger';
 import { v4 as uuidv4 } from 'uuid';
+import { documentRoute } from '@/lib/api/openapi/decorators';
+import { routeRegistry } from '@/lib/api/openapi/registry';
 
 // Create a rate limiter for feedback submissions
 const feedbackRateLimiter = new RateLimiter(10, 60 * 60 * 1000); // 10 feedback submissions per hour
@@ -31,7 +33,39 @@ const feedbackSchema = z.object({
   })).max(5).optional(),
 });
 
-export async function POST(request: NextRequest) {
+// Response schemas
+const feedbackSubmitResponseSchema = z.object({
+  id: z.string().uuid(),
+  message: z.string()
+});
+
+const feedbackItemSchema = z.object({
+  id: z.string().uuid(),
+  user_id: z.string().uuid(),
+  feedback_type: z.enum(['bug', 'feature', 'improvement', 'general']),
+  rating: z.number().min(1).max(5).nullable(),
+  title: z.string(),
+  description: z.string(),
+  page_url: z.string().nullable(),
+  browser_info: z.any().nullable(),
+  attachments: z.array(z.any()),
+  status: z.string(),
+  priority: z.string(),
+  created_at: z.string(),
+  updated_at: z.string()
+});
+
+const feedbackListResponseSchema = z.object({
+  feedback: z.array(feedbackItemSchema),
+  pagination: z.object({
+    page: z.number(),
+    limit: z.number(),
+    total: z.number(),
+    totalPages: z.number()
+  })
+});
+
+const postFeedbackHandler = async (request: NextRequest) => {
   const requestId = uuidv4();
 
   try {
@@ -192,8 +226,46 @@ export async function POST(request: NextRequest) {
   }
 }
 
+export const POST = documentRoute(
+  postFeedbackHandler,
+  {
+    method: 'POST',
+    path: '/api/v1/beta/feedback',
+    operationId: 'submitBetaFeedback',
+    summary: 'Submit beta feedback',
+    description: 'Submit feedback as a beta user',
+    tags: ['Beta'],
+    security: [{ bearer: [] }]
+  },
+  {
+    body: feedbackSchema,
+    contentType: 'application/json'
+  },
+  {
+    201: {
+      description: 'Feedback submitted successfully',
+      schema: feedbackSubmitResponseSchema
+    },
+    400: {
+      description: 'Invalid request'
+    },
+    401: {
+      description: 'Unauthorized'
+    },
+    403: {
+      description: 'Beta access required'
+    },
+    429: {
+      description: 'Rate limit exceeded'
+    },
+    500: {
+      description: 'Internal server error'
+    }
+  }
+)
+
 // Get user's feedback history
-export async function GET(request: NextRequest) {
+const getFeedbackHandler = async (request: NextRequest) => {
   const requestId = uuidv4();
 
   try {
@@ -282,3 +354,69 @@ export async function GET(request: NextRequest) {
     return APIErrorHandler.handleResponse(error as Error, requestId);
   }
 }
+
+export const GET = documentRoute(
+  getFeedbackHandler,
+  {
+    method: 'GET',
+    path: '/api/v1/beta/feedback',
+    operationId: 'getBetaFeedback',
+    summary: 'Get feedback history',
+    description: 'Get user\'s beta feedback history with pagination',
+    tags: ['Beta'],
+    security: [{ bearer: [] }],
+    parameters: [
+      {
+        name: 'page',
+        in: 'query',
+        required: false,
+        schema: { type: 'integer', minimum: 1, default: 1 },
+        description: 'Page number'
+      },
+      {
+        name: 'limit',
+        in: 'query',
+        required: false,
+        schema: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
+        description: 'Items per page'
+      },
+      {
+        name: 'status',
+        in: 'query',
+        required: false,
+        schema: { type: 'string' },
+        description: 'Filter by feedback status'
+      },
+      {
+        name: 'type',
+        in: 'query',
+        required: false,
+        schema: { 
+          type: 'string',
+          enum: ['bug', 'feature', 'improvement', 'general']
+        },
+        description: 'Filter by feedback type'
+      }
+    ]
+  },
+  undefined,
+  {
+    200: {
+      description: 'Feedback history retrieved successfully',
+      schema: feedbackListResponseSchema
+    },
+    401: {
+      description: 'Unauthorized'
+    },
+    403: {
+      description: 'Beta access required'
+    },
+    500: {
+      description: 'Internal server error'
+    }
+  }
+)
+
+// Register routes
+routeRegistry.registerRoute('/api/v1/beta/feedback', 'POST')
+routeRegistry.registerRoute('/api/v1/beta/feedback', 'GET')

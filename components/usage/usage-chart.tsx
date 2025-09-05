@@ -24,6 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { UsageForecast } from './usage-forecast';
+import { Loading } from '@/components/ui/loading';
 
 interface UsageStats {
   currentMonth: {
@@ -72,8 +73,7 @@ export function UsageChart() {
       <Card>
         <CardContent className="flex items-center justify-center h-96">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Loading usage data...</p>
+            <Loading size="xl" text="Loading usage data..." />
           </div>
         </CardContent>
       </Card>

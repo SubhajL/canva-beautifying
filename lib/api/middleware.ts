@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { apiErrors, ApiError } from './response'
 import { User } from '@supabase/supabase-js'
+import { pdfAnalyzer } from '@/lib/utils/pdf-analyzer'
 
 export interface AuthenticatedRequest extends NextRequest {
   user?: User
@@ -16,6 +17,16 @@ export async function authenticateRequest(request: NextRequest): Promise<{
   user: User
   userId: string
 }> {
+  const supabase = await createClient()
+  
+  // First try to get user from cookie-based session (browser requests)
+  const { data: { user: sessionUser }, error: sessionError } = await supabase.auth.getUser()
+  
+  if (sessionUser && !sessionError) {
+    return { user: sessionUser, userId: sessionUser.id }
+  }
+  
+  // Fall back to Bearer token authentication (API requests)
   const authorization = request.headers.get('authorization')
   
   if (!authorization) {
@@ -27,8 +38,6 @@ export async function authenticateRequest(request: NextRequest): Promise<{
   if (type !== 'Bearer' || !token) {
     throw new ApiError('INVALID_AUTH_HEADER', 'Invalid authorization header format', 401)
   }
-  
-  const supabase = await createClient()
   
   // Verify the token
   const { data: { user }, error } = await supabase.auth.getUser(token)
@@ -157,7 +166,7 @@ export async function checkUserRateLimit(
 /**
  * Validates file upload parameters
  */
-export function validateFileUpload(file: File | null): void {
+export async function validateFileUpload(file: File | null): Promise<void> {
   if (!file) {
     throw new ApiError('NO_FILE', 'No file provided', 400)
   }
@@ -191,6 +200,38 @@ export function validateFileUpload(file: File | null): void {
       400,
       { fileType: file.type, allowedTypes }
     )
+  }
+  
+  // Deep PDF validation
+  if (file.type === 'application/pdf') {
+    const validation = await pdfAnalyzer.performDeepValidation(file)
+    
+    if (!validation.valid) {
+      const errorMessage = validation.errors.length > 0 
+        ? validation.errors.join('; ') 
+        : 'PDF validation failed'
+      
+      throw new ApiError(
+        'INVALID_PDF',
+        errorMessage,
+        400,
+        { 
+          fileType: file.type,
+          fileName: file.name,
+          errors: validation.errors,
+          warnings: validation.warnings,
+          canProcess: validation.canProcess
+        }
+      )
+    }
+    
+    // Log warnings but don't block upload
+    if (validation.warnings.length > 0) {
+      console.warn('PDF validation warnings:', {
+        file: file.name,
+        warnings: validation.warnings
+      })
+    }
   }
 }
 

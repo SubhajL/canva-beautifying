@@ -5,6 +5,7 @@ import { WizardProgress } from './wizard-progress';
 import { WizardProgressMobile } from './wizard-progress-mobile';
 import { WizardNavigation } from './wizard-navigation';
 import { UploadStep } from './steps/upload-step';
+import { ModelStep } from './steps/model-step';
 import { AudienceStep } from './steps/audience-step';
 import { StyleStep } from './steps/style-step';
 import { ReviewStep } from './steps/review-step';
@@ -22,6 +23,8 @@ export function EnhancementWizard() {
     switch (currentStep) {
       case 'upload':
         return <UploadStep />;
+      case 'model':
+        return <ModelStep />;
       case 'audience':
         return <AudienceStep />;
       case 'style':

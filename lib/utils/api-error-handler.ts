@@ -1,5 +1,8 @@
 import * as Sentry from '@sentry/nextjs';
 import { NextResponse } from 'next/server';
+import { ErrorSanitizer } from './error-sanitizer';
+import { SecureLogger } from './error-logger';
+import { AppError, ErrorCode, toAppError } from './error-types';
 
 export interface APIError extends Error {
   statusCode: number;
@@ -52,30 +55,32 @@ export class APIErrorHandler {
   }
 
   static handleResponse(error: APIError | Error, requestId?: string) {
-    // Log the error
-    this.logError(error, { requestId });
-
-    const statusCode = (error as APIError).statusCode || 500;
-    const isOperational = (error as APIError).isOperational || false;
-
-    // Prepare error response
-    const errorResponse = {
-      error: {
-        message: isOperational ? error.message : 'Internal server error',
-        code: (error as APIError).code || 'INTERNAL_ERROR',
-        statusCode,
-        requestId,
-        timestamp: new Date().toISOString(),
-      },
-    };
-
-    // In development, include more details
-    if (process.env.NODE_ENV === 'development') {
-      (errorResponse.error as any).details = (error as APIError).details;
-      (errorResponse.error as any).stack = error.stack;
+    // Convert to AppError if needed
+    const appError = toAppError(error);
+    
+    // Log the error securely
+    const correlationId = SecureLogger.logError(appError, { requestId });
+    
+    // Create sanitized response
+    const sanitizedResponse = ErrorSanitizer.forResponse(appError, requestId);
+    
+    // Add correlation ID for debugging
+    if (sanitizedResponse.error) {
+      sanitizedResponse.error.correlationId = correlationId;
     }
 
-    return NextResponse.json(errorResponse, { status: statusCode });
+    const statusCode = appError.statusCode || (error as APIError).statusCode || 500;
+    
+    // Handle rate limit headers
+    const headers: Record<string, string> = {};
+    if (appError.code === ErrorCode.RATE_LIMIT_EXCEEDED && appError.details?.retryAfter) {
+      headers['Retry-After'] = String(appError.details.retryAfter);
+    }
+
+    return NextResponse.json(sanitizedResponse, { 
+      status: statusCode,
+      headers 
+    });
   }
 }
 

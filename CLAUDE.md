@@ -127,6 +127,103 @@ The project follows a phased approach defined in the PRD:
 
 Development is tracked using TaskMaster AI with 40 defined tasks. Current focus is completing Phase 1 infrastructure before moving to the enhancement engine.
 
+## Testing Principles
+
+### Core Testing Philosophy
+1. **Use real services for integration tests** - Always run actual Redis, PostgreSQL, and other services during tests. Never mock external services as it doesn't reflect production behavior.
+2. **Tests should mirror production behavior** - Write tests that exercise the actual code paths and service interactions that occur in production.
+3. **Prefer integration tests over unit tests** - Focus on testing the integrated behavior of components working together rather than isolated unit tests with mocks.
+
+### Test Environment Setup
+- Redis should be running locally on port 6379 for tests
+- PostgreSQL/Supabase should be accessible for database tests
+- WebSocket server should run on its configured port
+- Use `.env.test` for test-specific configuration
+
+### What NOT to Mock
+- Redis connections
+- Database connections
+- External API calls (use test endpoints or sandbox environments)
+- File system operations
+- WebSocket connections
+
+### What CAN be Mocked
+- Time-based operations (use Jest fake timers)
+- Random number generation
+- External services that don't have test endpoints (but prefer real services when possible)
+
+## Visual Development
+
+### Design Principles
+- Comprehensive design checklist in `/docs/COMPREHENSIVE_UX_UI_GUIDELINES.md`
+- Brand style guide in `/docs/style-guide.md`
+- When making visual (front-end, UI/UX) changes, always refer to these files for guidance
+
+### Quick Visual Check
+IMMEDIATELY after implementing any front-end change:
+1. **Identify what changed** - Review the modified components/pages
+2. **Navigate to affected pages** - Use `mcp__playwright__browser_navigate` to visit each changed view
+3. **Verify design compliance** - Compare against `/docs/COMPREHENSIVE_UX_UI_GUIDELINES.md` and `/context/style-guide.md`
+4. **Validate feature implementation** - Ensure the change fulfills the user's specific request
+5. **Check acceptance criteria** - Review any provided context files or requirements
+6. **Capture evidence** - Take full page screenshot at desktop viewport (1440px) of each changed view
+7. **Check for errors** - Run `mcp__playwright__browser_console_messages`
+
+This verification ensures changes meet design standards and user requirements.
+
+### Comprehensive Design Review
+Invoke the `@agent-design-review` subagent for thorough design validation when:
+- Completing significant UI/UX features
+- Before finalizing PRs with visual changes
+- Needing comprehensive accessibility and responsiveness testing
+
 ## Task Master AI Instructions
 **Import Task Master's development workflow commands and guidelines, treat as if import is in the main CLAUDE.md file.**
 @./.taskmaster/CLAUDE.md
+- Start Claude with a descriptive first message that will show in /resume
+(
+    echo "[$INSTANCE_NAME] $FIRST_LINE"
+    echo "Context: $CONTEXT_FILE"
+    sleep 2
+) | claude\
+\
+Above used to work for piping, but then give error:\
+subhajlimanond@Subhajs-MacBook-Pro munbon2-backend % .vscode/c
+laude-scripts/start-claude.sh /Users/subhajlimanond/dev/munbon
+2-backend/docs/CLAUDE_INSTANCES_MASTER.md 'Claude Main'
+Error: Raw mode is not supported on the current process.stdin, which Ink uses as input stream by default.
+Read about how to prevent this error on https://github.com/vadimdemedes/ink/#israwmodesupported
+    at handleSetRawMode (file:///opt/homebrew/lib/node_modules/@anthropic-ai/claude-code/cli.js:838:3853)
+    at file:///opt/homebrew/lib/node_modules/@anthropic-ai/claude-code/cli.js:847:259
+    at vY (file:///opt/homebrew/lib/node_modules/@anthropic-ai/claude-code/cli.js:332:21536)
+    at AK (file:///opt/homebrew/lib/node_modules/@anthropic-ai/claude-code/cli.js:332:41119)
+    at file:///opt/homebrew/lib/node_modules/@anthropic-ai/claude-code/cli.js:332:39310
+    at YI0 (file:///opt/homebrew/lib/node_modules/@anthropic-ai/claude-code/cli.js:326:35903)
+    at Immediate.tY0 [as _onImmediate] (file:///opt/homebrew/lib/node_modules/@anthropic-ai/claude-code/cli.js:326:36322)
+    at process.processImmediate (node:internal/timers:505:21)
+
+  ERROR Raw mode is not supported on the current
+       process.stdin, which Ink uses as input stream by
+       default.
+       Read about how to prevent this error on https://github
+       .com/vadimdemedes/ink/#israwmodesupported
+
+ - Read about how to prevent this error on 
+   https://github.com/vadimdemedes/ink/#israwmodesupported
+ -handleSetRaw (file:///opt/homebrew/lib/node_modules/@anthro
+  ode         pic-ai/claude-code/cli.js:838:3853)
+ - (file:///opt/homebrew/lib/node_modules/@anthropic-ai/claud
+  e-code/cli.js:847:259)
+ -vY (file:///opt/homebrew/lib/node_modules/@anthropic-ai/cla
+    ude-code/cli.js:332:21536)
+ -AK (file:///opt/homebrew/lib/node_modules/@anthropic-ai/cla
+    ude-code/cli.js:332:41119)
+ - (file:///opt/homebrew/lib/node_modules/@anthropic-ai/claud
+  e-code/cli.js:332:39310)
+ -YI0 (file:///opt/homebrew/lib/node_modules/@anthropic-ai/cl
+     aude-code/cli.js:326:35903)
+ -Immediate.t (file:///opt/homebrew/lib/node_modules/@anthrop
+  Y0         ic-ai/claude-code/cli.js:326:36322)
+ - process.processImmediate (node:internal/timers:505:21)\
+\
+ULtrathink to analyze.

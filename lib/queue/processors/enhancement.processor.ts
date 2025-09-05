@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/server'
 import { uploadToR2 } from '@/lib/r2/client'
 import { EnhancementEngine } from '@/lib/enhancement/enhancement-engine'
 import { addExportJob } from '../queues'
+import { pipelineTracer, activateJobTraceContext } from '@/lib/observability/enhancement-pipeline'
+import { recordPipelineEvent } from '@/lib/observability/tracing'
 
 export const createEnhancementWorker = () => {
   const worker = new Worker<EnhancementJobData, JobResult>(
@@ -13,11 +15,20 @@ export const createEnhancementWorker = () => {
       const startTime = Date.now()
       const { 
         documentId, 
+        enhancementId,
         userId, 
         analysisResults, 
         enhancementSettings, 
         subscriptionTier 
       } = job.data
+
+      // Extract and activate trace context from job data
+      activateJobTraceContext(job.data)
+
+      // Track this job in the pipeline if enhancement ID exists
+      if (enhancementId && pipelineTracer.isActive(enhancementId)) {
+        pipelineTracer.trackQueueJob(job, QUEUE_NAMES.ENHANCEMENT)
+      }
 
       try {
         // Update progress: Starting
@@ -34,7 +45,7 @@ export const createEnhancementWorker = () => {
         })
 
         // Load original document
-        const supabase = createClient()
+        const supabase = await createClient()
         const { data: document, error: docError } = await supabase
           .from('documents')
           .select('*')
@@ -45,14 +56,35 @@ export const createEnhancementWorker = () => {
           throw new Error('Document not found')
         }
 
-        // Generate enhancement strategy
+        // Generate enhancement strategy with tracing
         await job.updateProgress({
           stage: 'strategy',
           progress: 15,
           message: 'Generating enhancement strategy',
         } as JobProgress)
         
-        const strategy = await engine.generateStrategy(analysisResults, enhancementSettings)
+        const strategy = await pipelineTracer.trackStage(
+          enhancementId || documentId,
+          'analysis' as any,
+          async () => {
+            recordPipelineEvent('strategy.generation.started', {
+              model: enhancementSettings.aiModel,
+              settings: enhancementSettings,
+            })
+            
+            const result = await engine.generateStrategy(analysisResults, enhancementSettings)
+            
+            recordPipelineEvent('strategy.generation.completed', {
+              strategyType: result.type,
+              improvements: Object.keys(result),
+            })
+            
+            return result
+          },
+          {
+            analysisResults: JSON.stringify(analysisResults),
+          }
+        )
 
         // Apply color enhancements
         await job.updateProgress({
@@ -189,6 +221,15 @@ export const createEnhancementWorker = () => {
           message: 'Enhancement completed successfully',
         } as JobProgress)
 
+        // Complete pipeline tracing
+        if (enhancementId && pipelineTracer.isActive(enhancementId)) {
+          pipelineTracer.completePipeline(enhancementId, 'success', {
+            enhancedFileUrl,
+            qualityImprovement: enhancedDocument.qualityImprovement,
+            aiTokensUsed: engine.getTokensUsed(),
+          })
+        }
+
         return {
           success: true,
           data: {
@@ -200,13 +241,14 @@ export const createEnhancementWorker = () => {
           metadata: {
             processingTime: Date.now() - startTime,
             aiTokensUsed: engine.getTokensUsed(),
+            traceId: pipelineTracer.getTraceId(enhancementId || documentId),
           },
         }
       } catch (error) {
         console.error('Enhancement error:', error)
         
         // Update document status to failed
-        const supabase = createClient()
+        const supabase = await createClient()
         await supabase
           .from('documents')
           .update({ 
@@ -214,6 +256,14 @@ export const createEnhancementWorker = () => {
             error_message: error instanceof Error ? error.message : 'Unknown error',
           })
           .eq('id', documentId)
+
+        // Complete pipeline tracing with error
+        if (enhancementId && pipelineTracer.isActive(enhancementId)) {
+          pipelineTracer.completePipeline(enhancementId, 'error', {
+            error: error instanceof Error ? error.message : 'Unknown error',
+            errorType: error instanceof Error ? error.constructor.name : 'UnknownError',
+          })
+        }
 
         return {
           success: false,
@@ -224,6 +274,7 @@ export const createEnhancementWorker = () => {
           },
           metadata: {
             processingTime: Date.now() - startTime,
+            traceId: pipelineTracer.getTraceId(enhancementId || documentId),
           },
         }
       }

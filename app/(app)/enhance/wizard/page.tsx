@@ -1,4 +1,6 @@
 import { EnhancementWizard } from '@/components/wizard/enhancement-wizard';
+import { FeatureErrorBoundary } from '@/components/error-boundaries/FeatureErrorBoundary';
+import { AsyncErrorBoundary } from '@/components/error-boundaries/AsyncErrorBoundary';
 
 export const metadata = {
   title: 'Enhancement Wizard - BeautifyAI',
@@ -6,5 +8,11 @@ export const metadata = {
 };
 
 export default function WizardPage() {
-  return <EnhancementWizard />;
+  return (
+    <FeatureErrorBoundary featureName="Enhancement Wizard">
+      <AsyncErrorBoundary>
+        <EnhancementWizard />
+      </AsyncErrorBoundary>
+    </FeatureErrorBoundary>
+  );
 }

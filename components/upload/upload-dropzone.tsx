@@ -7,6 +7,8 @@ import { FileUpload, UploadConfig } from './types'
 import { FilePreview } from './file-preview'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner';
+import { useLiveRegion } from '@/components/a11y/live-region';
 
 const DEFAULT_CONFIG: UploadConfig = {
   maxFiles: 10,
@@ -29,6 +31,7 @@ export function UploadDropzone({
   const config = useMemo(() => ({ ...DEFAULT_CONFIG, ...userConfig }), [userConfig])
   const [uploads, setUploads] = useState<FileUpload[]>([])
   const [isUploading, setIsUploading] = useState(false)
+  const { announce } = useLiveRegion();
 
   const onDrop = useCallback(async (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
     const validateFile = (file: File): string | null => {
@@ -52,7 +55,8 @@ export function UploadDropzone({
     // Handle rejected files
     rejectedFiles.forEach((rejection) => {
       const error = rejection.errors[0]?.message || 'File rejected'
-      alert(error)
+      toast.error(error)
+      announce(`Error: ${error}`, 'assertive')
     })
 
     // Validate accepted files
@@ -62,7 +66,8 @@ export function UploadDropzone({
       const error = validateFile(file)
       
       if (error) {
-        alert(error)
+        toast.error(error)
+        announce(`Error: ${error}`, 'assertive')
         continue
       }
 
@@ -77,6 +82,9 @@ export function UploadDropzone({
     }
 
     if (newUploads.length === 0) return
+
+    // Announce successful file selection
+    announce(`${newUploads.length} file${newUploads.length > 1 ? 's' : ''} selected for upload`, 'polite')
 
     // Add to uploads
     setUploads(prev => [...prev, ...newUploads])
@@ -95,6 +103,8 @@ export function UploadDropzone({
         }
         return u
       }))
+      
+      announce(`Upload complete for ${newUploads.length} file${newUploads.length > 1 ? 's' : ''}`, 'assertive')
     } catch (error) {
       // Update status to error
       setUploads(prev => prev.map(u => {
@@ -108,10 +118,12 @@ export function UploadDropzone({
         }
         return u
       }))
+      
+      announce('Upload failed. Please try again.', 'assertive')
     } finally {
       setIsUploading(false)
     }
-  }, [uploads.length, config, onUpload])
+  }, [uploads.length, config, onUpload, announce])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,

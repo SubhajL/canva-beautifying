@@ -3,7 +3,10 @@ import Redis from 'ioredis'
 // Redis connection configuration
 const redisUrl = process.env.REDIS_URL || process.env.UPSTASH_REDIS_URL
 
-if (!redisUrl) {
+// In test environment, use test database
+const isTest = process.env.NODE_ENV === 'test'
+
+if (!redisUrl && !isTest) {
   throw new Error('Redis URL is not configured. Please set REDIS_URL or UPSTASH_REDIS_URL in your environment variables.')
 }
 
@@ -19,7 +22,7 @@ type RedisOptions = string | {
   maxRetriesPerRequest?: number
 }
 
-let redisOptions: RedisOptions = {}
+let redisOptions: RedisOptions
 
 if (process.env.UPSTASH_REDIS_URL) {
   // Upstash Redis requires special handling
@@ -39,7 +42,24 @@ if (process.env.UPSTASH_REDIS_URL) {
 }
 
 // Create Redis client
-export const redis = new Redis(redisOptions)
+// In tests, allow override with real Redis instance
+let redisInstance: Redis | null = null
+
+if (isTest && process.env.USE_TEST_REDIS_INSTANCE === 'true') {
+  // Tests will inject their own Redis instance
+  redisInstance = null
+} else {
+  redisInstance = new Redis(redisOptions as any)
+}
+
+export const redis = redisInstance || new Redis(redisOptions as any)
+
+// Allow tests to inject real Redis instance
+export function setTestRedisInstance(instance: Redis) {
+  if (isTest) {
+    (redis as any) = instance
+  }
+}
 
 // Error handling
 redis.on('error', (error) => {

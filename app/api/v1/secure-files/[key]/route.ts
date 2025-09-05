@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyTemporaryAccessToken, downloadSecureFile } from '@/lib/r2/secure-storage';
 import { AuthenticationError, NotFoundError } from '@/lib/utils/api-error-handler';
 import { withErrorHandling } from '@/lib/middleware/error-middleware';
+import { documentRoute } from '@/lib/api/openapi/decorators';
+import { routeRegistry } from '@/lib/api/openapi/registry';
 
-export async function GET(
+const getSecureFileHandler = async (
   request: NextRequest,
   context: { params: Promise<{ key: string }> }
-) {
-  return withErrorHandling(request, async (req) => {
+) => {
   const { searchParams } = new URL(request.url);
   const token = searchParams.get('token');
   const { key: rawKey } = await context.params;
@@ -44,8 +45,78 @@ export async function GET(
     console.error('Secure file access error:', error);
     throw NotFoundError.create('File');
   }
-  });
 }
+
+export const GET = withErrorHandling(
+  documentRoute(
+    getSecureFileHandler,
+    {
+      method: 'GET',
+      path: '/api/v1/secure-files/{key}',
+      operationId: 'getSecureFile',
+      summary: 'Access secure file',
+      description: 'Downloads a secure file with temporary token-based authentication',
+      tags: ['Downloads'],
+      parameters: [
+        {
+          name: 'key',
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+          description: 'File key (path)'
+        },
+        {
+          name: 'token',
+          in: 'query',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Temporary access token'
+        }
+      ]
+    },
+    undefined,
+    {
+      200: {
+        description: 'File download',
+        content: {
+          'application/pdf': {
+            schema: {
+              type: 'string',
+              format: 'binary'
+            }
+          },
+          'image/png': {
+            schema: {
+              type: 'string',
+              format: 'binary'
+            }
+          },
+          'image/jpeg': {
+            schema: {
+              type: 'string',
+              format: 'binary'
+            }
+          },
+          'application/octet-stream': {
+            schema: {
+              type: 'string',
+              format: 'binary'
+            }
+          }
+        }
+      },
+      401: {
+        description: 'Unauthorized - Access token required or invalid'
+      },
+      404: {
+        description: 'File not found'
+      },
+      500: {
+        description: 'Internal server error'
+      }
+    }
+  )
+)
 
 function getContentType(extension?: string): string {
   const mimeTypes: Record<string, string> = {
@@ -63,3 +134,6 @@ function getContentType(extension?: string): string {
 
   return mimeTypes[extension || ''] || 'application/octet-stream';
 }
+
+// Register routes
+routeRegistry.registerRoute('/api/v1/secure-files/{key}', 'GET')

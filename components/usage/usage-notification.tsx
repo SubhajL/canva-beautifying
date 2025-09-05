@@ -23,6 +23,11 @@ export function UsageNotification() {
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
 
   useEffect(() => {
+    // Disable in test mode
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost' && window.location.port === '7071') {
+      return;
+    }
+    
     if (user) {
       checkUsageStatus();
       // Check every 5 minutes

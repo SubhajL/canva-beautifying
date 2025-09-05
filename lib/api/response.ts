@@ -36,11 +36,13 @@ export class ApiError extends Error {
   }
 }
 
-export const apiErrors = {
+export const apiErrorConstants = {
   // Authentication errors
   UNAUTHORIZED: new ApiError('UNAUTHORIZED', 'Authentication required', 401),
   INVALID_TOKEN: new ApiError('INVALID_TOKEN', 'Invalid or expired token', 401),
+  TOKEN_EXPIRED: new ApiError('TOKEN_EXPIRED', 'Token has expired', 401),
   INSUFFICIENT_PERMISSIONS: new ApiError('INSUFFICIENT_PERMISSIONS', 'Insufficient permissions', 403),
+  INSECURE_API_KEY_USAGE: new ApiError('INSECURE_API_KEY_USAGE', 'API keys must be sent in headers, not query parameters', 400),
   
   // Validation errors
   INVALID_REQUEST: new ApiError('INVALID_REQUEST', 'Invalid request data', 400),
@@ -128,4 +130,41 @@ export function paginatedResponse<T>(
       ...meta,
     },
   })
+}
+
+// Helper functions for common error responses
+export const apiErrorFunctions = {
+  badRequest: (message: string, details?: any) => 
+    new ApiError('BAD_REQUEST', message, 400, details),
+  
+  unauthorized: (message: string = 'Authentication required') => 
+    new ApiError('UNAUTHORIZED', message, 401),
+  
+  forbidden: (message: string = 'Insufficient permissions') => 
+    new ApiError('FORBIDDEN', message, 403),
+  
+  notFound: (message: string = 'Resource not found') => 
+    new ApiError('NOT_FOUND', message, 404),
+  
+  tooManyRequests: (message: string = 'Rate limit exceeded') => 
+    new ApiError('TOO_MANY_REQUESTS', message, 429),
+  
+  internalServerError: (message: string = 'An unexpected error occurred') => 
+    new ApiError('INTERNAL_ERROR', message, 500),
+}
+
+// Alias for backward compatibility
+export { apiErrorFunctions as apiErrors }
+
+// Create API response helper
+export function createAPIResponse<T>(
+  data: T | null,
+  error?: ApiError | Error | null,
+  meta?: Partial<ApiResponse['meta']>
+): NextResponse<ApiResponse<T>> {
+  if (error) {
+    return errorResponse(error, meta?.requestId)
+  }
+  
+  return successResponse(data, meta)
 }

@@ -2,21 +2,25 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { EnhancementService } from '@/lib/enhancement'
 import { checkUsageLimit, trackUsageAfterSuccess } from '@/lib/usage/middleware'
+import { createErrorResponse, ErrorFactory, createValidationError } from '@/lib/utils/create-safe-error'
+import { withDualRateLimit } from '@/lib/api/middleware/dual-rate-limit'
+import { APIRequestContext } from '@/lib/api/types'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60 // 60 seconds for enhancement processing
 
-export async function POST(request: NextRequest) {
+async function enhanceHandler(request: NextRequest, context?: APIRequestContext) {
+  const requestId = context?.requestId || request.headers.get('x-request-id') || undefined
+
   try {
     // Check authentication
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+      const error = ErrorFactory.authRequired()
+      const { status, body } = createErrorResponse(error, requestId)
+      return NextResponse.json(body, { status })
     }
 
     // Check usage limits
@@ -29,10 +33,9 @@ export async function POST(request: NextRequest) {
     const { documentId, preferences } = body
 
     if (!documentId) {
-      return NextResponse.json(
-        { error: 'Document ID is required' },
-        { status: 400 }
-      )
+      const error = createValidationError('documentId', 'Document ID is required')
+      const { status, body: errorBody } = createErrorResponse(error, requestId)
+      return NextResponse.json(errorBody, { status })
     }
 
     // Initialize enhancement service
@@ -52,29 +55,32 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result)
   } catch (error) {
-    console.error('Enhancement API error:', error)
+    const { status, body, headers } = createErrorResponse(error, requestId)
     
-    return NextResponse.json(
-      { 
-        error: error instanceof Error ? error.message : 'Enhancement failed',
-        success: false
-      },
-      { status: 500 }
-    )
+    return NextResponse.json(body, { 
+      status,
+      headers: headers ? new Headers(headers) : undefined
+    })
   }
 }
 
-export async function GET(request: NextRequest) {
+// Export with dual rate limiting middleware
+export const POST = withDualRateLimit(enhanceHandler, {
+  endpoint: 'enhance'
+})
+
+async function getEnhancementStatusHandler(request: NextRequest, context?: APIRequestContext) {
+  const requestId = context?.requestId || request.headers.get('x-request-id') || undefined
+
   try {
     // Check authentication
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+      const error = ErrorFactory.authRequired()
+      const { status, body } = createErrorResponse(error, requestId)
+      return NextResponse.json(body, { status })
     }
 
     const { searchParams } = new URL(request.url)
@@ -94,11 +100,15 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json(status)
   } catch (error) {
-    console.error('Enhancement status API error:', error)
+    const { status, body, headers } = createErrorResponse(error, requestId)
     
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to get status' },
-      { status: 500 }
-    )
+    return NextResponse.json(body, { 
+      status,
+      headers: headers ? new Headers(headers) : undefined
+    })
   }
 }
+// Export with dual rate limiting middleware
+export const GET = withDualRateLimit(getEnhancementStatusHandler, {
+  endpoint: 'enhance'
+})

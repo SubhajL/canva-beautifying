@@ -5,7 +5,35 @@ import { NextRequest } from 'next/server';
 const CSRF_TOKEN_LENGTH = 32;
 const CSRF_COOKIE_NAME = 'csrf-token';
 const CSRF_HEADER_NAME = 'x-csrf-token';
-const CSRF_SECRET_KEY = process.env.CSRF_SECRET || 'default-csrf-secret-change-this';
+// Get CSRF secret from environment with proper validation
+const getCSRFSecret = (): string => {
+  const secret = process.env.CSRF_SECRET;
+  
+  if (!secret) {
+    throw new Error(
+      'CSRF_SECRET environment variable is required. ' +
+      'Please set it to a secure random string of at least 32 characters.'
+    );
+  }
+  
+  if (secret.length < 32) {
+    throw new Error(
+      'CSRF_SECRET must be at least 32 characters long for security. ' +
+      `Current length: ${secret.length}`
+    );
+  }
+  
+  if (process.env.NODE_ENV === 'production' && secret.startsWith('default-csrf-secret')) {
+    throw new Error(
+      'Default CSRF_SECRET detected in production. ' +
+      'Please generate a secure random secret.'
+    );
+  }
+  
+  return secret;
+};
+
+const CSRF_SECRET_KEY = getCSRFSecret();
 
 // Generate a new CSRF token
 export function generateCSRFToken(): string {
@@ -183,6 +211,11 @@ export class DoubleSubmitCSRF {
       return false;
     }
     
+    // Check length first to avoid timing safe equal errors
+    if (stored.token.length !== token.length) {
+      return false;
+    }
+    
     return crypto.timingSafeEqual(
       Buffer.from(stored.token),
       Buffer.from(token)
@@ -197,4 +230,26 @@ export class DoubleSubmitCSRF {
       }
     }
   }
+}
+
+// Helper to generate a secure CSRF secret
+export function generateSecureCSRFSecret(): string {
+  return crypto.randomBytes(32).toString('base64');
+}
+
+// Helper to validate CSRF secret configuration
+export function validateCSRFSecret(secret: string): { valid: boolean; error?: string } {
+  if (!secret) {
+    return { valid: false, error: 'CSRF secret is required' };
+  }
+  
+  if (secret.length < 32) {
+    return { valid: false, error: 'CSRF secret must be at least 32 characters' };
+  }
+  
+  if (secret.startsWith('default-csrf-secret')) {
+    return { valid: false, error: 'Default CSRF secret detected - please change it' };
+  }
+  
+  return { valid: true };
 }

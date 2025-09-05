@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { MobileButton } from '@/components/ui/mobile-button';
 import { cn } from '@/lib/utils';
 import { useIsTouchDevice } from '@/lib/utils/responsive';
+import { toast } from 'sonner';
 
 interface MobileFileUploadProps {
   onFilesSelected: (files: File[]) => void;
@@ -37,14 +38,14 @@ export function MobileFileUpload({
 
     // Validate file count
     if (files.length > maxFiles) {
-      alert(`You can only upload up to ${maxFiles} files at once`);
+      toast.error(`You can only upload up to ${maxFiles} files at once`);
       return;
     }
 
     // Validate file sizes
     const oversizedFiles = files.filter(file => file.size > maxSize);
     if (oversizedFiles.length > 0) {
-      alert(`Some files are too large. Maximum size is ${maxSize / 1024 / 1024}MB`);
+      toast.error(`Some files are too large. Maximum size is ${maxSize / 1024 / 1024}MB`);
       return;
     }
 

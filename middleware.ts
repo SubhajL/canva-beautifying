@@ -1,20 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
-
-// Rate limit store using Map
-const rateLimitStore = new Map<string, { count: number; resetTime: number }>()
-
-// Clean up expired entries periodically
-if (typeof setInterval !== 'undefined') {
-  setInterval(() => {
-    const now = Date.now()
-    for (const [key, value] of rateLimitStore.entries()) {
-      if (value.resetTime < now) {
-        rateLimitStore.delete(key)
-      }
-    }
-  }, 60000) // Clean up every minute
-}
+import { rateLimiters, MiddlewareRateLimiter } from '@/lib/redis/middleware-rate-limiter'
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -94,7 +80,8 @@ export async function middleware(request: NextRequest) {
   const publicApiRoutes = [
     '/api/auth',
     '/api/webhook',
-    '/api/stripe/webhook'
+    '/api/stripe/webhook',
+    '/api/docs'
   ]
   
   // Check if the current path is public
@@ -118,47 +105,116 @@ export async function middleware(request: NextRequest) {
   // Apply rate limiting to API v1 endpoints
   if (pathname.startsWith('/api/v1/')) {
     const ip = request.headers.get('x-forwarded-for') || request.ip || 'anonymous'
-    const key = `api:${ip}`
-    const now = Date.now()
+    const identifier = `api:${ip}`
     
-    // Rate limit: 100 requests per minute per IP
-    const windowMs = 60 * 1000
-    const maxRequests = 100
-    
-    const rateLimitInfo = rateLimitStore.get(key)
-    
-    if (!rateLimitInfo || rateLimitInfo.resetTime < now) {
-      rateLimitStore.set(key, {
-        count: 1,
-        resetTime: now + windowMs,
-      })
-    } else if (rateLimitInfo.count >= maxRequests) {
-      const retryAfter = Math.ceil((rateLimitInfo.resetTime - now) / 1000)
+    try {
+      // Use Redis-based rate limiter
+      const result = await rateLimiters.api.checkLimit(identifier)
       
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: {
-            code: 'RATE_LIMIT_EXCEEDED',
-            message: `Too many requests. Please try again in ${retryAfter} seconds`,
-            details: { retryAfter },
-          },
-          meta: {
-            timestamp: new Date().toISOString(),
-            version: 'v1',
-          },
-        }),
-        {
-          status: 429,
-          headers: {
-            'Content-Type': 'application/json',
-            'Retry-After': retryAfter.toString(),
-            'Access-Control-Allow-Origin': '*',
-          },
+      // Add rate limit headers to response
+      const rateLimitHeaders = rateLimiters.api.getRateLimitHeaders(result)
+      Object.entries(rateLimitHeaders).forEach(([key, value]) => {
+        response.headers.set(key, value as string)
+      })
+      
+      if (!result.allowed) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: {
+              code: 'RATE_LIMIT_EXCEEDED',
+              message: `Too many requests. Please try again in ${result.retryAfter} seconds`,
+              details: { retryAfter: result.retryAfter },
+            },
+            meta: {
+              timestamp: new Date().toISOString(),
+              version: 'v1',
+            },
+          }),
+          {
+            status: 429,
+            headers: {
+              'Content-Type': 'application/json',
+              'Retry-After': result.retryAfter?.toString() || '60',
+              'Access-Control-Allow-Origin': '*',
+              ...rateLimitHeaders
+            },
+          }
+        )
+      }
+    } catch (error) {
+      // Log error but don't block requests if rate limiting fails
+      console.error('Rate limiting error:', error)
+    }
+  }
+  
+  // Apply stricter rate limiting to auth endpoints
+  if (pathname.startsWith('/api/auth') || pathname === '/login' || pathname === '/signup') {
+    const ip = request.headers.get('x-forwarded-for') || request.ip || 'anonymous'
+    const identifier = `auth:${ip}`
+    
+    try {
+      const result = await rateLimiters.auth.checkLimit(identifier)
+      
+      if (!result.allowed) {
+        // For auth endpoints, show a user-friendly error page
+        if (pathname === '/login' || pathname === '/signup') {
+          const errorUrl = new URL('/auth/error', request.url)
+          errorUrl.searchParams.set('error', 'rate_limit')
+          errorUrl.searchParams.set('retry_after', result.retryAfter?.toString() || '60')
+          return NextResponse.redirect(errorUrl, 307)
         }
-      )
-    } else {
-      rateLimitInfo.count++
+        
+        // For API auth endpoints
+        return new Response(
+          JSON.stringify({
+            error: 'Too many authentication attempts. Please try again later.',
+            retryAfter: result.retryAfter
+          }),
+          {
+            status: 429,
+            headers: {
+              'Content-Type': 'application/json',
+              'Retry-After': result.retryAfter?.toString() || '60'
+            }
+          }
+        )
+      }
+    } catch (error) {
+      console.error('Auth rate limiting error:', error)
+    }
+  }
+  
+  // Apply rate limiting to upload endpoints
+  if (pathname.startsWith('/api/upload') || pathname === '/api/v1/enhance') {
+    const authHeader = request.headers.get('authorization')
+    const userId = authHeader ? authHeader.replace('Bearer ', '').substring(0, 8) : 'anonymous'
+    const identifier = `upload:${userId}`
+    
+    try {
+      const result = await rateLimiters.upload.checkLimit(identifier)
+      
+      if (!result.allowed) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: {
+              code: 'UPLOAD_RATE_LIMIT_EXCEEDED',
+              message: 'Upload rate limit exceeded. Please wait before uploading more files.',
+              details: { retryAfter: result.retryAfter }
+            }
+          }),
+          {
+            status: 429,
+            headers: {
+              'Content-Type': 'application/json',
+              'Retry-After': result.retryAfter?.toString() || '60'
+            }
+          }
+        )
+      }
+    } catch (error) {
+      console.error('Upload rate limiting error:', error)
     }
   }
   
@@ -177,6 +233,12 @@ export async function middleware(request: NextRequest) {
         response.headers.set(key, value)
       }
     })
+    
+    // Also copy cookies from session response
+    const setCookieHeader = sessionResponse.headers.get('set-cookie')
+    if (setCookieHeader) {
+      response.headers.set('set-cookie', setCookieHeader)
+    }
     
     // Check if user is authenticated by looking for session cookie
     const hasSession = request.cookies.has('sb-access-token') || 

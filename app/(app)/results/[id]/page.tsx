@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -27,7 +27,7 @@ import { RelatedEnhancements } from '@/components/results/related-enhancements'
 import { useAuth } from '@/contexts/auth-context'
 
 interface ResultsPageProps {
-  params: Promise<{ id: string }>
+  params: { id: string }
 }
 
 interface Enhancement {
@@ -37,7 +37,7 @@ interface Enhancement {
   status: 'pending' | 'processing' | 'completed' | 'failed';
   enhanced_url?: string;
   report_url?: string;
-  report_data?: {
+  enhancement_data?: {
     summary?: string;
     improvements?: Array<{
       category: string;
@@ -46,6 +46,7 @@ interface Enhancement {
     }>;
     metadata?: Record<string, unknown>;
   };
+  analysis_data?: any;
   improvements?: {
     before: number;
     after: number;
@@ -72,9 +73,9 @@ interface Document {
 }
 
 export default function ResultsPage({ params }: ResultsPageProps) {
-  const { id } = use(params)
+  const { id } = params
   const router = useRouter()
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const [enhancement, setEnhancement] = useState<Enhancement | null>(null)
   const [document, setDocument] = useState<Document | null>(null)
   const [loading, setLoading] = useState(true)
@@ -84,9 +85,12 @@ export default function ResultsPage({ params }: ResultsPageProps) {
   const [activeTab, setActiveTab] = useState('comparison')
 
   useEffect(() => {
-    loadEnhancementData()
+    // Wait for auth to load before fetching enhancement data
+    if (!authLoading) {
+      loadEnhancementData()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id])
+  }, [id, authLoading])
 
   const loadEnhancementData = async () => {
     try {
@@ -112,7 +116,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
       if (enhError) throw enhError
 
       // Verify ownership
-      if (enhancementData.user_id !== user?.id) {
+      if (!user || enhancementData.user_id !== user.id) {
         throw new Error('Unauthorized access')
       }
 
@@ -132,7 +136,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
     }
   }
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="container mx-auto py-8">
         <div className="animate-pulse space-y-4">
@@ -306,7 +310,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
         <TabsContent value="report">
           <EnhancementReport
             enhancementId={enhancement.id}
-            reportData={enhancement.report_data}
+            reportData={enhancement.enhancement_data}
             reportUrl={enhancement.report_url}
           />
         </TabsContent>
@@ -383,24 +387,30 @@ export default function ResultsPage({ params }: ResultsPageProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
-                  <div>
-                    <p className="font-medium">Color Contrast</p>
-                    <p className="text-sm text-muted-foreground">
-                      Consider using higher contrast colors for better readability
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
-                  <div>
-                    <p className="font-medium">Visual Hierarchy</p>
-                    <p className="text-sm text-muted-foreground">
-                      Add more spacing between sections for clearer organization
-                    </p>
-                  </div>
-                </div>
+                {enhancement.enhancement_data?.improvements && enhancement.enhancement_data.improvements.length > 0 ? (
+                  enhancement.enhancement_data.improvements.slice(0, 5).map((improvement, index) => (
+                    <div key={index} className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
+                      <div>
+                        <p className="font-medium">{improvement.category}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {improvement.description}
+                        </p>
+                        {improvement.impact && (
+                          <div className="mt-1">
+                            <span className="text-xs text-muted-foreground">
+                              Impact: {Math.round(improvement.impact * 100)}%
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    No additional suggestions available at this time.
+                  </p>
+                )}
                 <Button className="w-full mt-4">
                   <Sparkles className="h-4 w-4 mr-2" />
                   Enhance Again with Different Settings

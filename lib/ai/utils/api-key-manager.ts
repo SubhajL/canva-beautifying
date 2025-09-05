@@ -1,120 +1,106 @@
-import { AIModel } from '../types'
+import { getAIApiKeyStore } from '@/lib/redis/ai-api-key-store'
+import type { AIModel } from '../types'
 
-interface APIKeyConfig {
-  primary: string
-  fallback?: string
-  rotationEnabled?: boolean
-  lastRotated?: Date
-  usageCount?: number
-  maxUsageBeforeRotation?: number
-}
-
+/**
+ * API Key Manager for AI services
+ * Now uses Redis for distributed key storage and rotation
+ */
 export class APIKeyManager {
-  private keys: Map<AIModel, APIKeyConfig> = new Map()
-  
+  private keyStore = getAIApiKeyStore()
+  private initialized = false
+
   constructor() {
-    this.loadKeysFromEnvironment()
+    this.initialize()
   }
 
-  private loadKeysFromEnvironment(): void {
-    // Load Gemini keys
-    const geminiKey = process.env.GEMINI_API_KEY
-    const geminiFallbackKey = process.env.GEMINI_API_KEY_FALLBACK
-    if (geminiKey) {
-      this.keys.set('gemini-2.0-flash', {
-        primary: geminiKey,
-        fallback: geminiFallbackKey,
-        rotationEnabled: !!geminiFallbackKey,
-        usageCount: 0
-      })
-    }
-
-    // Load OpenAI keys
-    const openaiKey = process.env.OPENAI_API_KEY
-    const openaiFallbackKey = process.env.OPENAI_API_KEY_FALLBACK
-    if (openaiKey) {
-      this.keys.set('gpt-4o-mini', {
-        primary: openaiKey,
-        fallback: openaiFallbackKey,
-        rotationEnabled: !!openaiFallbackKey,
-        usageCount: 0
-      })
-    }
-
-    // Load Claude keys
-    const claudeKey = process.env.ANTHROPIC_API_KEY
-    const claudeFallbackKey = process.env.ANTHROPIC_API_KEY_FALLBACK
-    if (claudeKey) {
-      // Use same keys for both Claude models
-      const claudeConfig = {
-        primary: claudeKey,
-        fallback: claudeFallbackKey,
-        rotationEnabled: !!claudeFallbackKey,
-        usageCount: 0
-      }
-      this.keys.set('claude-3.5-sonnet', claudeConfig)
-      this.keys.set('claude-4-sonnet', claudeConfig)
+  private async initialize(): Promise<void> {
+    if (this.initialized) return
+    
+    try {
+      await this.keyStore.initializeFromEnvironment()
+      this.initialized = true
+    } catch (error) {
+      console.error('[APIKeyManager] Failed to initialize from environment:', error)
     }
   }
 
+  /**
+   * Get API key for a model (synchronous for backward compatibility)
+   * Uses environment variables directly
+   */
   getApiKey(model: AIModel): string | null {
-    const config = this.keys.get(model)
-    if (!config) {
-      console.error(`No API key configured for model: ${model}`)
+    // For now, use environment directly to maintain sync behavior
+    // TODO: Update AI service to use async getApiKeyAsync
+    switch (model) {
+      case 'gemini-2.0-flash':
+        return process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || null
+      case 'gpt-4o-mini':
+        return process.env.OPENAI_API_KEY || null
+      case 'claude-3.5-sonnet':
+      case 'claude-4-sonnet':
+        return process.env.ANTHROPIC_API_KEY || null
+      default:
+        return null
+    }
+  }
+
+  /**
+   * Get API key for a model (async version using Redis)
+   * @preferred Use this instead of getApiKey
+   */
+  async getApiKeyAsync(model: AIModel): Promise<string | null> {
+    await this.initialize()
+    
+    try {
+      const key = await this.keyStore.getKey(model)
+      
+      if (!key) {
+        console.error(`No API key configured for model: ${model}`)
+      }
+      
+      return key
+    } catch (error) {
+      console.error(`Failed to get API key for ${model}:`, error)
       return null
     }
-
-    // Increment usage count
-    if (config.usageCount !== undefined) {
-      config.usageCount++
-    }
-
-    // Check if rotation is needed
-    if (config.rotationEnabled && config.maxUsageBeforeRotation) {
-      if (config.usageCount && config.usageCount >= config.maxUsageBeforeRotation) {
-        this.rotateKey(model)
-      }
-    }
-
-    return config.primary
   }
 
-  rotateKey(model: AIModel): boolean {
-    const config = this.keys.get(model)
-    if (!config || !config.fallback) {
-      console.error(`Cannot rotate key for ${model}: No fallback key available`)
+  /**
+   * Set API key for a model
+   */
+  async setApiKey(model: AIModel, key: string, isFallback: boolean = false): Promise<void> {
+    await this.initialize()
+    
+    const provider = this.getProvider(model)
+    await this.keyStore.setKey(model, key, { isFallback, provider })
+  }
+
+  /**
+   * Rotate API keys (swap primary and fallback)
+   */
+  async rotateKey(model: AIModel): Promise<boolean> {
+    const primaryKey = await this.keyStore.getKey(model)
+    const fallbackKey = await this.keyStore.getFallbackKey(model)
+    
+    if (!primaryKey || !fallbackKey) {
+      console.error(`Cannot rotate key for ${model}: Missing primary or fallback key`)
       return false
     }
-
-    // Swap primary and fallback
-    const temp = config.primary
-    config.primary = config.fallback
-    config.fallback = temp
-    config.lastRotated = new Date()
-    config.usageCount = 0
-
-    console.log(`Rotated API key for ${model}`)
+    
+    // Swap keys
+    await this.keyStore.setKey(model, fallbackKey)
+    await this.keyStore.setKey(model, primaryKey, { isFallback: true })
+    
+    console.log(`[APIKeyManager] Rotated API key for ${model}`)
     return true
   }
 
-  setApiKey(model: AIModel, key: string, isFallback: boolean = false): void {
-    const config = this.keys.get(model) || {
-      primary: '',
-      rotationEnabled: false,
-      usageCount: 0
-    }
-
-    if (isFallback) {
-      config.fallback = key
-      config.rotationEnabled = true
-    } else {
-      config.primary = key
-    }
-
-    this.keys.set(model, config)
-  }
-
-  validateKeys(): { valid: boolean; missing: AIModel[] } {
+  /**
+   * Validate that required keys are present
+   */
+  async validateKeys(): Promise<{ valid: boolean; missing: AIModel[] }> {
+    await this.initialize()
+    
     const missing: AIModel[] = []
     const requiredModels: AIModel[] = [
       'gemini-2.0-flash',
@@ -123,8 +109,8 @@ export class APIKeyManager {
     ]
 
     for (const model of requiredModels) {
-      const config = this.keys.get(model)
-      if (!config || !config.primary) {
+      const stats = await this.keyStore.getKeyStats(model)
+      if (!stats || !stats.hasKey) {
         missing.push(model)
       }
     }
@@ -135,23 +121,16 @@ export class APIKeyManager {
     }
   }
 
-  getKeyStatus(): Record<AIModel, {
+  /**
+   * Get key status for all models
+   */
+  async getKeyStatus(): Promise<Record<AIModel, {
     hasKey: boolean
     hasFallback: boolean
     usageCount: number
     lastRotated?: Date
-  }> {
-    const status: Record<AIModel, {
-      hasKey: boolean
-      hasFallback: boolean
-      usageCount: number
-      lastRotated?: Date
-    }> = {} as Record<AIModel, {
-      hasKey: boolean
-      hasFallback: boolean
-      usageCount: number
-      lastRotated?: Date
-    }>
+  }>> {
+    await this.initialize()
     
     const allModels: AIModel[] = [
       'gemini-2.0-flash',
@@ -160,25 +139,52 @@ export class APIKeyManager {
       'claude-4-sonnet'
     ]
 
+    const status = {} as Record<AIModel, {
+      hasKey: boolean
+      hasFallback: boolean
+      usageCount: number
+      lastRotated?: Date
+    }>
+
     for (const model of allModels) {
-      const config = this.keys.get(model)
-      status[model] = {
-        hasKey: !!config?.primary,
-        hasFallback: !!config?.fallback,
-        usageCount: config?.usageCount || 0,
-        lastRotated: config?.lastRotated
+      const stats = await this.keyStore.getKeyStats(model)
+      
+      if (stats) {
+        status[model] = {
+          hasKey: stats.hasKey,
+          hasFallback: stats.hasFallback,
+          usageCount: stats.usageCount,
+          lastRotated: stats.rotatedAt || undefined
+        }
+      } else {
+        status[model] = {
+          hasKey: false,
+          hasFallback: false,
+          usageCount: 0
+        }
       }
     }
 
     return status
   }
 
-  // Mask API key for logging
+  /**
+   * Get provider name for a model
+   */
+  private getProvider(model: AIModel): 'openai' | 'google' | 'anthropic' {
+    if (model.includes('gemini')) return 'google'
+    if (model.includes('gpt')) return 'openai'
+    return 'anthropic'
+  }
+
+  /**
+   * Mask API key for logging
+   */
   static maskApiKey(key: string): string {
     if (!key || key.length < 8) return '***'
     return `${key.substring(0, 4)}...${key.substring(key.length - 4)}`
   }
 }
 
-// Singleton instance
+// Export singleton instance
 export const apiKeyManager = new APIKeyManager()

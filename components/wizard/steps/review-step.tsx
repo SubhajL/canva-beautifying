@@ -17,9 +17,14 @@ import {
   Check,
   Loader2,
   Edit,
-  Sparkles
+  Sparkles,
+  Cpu,
+  Files,
+  X,
+  AlertCircle
 } from 'lucide-react';
 import { formatFileSize } from '@/lib/utils/format';
+import { cn } from '@/lib/utils';
 
 const getAudienceLabel = (value: string | null) => {
   const audiences: Record<string, string> = {
@@ -55,25 +60,35 @@ const getStyleLabel = (value: string | null) => {
   return styles[value || ''] || value;
 };
 
+const getModelLabel = (value: string | null) => {
+  const models: Record<string, string> = {
+    'gemini-2.0-flash': 'Gemini 2.0 Flash',
+    'gpt-4o-mini': 'GPT-4o Mini',
+    'claude-3.5-sonnet': 'Claude 3.5 Sonnet',
+    'ensemble': 'Ensemble Mode',
+  };
+  return models[value || ''] || value;
+};
+
 export function ReviewStep() {
-  const _router = useRouter();
+  const router = useRouter();
   const { user, session } = useAuth();
-  const { data, setStep, updateData, setProcessing } = useWizardStore();
+  const { data, setStep, updateData, setProcessing, removeFile } = useWizardStore();
   const { handleApiError } = useApiError();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const uploadedFiles = data.files?.filter(f => f.status === 'uploaded') || [];
+  const hasMultipleFiles = uploadedFiles.length > 1;
+
   const handleStartEnhancement = async () => {
-    if (!user || !session || !data.file) return;
+    if (!user || !session || uploadedFiles.length === 0) return;
 
     setIsSubmitting(true);
     setProcessing(true);
 
     try {
-      // Prepare form data
-      const formData = new FormData();
-      formData.append('file', data.file);
-      
-      const settings = {
+      const preferences = {
+        selectedModel: data.selectedModel,
         targetAudience: data.targetAudience,
         gradeLevel: data.gradeLevel,
         subject: data.subject,
@@ -84,39 +99,84 @@ export function ReviewStep() {
         includeGraphics: data.includeGraphics,
         includeCharts: data.includeCharts,
       };
-      
-      formData.append('settings', JSON.stringify({ enhancementSettings: settings }));
 
-      // Submit enhancement request
-      const response = await fetch('/api/v1/enhance', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: formData,
-      });
+      if (hasMultipleFiles) {
+        // Use batch API for multiple files
+        const documentIds = uploadedFiles.map(f => f.documentId).filter(Boolean) as string[];
+        
+        const response = await fetch('/api/v1/enhance/batch', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            documentIds,
+            preferences,
+          }),
+        });
 
-      if (!response.ok) {
-        await handleApiError(response);
-        setProcessing(false);
-        return;
+        if (!response.ok) {
+          await handleApiError(response);
+          setProcessing(false);
+          return;
+        }
+
+        const result = await response.json();
+
+        // Update wizard data with batch info
+        updateData({
+          batchId: result.batchId,
+          batchResults: result.results,
+        });
+
+        // Navigate to batch results page
+        router.push(`/enhance/batch/${result.batchId}`);
+        
+        toast.success('Batch enhancement started!', {
+          description: `Processing ${result.queued} documents.`,
+        });
+
+      } else {
+        // Single file enhancement
+        const file = uploadedFiles[0];
+        
+        // Prepare form data
+        const formData = new FormData();
+        formData.append('file', file.file);
+        formData.append('settings', JSON.stringify({ enhancementSettings: preferences }));
+
+        // Submit enhancement request
+        const response = await fetch('/api/v1/enhance', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: formData,
+        });
+
+        if (!response.ok) {
+          await handleApiError(response);
+          setProcessing(false);
+          return;
+        }
+
+        const result = await response.json();
+
+        // Update wizard data with IDs
+        updateData({
+          enhancementId: result.data.id,
+          documentId: result.data.documentId,
+          jobId: result.data.jobId,
+        });
+
+        // Move to processing step
+        setStep('processing');
+        
+        toast.success('Enhancement started!', {
+          description: 'Your document is being processed.',
+        });
       }
-
-      const result = await response.json();
-
-      // Update wizard data with IDs
-      updateData({
-        enhancementId: result.data.id,
-        documentId: result.data.documentId,
-        jobId: result.data.jobId,
-      });
-
-      // Move to processing step
-      setStep('processing');
-      
-      toast.success('Enhancement started!', {
-        description: 'Your document is being processed.',
-      });
 
     } catch (error) {
       console.error('Enhancement error:', error);
@@ -132,17 +192,26 @@ export function ReviewStep() {
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-semibold">Review Your Selections</h2>
         <p className="text-muted-foreground">
-          Confirm your choices before we enhance your document
+          Confirm your choices before we enhance your {hasMultipleFiles ? 'documents' : 'document'}
         </p>
       </div>
 
       <div className="space-y-4">
-        {/* Document Info */}
+        {/* Documents Info */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Document
+              {hasMultipleFiles ? (
+                <>
+                  <Files className="h-4 w-4" />
+                  Documents ({uploadedFiles.length})
+                </>
+              ) : (
+                <>
+                  <FileText className="h-4 w-4" />
+                  Document
+                </>
+              )}
             </CardTitle>
             <Button
               variant="ghost"
@@ -154,15 +223,62 @@ export function ReviewStep() {
             </Button>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">File name:</span>
-                <span className="text-sm font-medium">{data.fileName}</span>
+            {uploadedFiles.length > 0 ? (
+              <div className="space-y-3">
+                {uploadedFiles.map((file) => (
+                  <div
+                    key={file.id}
+                    className="flex items-center justify-between p-3 rounded-lg bg-muted/30"
+                  >
+                    <div className="flex items-center gap-3 flex-1">
+                      <FileText className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium truncate">{file.fileName}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatFileSize(file.fileSize)}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeFile(file.id)}
+                      className="flex-shrink-0 ml-2"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Size:</span>
-                <span className="text-sm">{formatFileSize(data.fileSize || 0)}</span>
+            ) : (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <AlertCircle className="h-4 w-4" />
+                <span>No documents uploaded</span>
               </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Model Selection */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Cpu className="h-4 w-4" />
+              AI Model
+            </CardTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setStep('model')}
+            >
+              <Edit className="h-3 w-3 mr-1" />
+              Edit
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Selected model:</span>
+              <Badge variant="default">{getModelLabel(data.selectedModel)}</Badge>
             </div>
           </CardContent>
         </Card>
@@ -265,7 +381,7 @@ export function ReviewStep() {
         <Button
           size="lg"
           onClick={handleStartEnhancement}
-          disabled={isSubmitting}
+          disabled={isSubmitting || uploadedFiles.length === 0}
           className="min-w-[200px]"
         >
           {isSubmitting ? (
@@ -276,7 +392,7 @@ export function ReviewStep() {
           ) : (
             <>
               <Sparkles className="mr-2 h-4 w-4" />
-              Start Enhancement
+              {hasMultipleFiles ? 'Start Batch Enhancement' : 'Start Enhancement'}
             </>
           )}
         </Button>

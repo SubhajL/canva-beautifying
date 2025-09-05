@@ -8,7 +8,7 @@ const createJestConfig = nextJest({
 // Add any custom config to be passed to Jest
 const customJestConfig = {
   // Add more setup options before each test is run
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js', '<rootDir>/__tests__/setup.ts'],
   
   // Module directories
   moduleNameMapper: {
@@ -31,6 +31,15 @@ const customJestConfig = {
   
   // Test environment
   testEnvironment: 'jest-environment-jsdom',
+  
+  // Roots for module resolution
+  roots: ['<rootDir>'],
+  modulePaths: ['<rootDir>'],
+  
+  // Transform ignore patterns - don't ignore certain node_modules
+  transformIgnorePatterns: [
+    '/node_modules/(?!(bullmq|msgpackr|@faker-js/faker|yaml|uuid)/)',
+  ],
   
   // Coverage configuration
   collectCoverageFrom: [
@@ -59,7 +68,7 @@ const customJestConfig = {
   
   // Transform ignore patterns
   transformIgnorePatterns: [
-    '/node_modules/(?!(bullmq|msgpackr)/)',
+    '/node_modules/(?!(bullmq|msgpackr|@faker-js/faker|yaml|docker-compose|testcontainers)/)',
     '^.+\\.module\\.(css|sass|scss)$',
   ],
   
@@ -72,13 +81,13 @@ const customJestConfig = {
     }],
   ],
   
-  // Thresholds - temporarily lowered while tests are being fixed
+  // Thresholds - set to target 80% coverage
   coverageThreshold: {
     global: {
-      branches: 0,
-      functions: 0,
-      lines: 0,
-      statements: 0,
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
     },
   },
 }

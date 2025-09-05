@@ -8,6 +8,9 @@ import { UsageStats } from '@/components/dashboard/usage-stats';
 import { RecentEnhancements } from '@/components/dashboard/recent-enhancements';
 import { EnhancementHistory } from '@/components/dashboard/enhancement-history';
 import { QuickActions } from '@/components/dashboard/quick-actions';
+import { FeatureErrorBoundary } from '@/components/error-boundaries/FeatureErrorBoundary';
+import { AsyncErrorBoundary } from '@/components/error-boundaries/AsyncErrorBoundary';
+import { Loading } from '@/components/ui/loading';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -23,7 +26,7 @@ export default function DashboardPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <Loading size="xl" text="Loading dashboard..." />
           <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
         </div>
       </div>
@@ -46,17 +49,29 @@ export default function DashboardPage() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Usage Statistics - Takes 1 column */}
         <div className="lg:col-span-1">
-          <UsageStats />
+          <FeatureErrorBoundary featureName="Usage Statistics">
+            <AsyncErrorBoundary>
+              <UsageStats />
+            </AsyncErrorBoundary>
+          </FeatureErrorBoundary>
         </div>
 
         {/* Recent Enhancements - Takes 2 columns */}
         <div className="lg:col-span-2">
-          <RecentEnhancements />
+          <FeatureErrorBoundary featureName="Recent Enhancements">
+            <AsyncErrorBoundary>
+              <RecentEnhancements />
+            </AsyncErrorBoundary>
+          </FeatureErrorBoundary>
         </div>
       </div>
 
       {/* Enhancement History - Full width */}
-      <EnhancementHistory />
+      <FeatureErrorBoundary featureName="Enhancement History">
+        <AsyncErrorBoundary>
+          <EnhancementHistory />
+        </AsyncErrorBoundary>
+      </FeatureErrorBoundary>
     </div>
   );
 }

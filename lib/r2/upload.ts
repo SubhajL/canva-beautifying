@@ -1,6 +1,7 @@
 import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { r2Client, R2_BUCKET_NAME, getR2Key, R2_FOLDERS } from "./client"
+import { uploadFileLocal, deleteFileLocal, deleteFilesLocal } from "./local-storage"
 
 interface UploadFileOptions {
   file: File | Buffer
@@ -19,6 +20,18 @@ export async function uploadFile({
   contentType,
   metadata = {},
 }: UploadFileOptions): Promise<{ key: string; url: string }> {
+  // Use local storage in test mode
+  if (process.env.NODE_ENV === 'test') {
+    return uploadFileLocal({
+      file,
+      userId,
+      filename,
+      folder,
+      contentType,
+      metadata,
+    })
+  }
+  
   const key = getR2Key(folder, userId, filename)
   
   const command = new PutObjectCommand({
@@ -55,6 +68,11 @@ export async function generateSignedUrl(
 }
 
 export async function deleteFile(key: string): Promise<void> {
+  // Use local storage in test mode
+  if (process.env.NODE_ENV === 'test') {
+    return deleteFileLocal(key)
+  }
+  
   const command = new DeleteObjectCommand({
     Bucket: R2_BUCKET_NAME,
     Key: key,
@@ -64,5 +82,10 @@ export async function deleteFile(key: string): Promise<void> {
 }
 
 export async function deleteFiles(keys: string[]): Promise<void> {
+  // Use local storage in test mode
+  if (process.env.NODE_ENV === 'test') {
+    return deleteFilesLocal(keys)
+  }
+  
   await Promise.all(keys.map(key => deleteFile(key)))
 }

@@ -1,9 +1,9 @@
-import { test as setup } from '@playwright/test';
+import { request } from '@playwright/test';
 
 /**
  * Check if required services are available before running tests
  */
-setup('check services', async ({ request }) => {
+export default async function globalSetup() {
   // Skip service checks in UI mode for better developer experience
   const isUIMode = process.env.PWTEST_UI_MODE === 'true' || process.env.PW_TEST_UI_MODE === 'true';
   
@@ -17,7 +17,7 @@ setup('check services', async ({ request }) => {
   const services = [
     {
       name: 'Next.js App',
-      url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:5000',
+      url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:7071',
       path: '/',
     },
     {
@@ -36,6 +36,9 @@ setup('check services', async ({ request }) => {
   
   const results: { service: string; status: string; error?: string }[] = [];
   
+  // Create a request context
+  const requestContext = await request.newContext();
+  
   for (const service of services) {
     if (!service.url && !service.optional) {
       results.push({
@@ -49,8 +52,8 @@ setup('check services', async ({ request }) => {
     if (!service.url) continue;
     
     try {
-      const response = await request.get(`${service.url}${service.path}`, {
-        timeout: 5000,
+      const response = await requestContext.get(`${service.url}${service.path}`, {
+        timeout: 15000,
       });
       
       if (response.ok() || response.status() < 500) {
@@ -65,7 +68,7 @@ setup('check services', async ({ request }) => {
           error: `Status: ${response.status()}`,
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       results.push({
         service: service.name,
         status: service.optional ? '⚠️  Unavailable (optional)' : '❌ Unavailable',
@@ -73,6 +76,9 @@ setup('check services', async ({ request }) => {
       });
     }
   }
+  
+  // Dispose the context
+  await requestContext.dispose();
   
   // Print results
   console.log('Service Status:');
@@ -98,4 +104,4 @@ setup('check services', async ({ request }) => {
   } else {
     console.log('\n✅ All required services are available!\n');
   }
-});
+}

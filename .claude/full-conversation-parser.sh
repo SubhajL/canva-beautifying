@@ -16,16 +16,19 @@ extract_instance_from_path() {
     local path="$1"
     local filename=$(basename "$path")
     
-    # Map your instance files here
+    # Map instance files based on the actual Claude instance documentation
     case "$filename" in
-        "CLAUDE.md") echo "Main Instance" ;;
-        "AI_SERVICE.md") echo "AI Service" ;;
-        "ENHANCE_SERVICE.md") echo "Enhancement Service" ;;
-        "QUEUE_SERVICE.md") echo "Queue Service" ;;
-        "STORAGE_SERVICE.md") echo "Storage Service" ;;
-        "AUTH_SERVICE.md") echo "Auth Service" ;;
-        "API_SERVICE.md") echo "API Service" ;;
-        "WEBSOCKET_SERVICE.md") echo "WebSocket Service" ;;
+        "CLAUDE.md") echo "Claude Main" ;;
+        "CLAUDE_INSTANCE_00_MAIN_ORCHESTRATOR.md") echo "Claude Main" ;;
+        "CLAUDE_INSTANCE_01_STATE_MANAGEMENT.md") echo "Claude State Management" ;;
+        "CLAUDE_INSTANCE_02_AI_SERVICE_RESILIENCE.md") echo "Claude AI Resilience" ;;
+        "CLAUDE_INSTANCE_03_CACHING_INFRASTRUCTURE.md") echo "Claude Caching" ;;
+        "CLAUDE_INSTANCE_04_OBSERVABILITY_PERFORMANCE.md") echo "Claude Observability" ;;
+        "CLAUDE_INSTANCE_05_CODE_REVIEWER.md") echo "Claude Reviewer" ;;
+        "CLAUDE_INSTANCE_06_TEST_ENGINEER.md") echo "Claude Test" ;;
+        "CLAUDE_INSTANCE_07_DATABASE_MIGRATION_SPECIALIST.md") echo "Claude DB Migration" ;;
+        "CLAUDE_INSTANCE_08_DEVOPS_ENGINEER.md") echo "Claude Devops" ;;
+        "CLAUDE_INSTANCE_09_API_INTEGRATION_SPECIALIST.md") echo "Claude API" ;;
         *) echo "" ;;
     esac
 }
@@ -34,7 +37,16 @@ extract_instance_from_path() {
 get_target_file() {
     local instance="$1"
     case "$instance" in
-        "Main Instance") echo "MAIN_INSTANCE.md" ;;
+        "Main"|"Claude Main"|"Main Instance") echo "CLAUDE_INSTANCE_00_MAIN_ORCHESTRATOR.md" ;;
+        "Claude State Management"|"State Manag..."|"State Management") echo "CLAUDE_INSTANCE_01_STATE_MANAGEMENT.md" ;;
+        "Claude AI Resilience"|"AI Resilience") echo "CLAUDE_INSTANCE_02_AI_SERVICE_RESILIENCE.md" ;;
+        "Claude Caching"|"Caching") echo "CLAUDE_INSTANCE_03_CACHING_INFRASTRUCTURE.md" ;;
+        "Claude Observability"|"Observability") echo "CLAUDE_INSTANCE_04_OBSERVABILITY_PERFORMANCE.md" ;;
+        "Claude Reviewer"|"Reviewer"|"Code Reviewer") echo "CLAUDE_INSTANCE_05_CODE_REVIEWER.md" ;;
+        "Claude Test"|"Test"|"Test Engineer") echo "CLAUDE_INSTANCE_06_TEST_ENGINEER.md" ;;
+        "Claude DB Migration"|"DB Migration"|"Database Migration") echo "CLAUDE_INSTANCE_07_DATABASE_MIGRATION_SPECIALIST.md" ;;
+        "Claude DevOps"|"DevOps"|"Devops") echo "CLAUDE_INSTANCE_08_DEVOPS_INFRASTRUCTURE.md" ;;
+        "Claude API"|"API"|"API Integration") echo "CLAUDE_INSTANCE_09_API_INTEGRATION_SPECIALIST.md" ;;
         "AI Service") echo "AI_SERVICE.md" ;;
         "Enhancement Service") echo "ENHANCE_SERVICE.md" ;;
         "Queue Service") echo "QUEUE_SERVICE.md" ;;
@@ -68,8 +80,12 @@ process_jsonl_full() {
     [ ! -f "$jsonl_file" ] && return
     
     # Get current line count and last processed position
-    local total_lines=$(wc -l < "$jsonl_file")
+    local total_lines=$(wc -l < "$jsonl_file" | tr -d ' ')
     local last_position=$(get_last_position "$file_id")
+    
+    # Ensure numeric values
+    last_position=${last_position:-0}
+    total_lines=${total_lines:-0}
     
     [ "$last_position" -ge "$total_lines" ] && return
     
@@ -81,13 +97,19 @@ process_jsonl_full() {
         # New file - identify instance
         local first_message=$(jq -r 'select(.type=="user") | .message.content // .message.content[0].text // ""' "$jsonl_file" 2>/dev/null | head -1)
         
-        # Pattern 1: [Instance Name] tag
-        if [[ "$first_message" =~ ^\[([^\]]+)\] ]]; then
+        # Pattern 1: [Claude XXX] format - most specific patterns first
+        if [[ "$first_message" =~ \[Claude[[:space:]]+(State[[:space:]]+Management|State[[:space:]]+Manag|AI[[:space:]]+Resilience|Caching|Observability|Reviewer|Test|DB[[:space:]]+Migration|DevOps|API|Main)\] ]]; then
+            instance="Claude ${BASH_REMATCH[1]}"
+        # Pattern 2: [Instance Name] tag for any bracketed content
+        elif [[ "$first_message" =~ ^\[([^\]]+)\] ]]; then
             instance="${BASH_REMATCH[1]}"
-        # Pattern 2: Context file reference
+        # Pattern 3: Context file reference
         elif [[ "$first_message" =~ context\ file.*(/[^[:space:]]+\.md) ]]; then
             local context_path="${BASH_REMATCH[1]}"
             instance=$(extract_instance_from_path "$context_path")
+        # Pattern 4: Claude pattern anywhere in first few words
+        elif [[ "$first_message" =~ ^[[:space:]]*Claude[[:space:]]+(State[[:space:]]+Management|AI[[:space:]]+Resilience|Caching|Observability|Reviewer|Test|DB[[:space:]]+Migration|DevOps|API|Main) ]]; then
+            instance="Claude ${BASH_REMATCH[1]}"
         fi
         
         [ -z "$instance" ] && echo "Warning: Could not identify instance" && return
