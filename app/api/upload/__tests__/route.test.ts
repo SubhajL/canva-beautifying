@@ -2,6 +2,8 @@ import { POST } from '../route'
 import { uploadFile } from '@/lib/r2'
 import { createClient } from '@/lib/supabase/server'
 
+import { MockFile } from '@/__tests__/utils/mock-file';
+
 // Mock NextRequest globally
 const mockNextRequest = jest.fn().mockImplementation((url, options = {}) => {
   const request = {
@@ -24,9 +26,14 @@ const mockNextRequest = jest.fn().mockImplementation((url, options = {}) => {
 // @ts-ignore
 global.NextRequest = mockNextRequest
 
-// Mock dependencies
+
 jest.mock('@/lib/r2')
 jest.mock('@/lib/supabase/server')
+
+
+
+// Mock dependencies
+
 
 const mockUploadFile = uploadFile as jest.MockedFunction<typeof uploadFile>
 const mockCreateClient = createClient as jest.MockedFunction<typeof createClient>
@@ -118,7 +125,7 @@ describe('POST /api/upload', () => {
 
     it('returns 400 when file exceeds size limit', async () => {
       const formData = new FormData()
-      const largeFile = new File(
+      const largeFile = new MockFile(
         [new ArrayBuffer(51 * 1024 * 1024)], // 51MB
         'large.jpg',
         { type: 'image/jpeg' }
@@ -139,7 +146,7 @@ describe('POST /api/upload', () => {
 
     it('returns 400 for invalid file type', async () => {
       const formData = new FormData()
-      const invalidFile = new File(
+      const invalidFile = new MockFile(
         ['test content'],
         'test.txt',
         { type: 'text/plain' }
@@ -169,7 +176,7 @@ describe('POST /api/upload', () => {
         error: null
       })
 
-      validFile = new File(
+      validFile = new MockFile(
         ['test image content'],
         'test.jpg',
         { type: 'image/jpeg' }
@@ -287,7 +294,11 @@ describe('POST /api/upload', () => {
       ]
 
       for (const { type, ext } of fileTypes) {
-        const file = new File(['content'], `test.${ext}`, { type })
+        const pdfBuffer = Buffer.from(
+          'JVBERi0xLjcgJUBQUFNUUCAxIDAgb2JqPDwvVHlwZS9QYWdlL1BhcmVudCAyIDAgUi9NZWRpYUJveFswIDAgNTk1IDg0Ml0vQ29udGVudHMgMyAwIFI+PgplbmRvYmogMiAwIG9iajw8L1R5cGUvUGFnZXMvS2lkc1sxIDAgUl0vQ291bnQgMT4+CmVuZG9iaiAzIDAgb2JqPDwvTGVuZ3RoIDQ0Pj5zdHJlYW0KQlQgL0YxIDEyIFRmIChIZWxsbyBXb3JsZCkgVGoNCkVUCmVuZHN0cmVhbQplbmRvYmoKeHJlZgowIDQKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDE1IDAgbiAKMDAwMDAwMDA3MyAwIG4gCjAwMDAwMDAxMjIgMCBuIAp0cmFpbGVyPDwvU2l6ZSA0L1Jvb3QgMiAwIFI+PgpzdGFydHhyZWYKMTg0CiUlRU9GCg==',
+          'base64'
+        );
+        const file = new MockFile([pdfBuffer], `test.${ext}`, { type });
         const formData = new FormData()
         formData.append('file', file)
 
@@ -330,7 +341,7 @@ describe('POST /api/upload', () => {
 
     it('returns 500 when upload fails', async () => {
       const formData = new FormData()
-      const file = new File(['content'], 'test.jpg', { type: 'image/jpeg' })
+      const file = new MockFile(['content'], 'test.jpg', { type: 'image/jpeg' })
       formData.append('file', file)
 
       mockUploadFile.mockRejectedValue(new Error('Upload failed'))
@@ -375,7 +386,7 @@ describe('POST /api/upload', () => {
 
     it('preserves original filename with special characters', async () => {
       const specialFilename = 'test file (2023) - version 1.0.jpg'
-      const file = new File(['content'], specialFilename, { type: 'image/jpeg' })
+      const file = new MockFile(['content'], specialFilename, { type: 'image/jpeg' })
       const formData = new FormData()
       formData.append('file', file)
 

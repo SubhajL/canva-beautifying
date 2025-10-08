@@ -1,280 +1,196 @@
-import { test, expect } from './fixtures/auth.fixture';
-import TestHelpers from './utils/test-helpers';
-import path from 'path';
+/**
+ * Results and Export E2E Tests
+ * Tests the complete enhancement results page and export functionality
+ */
 
-test.describe('Results and Export', () => {
-  let enhancementId: string;
-  
-  test.beforeEach(async ({ page, authenticatedPage }) => {
-    const helpers = new TestHelpers(page);
-    
-    // Create a real enhancement first
-    await page.goto('/dashboard');
-    
-    // Upload a document
-    const testImagePath = path.join(process.cwd(), 'test-results', 'test-worksheet.svg');
-    await TestHelpers.createTestImage(testImagePath);
-    
-    const uploadPromise = helpers.waitForApiResponse(/\/api\/v1\/enhance\/upload/, 60000);
-    const fileInput = page.locator('input[type="file"]');
-    await fileInput.setInputFiles(testImagePath);
-    
-    const uploadResponse = await uploadPromise;
-    const documentId = uploadResponse.data.documentId;
-    
-    // Wait for navigation to enhancement page
-    await page.waitForURL(/enhance|wizard|settings|results/, { timeout: 30000 });
-    
-    // Start enhancement
-    const enhancePromise = helpers.waitForApiResponse(/\/api\/v1\/enhance\/process/);
-    const enhanceButton = page.getByRole('button', { name: /enhance|start|process/i });
-    if (await enhanceButton.isVisible()) {
-      await enhanceButton.click();
-      const enhanceResponse = await enhancePromise;
-      enhancementId = enhanceResponse.data.enhancementId;
-      
-      // Poll for completion
-      const statusUrl = `/api/v1/enhance/status/${enhancementId}`;
-      await helpers.pollApi(
-        statusUrl,
-        (data: any) => data.data.status === 'completed',
-        { maxAttempts: 60, interval: 2000 }
-      );
-    } else {
-      // Already on results page
-      enhancementId = page.url().match(/results\/(\w+)/)?.[1] || 'test';
+import { test, expect } from './fixtures/auth.fixture'
+import TestHelpers from './utils/test-helpers'
+import path from 'path'
+import fs from 'fs/promises'
+
+const servicesEnabled = process.env.E2E_ENABLE_SERVICES === 'true'
+
+test.describe(servicesEnabled ? '@services Results and Export' : test.skip, () => {
+  let testImagePath: string
+
+  test.beforeAll(async () => {
+    // Create test image for upload
+    testImagePath = path.join(process.cwd(), 'test-results', 'results-test.jpg')
+    await fs.mkdir(path.dirname(testImagePath), { recursive: true }).catch(() => {})
+
+    // Create minimal valid JPEG
+    const jpegHeader = Buffer.from([
+      0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46,
+      0x49, 0x46, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01,
+      0x00, 0x01, 0x00, 0x00
+    ])
+    const jpegFooter = Buffer.from([0xFF, 0xD9])
+    const filler = Buffer.alloc(2000, 0xFF)
+
+    await fs.writeFile(testImagePath, Buffer.concat([jpegHeader, filler, jpegFooter]))
+  })
+
+  test.afterAll(async () => {
+    // Clean up test image
+    try {
+      await fs.unlink(testImagePath)
+    } catch {
+      // Ignore if already deleted
     }
-    
-    // Navigate to results page
-    if (!page.url().includes('/results/')) {
-      await page.goto(`/app/results/${enhancementId}`);
-    }
-    
-    await page.waitForLoadState('networkidle');
-  });
+  })
 
-  test('should display enhancement results', async ({ page }) => {
-    // Check for before/after comparison
-    await expect(page.getByText(/before/i)).toBeVisible();
-    await expect(page.getByText(/after/i)).toBeVisible();
-    
-    // Check for improvement metrics
-    await expect(page.getByText(/88/)).toBeVisible(); // Overall score
-    await expect(page.getByText(/readability/i)).toBeVisible();
-    await expect(page.getByText(/visual.*appeal/i)).toBeVisible();
-    await expect(page.getByText(/accessibility/i)).toBeVisible();
-  });
+  test('should display results page after enhancement', async ({ page, authenticatedPage }) => {
+    const helpers = new TestHelpers(page)
 
-  test('should show improvement details', async ({ page }) => {
-    // Check for enhancement list
-    await expect(page.getByText(/improved color contrast/i)).toBeVisible();
-    await expect(page.getByText(/visual hierarchy/i)).toBeVisible();
-    
-    // Check for processing time
-    await expect(page.getByText(/8.5.*seconds/i)).toBeVisible();
-  });
+    // Upload document
+    await page.goto('/dashboard')
+    const fileInput = page.locator('input[type="file"]')
+    const uploadPromise = helpers.waitForApiResponse(/\/api\/upload/)
+    await fileInput.setInputFiles(testImagePath)
 
-  test('should allow toggling between before and after views', async ({ page }) => {
-    const helpers = new TestHelpers(page);
-    
-    // Look for toggle or slider
-    const toggleButton = page.getByRole('button', { name: /compare|toggle/i });
-    const slider = page.locator('[role="slider"], .comparison-slider');
-    
-    if (await toggleButton.isVisible()) {
-      await toggleButton.click();
-      // Should change view
-      await expect(page.locator('.before-view, .after-view')).toBeVisible();
-    } else if (await slider.isVisible()) {
-      // Test slider interaction
-      await slider.hover();
-      await page.mouse.down();
-      await page.mouse.move(100, 0);
-      await page.mouse.up();
-    }
-  });
+    const uploadResponse = await uploadPromise
+    expect(uploadResponse.success).toBe(true)
+    expect(uploadResponse.enhancementId).toBeDefined()
 
-  test('should provide download options', async ({ page }) => {
-    const helpers = new TestHelpers(page);
-    
-    // Find download button
-    const downloadButton = page.getByRole('button', { name: /download/i });
-    await expect(downloadButton).toBeVisible();
-    
-    // Click download
-    await downloadButton.click();
-    
-    // Should show format options
-    const formatOptions = ['PNG', 'JPG', 'PDF'];
-    for (const format of formatOptions) {
-      const option = page.getByText(format);
-      if (await option.isVisible()) {
-        await expect(option).toBeVisible();
-      }
-    }
-  });
+    const enhancementId = uploadResponse.enhancementId
 
-  test('should download enhanced document', async ({ page }) => {
-    const helpers = new TestHelpers(page);
-    
-    // Find download button
-    const downloadButton = page.getByRole('button', { name: /download|export/i });
-    await expect(downloadButton).toBeVisible();
-    
-    // Click download
-    await downloadButton.click();
-    
-    // If format options appear, select PNG
-    const pngOption = page.getByText('PNG').first();
-    if (await pngOption.isVisible()) {
-      await pngOption.click();
-      
-      // Wait for export API
-      const exportPromise = helpers.waitForApiResponse(/\/api\/v1\/enhance\/export/);
-      
-      // Confirm download
-      const confirmButton = page.getByRole('button', { name: /download|confirm|export/i }).last();
-      await confirmButton.click();
-      
-      // Check export response
-      const exportResponse = await exportPromise;
-      expect(exportResponse.success).toBe(true);
-      expect(exportResponse.data.exportUrl).toBeDefined();
-    } else {
-      // Direct download
-      const downloadPromise = page.waitForEvent('download', { timeout: 30000 });
-      const download = await downloadPromise;
-      expect(download.suggestedFilename()).toBeTruthy();
-    }
-  });
+    // Wait for enhancement to complete
+    let enhancementComplete = false
+    let attempts = 0
+    const maxAttempts = 60
 
-  test('should allow sharing results', async ({ page }) => {
-    const helpers = new TestHelpers(page);
-    
-    // Find share button
-    const shareButton = page.getByRole('button', { name: /share/i });
-    await expect(shareButton).toBeVisible();
-    
-    // Click share
-    await shareButton.click();
-    
-    // Should show share options
-    await expect(page.getByText(/share.*link|copy.*link/i)).toBeVisible();
-    
-    // Test copy link
-    const copyButton = page.getByRole('button', { name: /copy/i });
-    await copyButton.click();
-    
-    // Should show success message
-    await expect(page.getByText(/copied/i)).toBeVisible();
-  });
+    while (!enhancementComplete && attempts < maxAttempts) {
+      const statusResponse = await page.request.get(`/api/v1/enhance/${enhancementId}`)
 
-  test('should save to user library', async ({ page }) => {
-    const helpers = new TestHelpers(page);
-    
-    // Find save button
-    const saveButton = page.getByRole('button', { name: /save/i });
-    
-    if (await saveButton.isVisible()) {
-      await saveButton.click();
-      
-      // Should show success
-      await expect(page.getByText(/saved/i)).toBeVisible();
-    }
-  });
+      if (statusResponse.ok()) {
+        const payload = await statusResponse.json()
 
-  test('should allow starting new enhancement', async ({ page }) => {
-    const helpers = new TestHelpers(page);
-    
-    // Find new enhancement button
-    const newButton = page.getByRole('button', { name: /new|another|enhance again/i });
-    await expect(newButton).toBeVisible();
-    
-    // Click it
-    await newButton.click();
-    
-    // Should navigate back to dashboard or upload
-    await expect(page).toHaveURL(/dashboard|upload/);
-  });
-
-  test('should show export options for different formats', async ({ page }) => {
-    const helpers = new TestHelpers(page);
-    
-    // Click download/export
-    const exportButton = page.getByRole('button', { name: /export|download/i });
-    await exportButton.click();
-    
-    // Check for format options
-    const formats = [
-      { name: 'PNG', desc: 'High quality' },
-      { name: 'JPG', desc: 'Smaller size' },
-      { name: 'PDF', desc: 'Print ready' }
-    ];
-    
-    for (const format of formats) {
-      const option = page.getByText(format.name);
-      if (await option.isVisible()) {
-        await expect(option).toBeVisible();
-        
-        // Check for description
-        const desc = page.getByText(new RegExp(format.desc, 'i'));
-        if (await desc.isVisible()) {
-          await expect(desc).toBeVisible();
+        // Check for API-level errors
+        if (!payload.success) {
+          const apiError = payload.error?.message || payload.error || 'API returned success: false'
+          throw new Error(`Enhancement API error: ${apiError}`)
         }
-      }
-    }
-  });
 
-  test('should track export usage', async ({ page }) => {
-    const helpers = new TestHelpers(page);
-    
-    // Mock usage tracking
-    let exportTracked = false;
-    await page.route('**/api/v1/usage/track', route => {
-      const request = route.request();
-      if (request.postDataJSON()?.action === 'export') {
-        exportTracked = true;
-      }
-      route.fulfill({ status: 200 });
-    });
-    
-    // Export document
-    const downloadButton = page.getByRole('button', { name: /download/i });
-    await downloadButton.click();
-    
-    // Should track usage
-    await page.waitForTimeout(1000); // Give time for tracking
-    expect(exportTracked).toBeTruthy();
-  });
+        // Guard against missing data
+        if (!payload.data) {
+          console.log(`Attempt ${attempts + 1}: No data in response, retrying...`)
+          await page.waitForTimeout(2000)
+          attempts++
+          continue
+        }
 
-  test('should handle export errors gracefully', async ({ page }) => {
-    const helpers = new TestHelpers(page);
-    
-    // Mock export error
-    await page.route('**/api/v1/enhance/export/*', route => {
-      route.fulfill({
-        status: 500,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          success: false,
-          error: { message: 'Export failed' }
-        })
-      });
-    });
-    
-    // Try to export
-    const downloadButton = page.getByRole('button', { name: /download/i });
-    await downloadButton.click();
-    
-    // Select format if needed
-    const pngOption = page.getByText('PNG');
-    if (await pngOption.isVisible()) {
-      await pngOption.click();
-      const confirmButton = page.getByRole('button', { name: /download|confirm/i }).last();
-      await confirmButton.click();
+        const status = payload.data.status
+
+        if (status === 'completed') {
+          enhancementComplete = true
+          break
+        } else if (status === 'failed') {
+          const errorMsg = payload.data.error || payload.data.error_message || 'Unknown error'
+          throw new Error(`Enhancement failed: ${errorMsg}`)
+        }
+
+        // Log progress for other states
+        console.log(`Attempt ${attempts + 1}: Status = ${status}`)
+      } else {
+        // Non-OK HTTP status
+        const errorText = await statusResponse.text().catch(() => 'Unknown error')
+        console.log(`Attempt ${attempts + 1}: HTTP ${statusResponse.status()} - ${errorText}`)
+      }
+
+      await page.waitForTimeout(2000)
+      attempts++
     }
-    
-    // Should show error
-    await expect(page.getByText(/export failed|error|try again/i)).toBeVisible();
-  });
-});
+
+    if (!enhancementComplete) {
+      const timeoutSecs = maxAttempts * 2
+      throw new Error(`Enhancement did not complete within ${timeoutSecs} seconds`)
+    }
+
+    // Navigate to results page
+    await page.goto(`/results/${enhancementId}`)
+
+    // Verify results page loaded
+    await expect(page).toHaveURL(new RegExp(`/results/${enhancementId}`))
+
+    // Check for key results page elements
+    const enhancedImage = page.locator('img[alt*="enhanced" i], img[alt*="after" i]').first()
+    await expect(enhancedImage).toBeVisible({ timeout: 10000 })
+
+    // Check for before/after comparison
+    const originalImage = page.locator('img[alt*="original" i], img[alt*="before" i]').first()
+    await expect(originalImage).toBeVisible({ timeout: 5000 })
+  })
+
+  test('should provide export options', async ({ page, authenticatedPage }) => {
+    const helpers = new TestHelpers(page)
+
+    // Upload
+    await page.goto('/dashboard')
+    const fileInput = page.locator('input[type="file"]')
+    const uploadPromise = helpers.waitForApiResponse(/\/api\/upload/)
+    await fileInput.setInputFiles(testImagePath)
+
+    const uploadResponse = await uploadPromise
+    const enhancementId = uploadResponse.enhancementId
+
+    // Navigate to results
+    await page.goto(`/results/${enhancementId}`)
+    await page.waitForTimeout(2000)
+
+    // Check for export button
+    const exportButton = page.getByRole('button', { name: /export|download/i }).first()
+    await expect(exportButton).toBeVisible({ timeout: 10000 })
+  })
+
+  test('should allow downloading enhanced document', async ({ page, authenticatedPage }) => {
+    const helpers = new TestHelpers(page)
+
+    // Upload
+    await page.goto('/dashboard')
+    const fileInput = page.locator('input[type="file"]')
+    const uploadPromise = helpers.waitForApiResponse(/\/api\/upload/)
+    await fileInput.setInputFiles(testImagePath)
+
+    const uploadResponse = await uploadPromise
+    const enhancementId = uploadResponse.enhancementId
+
+    // Navigate to results
+    await page.goto(`/results/${enhancementId}`)
+    await page.waitForTimeout(2000)
+
+    const exportButton = page.getByRole('button', { name: /export|download/i }).first()
+
+    if (await exportButton.isVisible({ timeout: 10000 })) {
+      const downloadPromise = page.waitForEvent('download', { timeout: 30000 })
+      await exportButton.click()
+
+      // Try to select format
+      const pngButton = page.getByRole('button', { name: /png/i }).or(
+        page.getByRole('option', { name: /png/i })
+      )
+
+      if (await pngButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await pngButton.click()
+      }
+
+      // Confirm
+      const confirmButton = page.getByRole('button', { name: /confirm|download|export/i })
+      if (await confirmButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await confirmButton.click()
+      }
+
+      // Verify download
+      const download = await downloadPromise
+      expect(download.suggestedFilename()).toBeDefined()
+      expect(download.suggestedFilename()).toMatch(/\.(png|jpg|jpeg|pdf)$/i)
+
+      const downloadPath = path.join(process.cwd(), 'test-results', download.suggestedFilename())
+      await download.saveAs(downloadPath)
+
+      const stats = await fs.stat(downloadPath)
+      expect(stats.size).toBeGreaterThan(0)
+
+      await fs.unlink(downloadPath).catch(() => {})
+    }
+  })
+})

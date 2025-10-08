@@ -27,10 +27,10 @@ export const TEST_CONFIG = {
   // API endpoints (will use baseURL from playwright.config.ts)
   api: {
     auth: {
-      signup: '/auth/signup',
-      login: '/auth/login',
-      logout: '/auth/logout',
-      resetPassword: '/auth/reset-password',
+      signup: '/signup',
+      login: '/login',
+      logout: '/logout',
+      resetPassword: '/forgot-password',
     },
     enhance: {
       upload: '/api/v1/enhance/upload',

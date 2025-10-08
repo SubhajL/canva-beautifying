@@ -111,8 +111,23 @@ export class TestHelpers {
    * Fill a form field by label
    */
   async fillByLabel(label: string, value: string): Promise<void> {
-    const input = await this.page.getByLabel(label);
-    await input.fill(value);
+    // Try exact accessible label first
+    let locator = this.page.getByLabel(label)
+    try {
+      await locator.first().fill(value, { timeout: 3000 })
+      return
+    } catch {}
+
+    // Heuristics for common fields
+    const lower = label.toLowerCase()
+    if (lower.includes('email')) {
+      locator = this.page.locator('input[type="email"], input[name*="email" i], input[placeholder*="email" i]').first()
+    } else if (lower.includes('password') || lower.includes('passcode') || lower.includes('secret')) {
+      locator = this.page.locator('input[type="password"], input[name*="password" i]').first()
+    } else {
+      locator = this.page.locator(`input[placeholder*="${label}" i], input[name*="${label}" i]`).first()
+    }
+    await locator.fill(value)
   }
 
   /**

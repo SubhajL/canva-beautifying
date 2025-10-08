@@ -3,7 +3,7 @@ import TestHelpers from './utils/test-helpers';
 import path from 'path';
 import fs from 'fs/promises';
 
-test.describe('Document Upload Flow', () => {
+test.describe('@ui Document Upload Flow', () => {
   let testImagePath: string;
 
   test.beforeAll(async () => {
@@ -21,22 +21,23 @@ test.describe('Document Upload Flow', () => {
     }
   });
 
-  test('should display upload interface on dashboard', async ({ page, authenticatedPage }) => {
+  test('should display upload CTA on dashboard and open upload interface', async ({ page, authenticatedPage }) => {
     const helpers = new TestHelpers(page);
     
     // Navigate to dashboard
     await page.goto('/dashboard');
     
-    // Check for upload section
-    await expect(page.getByText(/upload document/i)).toBeVisible();
-    
-    // Check for dropzone
-    const dropzone = page.locator('[data-testid="upload-dropzone"]').or(
-      page.locator('.dropzone')
-    ).or(
-      page.getByText(/drag.*drop/i)
-    );
-    await expect(dropzone).toBeVisible();
+    // Check for upload CTA
+    const cta = page.getByRole('button', { name: /upload document/i }).first();
+    await expect(cta).toBeVisible();
+
+    // Open upload page
+    await cta.click();
+
+    // Verify dropzone visible on upload page
+    await expect(page).toHaveURL(/\/upload/);
+    const dropzone = page.locator('[data-testid="upload-dropzone"]').or(page.locator('.dropzone')).or(page.getByText(/drag.*drop/i));
+    await expect(dropzone.first()).toBeVisible();
   });
 
   test('should upload a document via file picker', async ({ page, authenticatedPage }) => {

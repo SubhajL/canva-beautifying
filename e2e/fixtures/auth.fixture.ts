@@ -1,4 +1,5 @@
 import { test as base } from '@playwright/test';
+import { attachNetworkHeartbeat } from '../utils/watchdog';
 import TestHelpers from '../utils/test-helpers';
 
 export type AuthFixtures = {
@@ -7,14 +8,20 @@ export type AuthFixtures = {
     password: string;
   };
   authenticatedPage: void;
+  watchdog: void;
 };
 
 export const test = base.extend<AuthFixtures>({
+  watchdog: [async ({ page }, use) => {
+    const detach = attachNetworkHeartbeat(page, { label: 'e2e' })
+    await use()
+    detach()
+  }, { auto: true }],
   testUser: async ({}, use) => {
-    // Create test user credentials
+    // Create or reuse test user credentials (env overrides if provided)
     const user = {
-      email: TestHelpers.generateTestEmail(),
-      password: TestHelpers.generateTestPassword(),
+      email: process.env.E2E_TEST_EMAIL || TestHelpers.generateTestEmail(),
+      password: process.env.E2E_TEST_PASSWORD || TestHelpers.generateTestPassword(),
     };
     
     await use(user);
@@ -24,7 +31,7 @@ export const test = base.extend<AuthFixtures>({
 
   authenticatedPage: [async ({ page, testUser }, use) => {
     // Sign up the test user
-    await page.goto('/auth/signup');
+    await page.goto('/signup');
     
     const helpers = new TestHelpers(page);
     
@@ -52,7 +59,7 @@ export const test = base.extend<AuthFixtures>({
       
     } catch (error) {
       // If signup fails, try login (user might already exist)
-      await page.goto('/auth/login');
+      await page.goto('/login');
       await helpers.fillByLabel('Email', testUser.email);
       await helpers.fillByLabel('Password', testUser.password);
       

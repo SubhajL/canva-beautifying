@@ -1,7 +1,7 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/base.fixture';
 import TestHelpers from './utils/test-helpers';
 
-test.describe('Authentication Flow', () => {
+test.describe('@ui Authentication Flow', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
   });
@@ -20,13 +20,13 @@ test.describe('Authentication Flow', () => {
 
   test('should navigate to signup page', async ({ page }) => {
     const helpers = new TestHelpers(page);
-    
+
     // Click Get Started
     await helpers.clickButton('Get Started');
-    
+
     // Should redirect to signup
-    await expect(page).toHaveURL(/\/auth\/signup/);
-    
+    await expect(page).toHaveURL(/\/signup/);
+
     // Check signup form elements
     await expect(page.getByLabel('Email')).toBeVisible();
     await expect(page.getByLabel('Password')).toBeVisible();
@@ -37,9 +37,9 @@ test.describe('Authentication Flow', () => {
     const helpers = new TestHelpers(page);
     const testEmail = TestHelpers.generateTestEmail();
     const testPassword = TestHelpers.generateTestPassword();
-    
+
     // Navigate to signup
-    await page.goto('/auth/signup');
+    await page.goto('/signup');
     
     // Fill form
     await helpers.fillByLabel('Email', testEmail);
@@ -67,23 +67,23 @@ test.describe('Authentication Flow', () => {
     const helpers = new TestHelpers(page);
     const testEmail = TestHelpers.generateTestEmail();
     const testPassword = TestHelpers.generateTestPassword();
-    
+
     // First sign up
-    await page.goto('/auth/signup');
+    await page.goto('/signup');
     await helpers.fillByLabel('Email', testEmail);
     await helpers.fillByLabel('Password', testPassword);
-    
+
     const signupPromise = helpers.waitForApiResponse(/\/auth\/v1\/signup/);
     await helpers.clickButton('Sign Up');
     await signupPromise;
-    
+
     await helpers.waitForNavigation('/dashboard');
-    
+
     // Log out
     await helpers.logout();
-    
+
     // Now test login
-    await page.goto('/auth/login');
+    await page.goto('/login');
     await helpers.fillByLabel('Email', testEmail);
     await helpers.fillByLabel('Password', testPassword);
     
@@ -101,8 +101,8 @@ test.describe('Authentication Flow', () => {
 
   test('should show validation errors for invalid input', async ({ page }) => {
     const helpers = new TestHelpers(page);
-    
-    await page.goto('/auth/signup');
+
+    await page.goto('/signup');
     
     // Try to submit empty form
     await helpers.clickButton('Sign Up');
@@ -125,7 +125,7 @@ test.describe('Authentication Flow', () => {
   });
 
   test('should handle OAuth login', async ({ page }) => {
-    await page.goto('/auth/login');
+    await page.goto('/login');
     
     // Check OAuth buttons
     const googleButton = page.getByRole('button', { name: /continue with google/i });
@@ -139,15 +139,15 @@ test.describe('Authentication Flow', () => {
 
   test('should handle password reset flow', async ({ page }) => {
     const helpers = new TestHelpers(page);
-    
-    await page.goto('/auth/login');
-    
+
+    await page.goto('/login');
+
     // Click forgot password
     const forgotLink = page.getByRole('link', { name: /forgot password/i });
     await forgotLink.click();
-    
+
     // Should navigate to reset page
-    await expect(page).toHaveURL(/\/auth\/reset-password/);
+    await expect(page).toHaveURL(/\/forgot-password/);
     
     // Fill email
     await helpers.fillByLabel('Email', 'test@example.com');
@@ -161,19 +161,19 @@ test.describe('Authentication Flow', () => {
     const helpers = new TestHelpers(page);
     const testEmail = TestHelpers.generateTestEmail();
     const testPassword = TestHelpers.generateTestPassword();
-    
+
     // Sign up first
-    await page.goto('/auth/signup');
+    await page.goto('/signup');
     await helpers.fillByLabel('Email', testEmail);
     await helpers.fillByLabel('Password', testPassword);
     await helpers.clickButton('Sign Up');
     await helpers.waitForNavigation('/dashboard');
-    
+
     // Try to access auth pages while logged in
-    await page.goto('/auth/login');
+    await page.goto('/login');
     await expect(page).toHaveURL('/dashboard');
-    
-    await page.goto('/auth/signup');
+
+    await page.goto('/signup');
     await expect(page).toHaveURL('/dashboard');
   });
 });

@@ -77,7 +77,7 @@ describe('/api/enhance', () => {
         const data = await response.json()
 
         expect(response.status).toBe(401)
-        expect(data.error).toBe('Authentication required')
+        expect(data.error.message).toBe('Please sign in to continue')
       })
 
       it('returns 401 when auth check fails', async () => {
@@ -96,7 +96,7 @@ describe('/api/enhance', () => {
         const data = await response.json()
 
         expect(response.status).toBe(401)
-        expect(data.error).toBe('Authentication required')
+        expect(data.error.message).toBe('Please sign in to continue')
       })
     })
 
@@ -318,7 +318,7 @@ describe('/api/enhance', () => {
         const data = await response.json()
 
         expect(response.status).toBe(401)
-        expect(data.error).toBe('Authentication required')
+        expect(data.error.message).toBe('Please sign in to continue')
       })
     })
 
