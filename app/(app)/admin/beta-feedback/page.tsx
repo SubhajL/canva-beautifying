@@ -76,17 +76,17 @@ const typeIcons = {
 };
 
 const statusColors = {
-  pending: 'bg-yellow-500',
-  reviewed: 'bg-blue-500',
-  resolved: 'bg-green-500',
-  wont_fix: 'bg-gray-500',
+  pending: 'bg-warning',
+  reviewed: 'bg-info',
+  resolved: 'bg-success',
+  wont_fix: 'bg-muted-foreground/40',
 };
 
 const priorityColors = {
-  low: 'bg-gray-500',
-  medium: 'bg-yellow-500',
-  high: 'bg-orange-500',
-  critical: 'bg-red-500',
+  low: 'bg-muted-foreground/40',
+  medium: 'bg-warning',
+  high: 'bg-warning',
+  critical: 'bg-error',
 };
 
 export default function BetaFeedbackManagement() {
@@ -273,7 +273,7 @@ export default function BetaFeedbackManagement() {
             </div>
             {item.rating && (
               <div className="flex items-center gap-1">
-                <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+                <Star className="h-4 w-4 fill-warning text-warning" />
                 <span className="text-sm font-medium">{item.rating}</span>
               </div>
             )}
@@ -338,20 +338,20 @@ export default function BetaFeedbackManagement() {
           <Card>
             <CardHeader className="pb-3">
               <CardDescription>Pending Review</CardDescription>
-              <CardTitle className="text-2xl text-yellow-600">{stats.pending}</CardTitle>
+              <CardTitle className="text-2xl text-warning">{stats.pending}</CardTitle>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="pb-3">
               <CardDescription>Resolved</CardDescription>
-              <CardTitle className="text-2xl text-green-600">{stats.resolved}</CardTitle>
+              <CardTitle className="text-2xl text-success">{stats.resolved}</CardTitle>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="pb-3">
               <CardDescription>Average Rating</CardDescription>
               <CardTitle className="text-2xl flex items-center gap-1">
-                <Star className="h-5 w-5 fill-yellow-500 text-yellow-500" />
+                <Star className="h-5 w-5 fill-warning text-warning" />
                 {stats.avgRating.toFixed(1)}
               </CardTitle>
             </CardHeader>
@@ -497,8 +497,8 @@ export default function BetaFeedbackManagement() {
                           key={i}
                           className={`h-4 w-4 ${
                             i < selectedFeedback.rating!
-                              ? 'fill-yellow-500 text-yellow-500'
-                              : 'text-gray-300'
+                              ? 'fill-warning text-warning'
+                              : 'text-muted-foreground/30'
                           }`}
                         />
                       ))}
@@ -518,7 +518,7 @@ export default function BetaFeedbackManagement() {
                       href={selectedFeedback.page_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-blue-600 hover:underline mt-1 block"
+                      className="text-sm text-info hover:underline mt-1 block"
                     >
                       {selectedFeedback.page_url}
                     </a>

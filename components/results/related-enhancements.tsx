@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ArrowRight, FileText, Calendar, TrendingUp } from 'lucide-react'
+import { densityClass } from '@/lib/ui/density'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -103,13 +104,13 @@ export function RelatedEnhancements({ currentEnhancementId, userId, documentType
             View your recent enhancement history
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <CardContent className={densityClass('p-4','p-6')}>
+          <div className={densityClass('grid grid-cols-1 md:grid-cols-3 gap-3','grid grid-cols-1 md:grid-cols-3 gap-4')}>
             {[1, 2, 3].map((i) => (
               <div key={i} className="animate-pulse">
-                <div className="h-32 bg-gray-200 rounded-lg mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-1"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-32 bg-muted rounded-lg mb-2"></div>
+                <div className="h-4 bg-muted rounded w-3/4 mb-1"></div>
+                <div className="h-3 bg-muted rounded w-1/2"></div>
               </div>
             ))}
           </div>
@@ -148,7 +149,7 @@ export function RelatedEnhancements({ currentEnhancementId, userId, documentType
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className={densityClass('grid grid-cols-1 md:grid-cols-3 gap-3','grid grid-cols-1 md:grid-cols-3 gap-4')}>
           {enhancements.map((enhancement) => {
             const improvementPercentage = getImprovementPercentage(enhancement.improvements)
             const documentType = getDocumentTypeLabel(enhancement.documents.type)
@@ -182,7 +183,7 @@ export function RelatedEnhancements({ currentEnhancementId, userId, documentType
                   </div>
 
                   {/* Details */}
-                  <CardContent className="p-4">
+                  <CardContent className={densityClass('p-3','p-4')}>
                     <h4 className="font-medium text-sm truncate mb-2">
                       {enhancement.documents.name}
                     </h4>
@@ -193,7 +194,7 @@ export function RelatedEnhancements({ currentEnhancementId, userId, documentType
                         {new Date(enhancement.created_at).toLocaleDateString()}
                       </div>
                       {improvementPercentage > 0 && (
-                        <div className="flex items-center gap-1 text-green-600">
+                        <div className="flex items-center gap-1 text-success">
                           <TrendingUp className="h-3 w-3" />
                           +{improvementPercentage}%
                         </div>

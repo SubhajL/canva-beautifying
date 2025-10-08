@@ -125,23 +125,23 @@ export function BatchProcessingControls({
             <p className="text-xs text-muted-foreground">Total Files</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-semibold text-blue-600">{processingCount}</p>
+            <p className="text-2xl font-semibold text-info">{processingCount}</p>
             <p className="text-xs text-muted-foreground">Processing</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-semibold text-green-600">{completedCount}</p>
+            <p className="text-2xl font-semibold text-success">{completedCount}</p>
             <p className="text-xs text-muted-foreground">Completed</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-semibold text-red-600">{errorCount}</p>
+            <p className="text-2xl font-semibold text-error">{errorCount}</p>
             <p className="text-xs text-muted-foreground">Errors</p>
           </div>
         </div>
 
         {/* Processing Tips */}
         {isProcessing && (
-          <div className="bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg">
-            <p className="text-sm text-blue-800 dark:text-blue-200">
+          <div className="bg-info/10 p-3 rounded-lg">
+            <p className="text-sm text-info">
               <strong>Tip:</strong> You can safely navigate away from this page. 
               Processing will continue in the background, and you&apos;ll be notified when complete.
             </p>
@@ -149,8 +149,8 @@ export function BatchProcessingControls({
         )}
 
         {errorCount > 0 && (
-          <div className="bg-red-50 dark:bg-red-950/20 p-3 rounded-lg">
-            <p className="text-sm text-red-800 dark:text-red-200">
+          <div className="bg-error/10 p-3 rounded-lg">
+            <p className="text-sm text-error">
               <strong>Note:</strong> {errorCount} file{errorCount > 1 ? 's' : ''} failed to process. 
               Check the individual file status for details.
             </p>

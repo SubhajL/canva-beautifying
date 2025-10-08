@@ -3,6 +3,7 @@ import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
+import { isCompact } from "@/lib/ui/density"
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-all duration-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
@@ -58,9 +59,20 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, rounded, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
+    // Density adjustment for sizes
+    const compactSizeAdjust: Record<string, string> = {
+      default: 'h-9 px-4 py-1.5',
+      sm: 'h-8 px-3',
+      lg: 'h-11 px-8',
+      xl: 'h-12 px-10',
+      icon: 'h-9 w-9',
+      'icon-sm': 'h-7 w-7',
+      'icon-lg': 'h-11 w-11',
+    }
+    const adjust = isCompact() ? compactSizeAdjust[size ?? 'default'] : ''
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, rounded, className }))}
+        className={cn(buttonVariants({ variant, size, rounded, className }), adjust)}
         ref={ref}
         {...props}
       />

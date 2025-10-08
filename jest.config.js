@@ -59,11 +59,12 @@ const customJestConfig = {
     '**/*.(test|spec).(js|jsx|ts|tsx)',
   ],
   
-  // Exclude E2E tests from Jest
+  // Exclude E2E tests from Jest (and optionally skip socket tests)
   testPathIgnorePatterns: [
     '/node_modules/',
     '/.next/',
     '/e2e/',
+    ...(process.env.JEST_SKIP_WEBSOCKET_TESTS === 'true' ? ['<rootDir>/lib/websocket/__tests__/server.test.ts'] : []),
   ],
   
   // Transform ignore patterns

@@ -217,7 +217,7 @@ export function ApiAuthenticationPanel({ className }: ApiAuthenticationPanelProp
                   placeholder="e.g., Production App"
                   className="mt-2"
                 />
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   Help identify this key in your dashboard
                 </p>
               </div>
@@ -241,7 +241,7 @@ export function ApiAuthenticationPanel({ className }: ApiAuthenticationPanelProp
                           <span className="font-mono text-sm">{maskApiKey('bai_1234567890abcdef')}</span>
                           <Badge variant="outline" className="text-xs">Pro</Badge>
                         </div>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <p className="text-sm text-muted-foreground mt-1">
                           Production App • Created 2 days ago
                         </p>
                       </div>
@@ -267,7 +267,7 @@ export function ApiAuthenticationPanel({ className }: ApiAuthenticationPanelProp
                           <span className="font-mono text-sm">{maskApiKey('bai_abcdef1234567890')}</span>
                           <Badge variant="outline" className="text-xs">Pro</Badge>
                         </div>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <p className="text-sm text-muted-foreground mt-1">
                           Development • Created 1 week ago
                         </p>
                       </div>
@@ -305,23 +305,23 @@ export function ApiAuthenticationPanel({ className }: ApiAuthenticationPanelProp
         <CardContent>
           <ul className="space-y-2 text-sm">
             <li className="flex items-start gap-2">
-              <span className="text-green-600 mt-0.5">•</span>
+              <span className="text-success mt-0.5">•</span>
               <span>Never expose your API key in client-side code or public repositories</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-green-600 mt-0.5">•</span>
+              <span className="text-success mt-0.5">•</span>
               <span>Use environment variables to store API keys securely</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-green-600 mt-0.5">•</span>
+              <span className="text-success mt-0.5">•</span>
               <span>Rotate your API keys regularly</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-green-600 mt-0.5">•</span>
+              <span className="text-success mt-0.5">•</span>
               <span>Use different keys for development and production</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-green-600 mt-0.5">•</span>
+              <span className="text-success mt-0.5">•</span>
               <span>Monitor your API usage for unusual activity</span>
             </li>
           </ul>

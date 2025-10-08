@@ -5,6 +5,10 @@ import { UsageNotification } from '@/components/usage/usage-notification'
 import { UpsellPrompt } from '@/components/usage/upsell-prompt'
 import { SkipNavigation, Landmark } from '@/components/a11y/skip-navigation'
 import { LiveRegionProvider } from '@/components/a11y/live-region'
+import { CommandProvider } from '@/contexts/command-palette'
+import { DensityProvider } from '@/contexts/density'
+import CommandPalette from '@/components/command/CommandPalette'
+import { CommandSourcesRegistrar } from '@/components/command/CommandSourcesRegistrar'
 import { MobileBottomNav } from '@/components/layout/mobile-bottom-nav'
 import { BetaFeedbackWidget } from '@/components/beta/beta-feedback-widget'
 import { useAuth } from '@/contexts/auth'
@@ -24,7 +28,9 @@ export default function AppLayout({
 
   return (
     <LiveRegionProvider>
-      <div className="min-h-screen bg-gray-50">
+      <DensityProvider>
+      <CommandProvider>
+      <div className="min-h-screen bg-background">
         <SkipNavigation />
         
         <Landmark
@@ -57,7 +63,12 @@ export default function AppLayout({
             position="bottom-right"
           />
         )}
+        {/* Global Command Palette */}
+        <CommandSourcesRegistrar />
+        <CommandPalette />
       </div>
+      </CommandProvider>
+      </DensityProvider>
     </LiveRegionProvider>
   )
 }

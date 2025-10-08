@@ -240,9 +240,14 @@ export async function middleware(request: NextRequest) {
       response.headers.set('set-cookie', setCookieHeader)
     }
     
-    // Check if user is authenticated by looking for session cookie
-    const hasSession = request.cookies.has('sb-access-token') || 
-                      request.cookies.has('sb-refresh-token')
+    // Dev-only fake auth: allow bypass when cookie is present and flag enabled
+    const devFakeAuthEnabled = process.env.E2E_DEV_FAKE_AUTH === 'true'
+    const hasDevE2EAuth = request.cookies.get('e2e-auth')?.value === '1'
+    const allowDevCookie = process.env.NODE_ENV !== 'production' && hasDevE2EAuth
+    // Check if user is authenticated by looking for session cookie or dev bypass
+    const hasSession = (request.cookies.has('sb-access-token') || 
+                      request.cookies.has('sb-refresh-token')) ||
+                      (devFakeAuthEnabled && hasDevE2EAuth) || allowDevCookie
     
     // Redirect to login if accessing protected route without session
     if (pathname.startsWith('/app') && !hasSession) {

@@ -1,8 +1,16 @@
-import { trace, SpanKind, SpanStatusCode, context } from '@opentelemetry/api';
+import { trace, SpanKind, SpanStatusCode, context, Context } from '@opentelemetry/api';
 import { logger } from './logger';
 import { metrics } from './metrics';
-import { createChildSpan, withSpanAsync } from './context-propagation';
+import { createChildSpan, withSpanAsync, restoreFromCarrier } from './context-propagation';
 import { Queue, Job } from 'bullmq';
+import { EnhancementJobData } from '../queue/types';
+
+export function activateJobTraceContext(jobData: EnhancementJobData): Context {
+  if (jobData.traceCarrier) {
+    return restoreFromCarrier(jobData.traceCarrier);
+  }
+  return context.active();
+}
 
 // Pipeline stages
 export enum PipelineStage {

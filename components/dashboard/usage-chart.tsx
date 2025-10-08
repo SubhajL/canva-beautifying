@@ -19,8 +19,9 @@ import {
   Cell,
 } from 'recharts';
 import { format } from 'date-fns';
+import { chartColors } from '@/lib/ui/chart-palette'
 
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+const COLORS = [chartColors.info, chartColors.success, chartColors.warning, chartColors.error, chartColors.accent];
 
 export function UsageChart() {
   const { stats, loading } = useUsageTracking();
@@ -72,15 +73,17 @@ export function UsageChart() {
             <div className="h-[350px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
                   <XAxis 
                     dataKey="date" 
                     className="text-xs"
-                    tick={{ fill: 'currentColor' }}
+                    tick={{ fill: chartColors.neutral }}
+                    stroke={chartColors.grid}
                   />
                   <YAxis 
                     className="text-xs"
-                    tick={{ fill: 'currentColor' }}
+                    tick={{ fill: chartColors.neutral }}
+                    stroke={chartColors.grid}
                   />
                   <Tooltip
                     contentStyle={{
@@ -92,8 +95,8 @@ export function UsageChart() {
                   <Area
                     type="monotone"
                     dataKey="credits"
-                    stroke="#3b82f6"
-                    fill="#3b82f6"
+                    stroke={chartColors.info}
+                    fill={chartColors.info}
                     fillOpacity={0.2}
                     strokeWidth={2}
                   />
@@ -118,15 +121,17 @@ export function UsageChart() {
             <div className="h-[350px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
                   <XAxis 
                     dataKey="date" 
                     className="text-xs"
-                    tick={{ fill: 'currentColor' }}
+                    tick={{ fill: chartColors.neutral }}
+                    stroke={chartColors.grid}
                   />
                   <YAxis 
                     className="text-xs"
-                    tick={{ fill: 'currentColor' }}
+                    tick={{ fill: chartColors.neutral }}
+                    stroke={chartColors.grid}
                   />
                   <Tooltip
                     contentStyle={{
@@ -137,7 +142,7 @@ export function UsageChart() {
                   />
                   <Bar
                     dataKey="documents"
-                    fill="#10b981"
+                    fill={chartColors.success}
                     radius={[4, 4, 0, 0]}
                   />
                 </BarChart>
@@ -170,7 +175,7 @@ export function UsageChart() {
                           `${name} ${(percent * 100).toFixed(0)}%`
                         }
                         outerRadius={80}
-                        fill="#8884d8"
+                        fill={chartColors.accent}
                         dataKey="value"
                       >
                         {pieData.map((entry, index) => (

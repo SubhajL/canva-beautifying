@@ -26,6 +26,9 @@ interface UseEnhancementsOptions {
   status?: string;
   sortBy?: 'created_at' | 'title' | 'status';
   sortOrder?: 'asc' | 'desc';
+  fileType?: string;
+  fromDate?: string; // ISO string
+  toDate?: string;   // ISO string
 }
 
 interface UseEnhancementsReturn {
@@ -43,7 +46,10 @@ export function useEnhancements(options: UseEnhancementsOptions = {}): UseEnhanc
     search, 
     status, 
     sortBy = 'created_at', 
-    sortOrder = 'desc' 
+    sortOrder = 'desc',
+    fileType,
+    fromDate,
+    toDate,
   } = options;
   
   const { user } = useAuth();
@@ -79,6 +85,17 @@ export function useEnhancements(options: UseEnhancementsOptions = {}): UseEnhanc
         query = query.eq('status', status);
       }
 
+      // Apply filters
+      if (fileType) {
+        query = query.eq('file_type', fileType);
+      }
+      if (fromDate) {
+        query = query.gte('created_at', fromDate);
+      }
+      if (toDate) {
+        query = query.lte('created_at', toDate);
+      }
+
       // Apply sorting
       query = query.order(sortBy, { ascending: sortOrder === 'asc' });
 
@@ -105,7 +122,7 @@ export function useEnhancements(options: UseEnhancementsOptions = {}): UseEnhanc
 
   useEffect(() => {
     fetchEnhancements();
-  }, [user, limit, page, search, status, sortBy, sortOrder]);
+  }, [user, limit, page, search, status, sortBy, sortOrder, fileType, fromDate, toDate]);
 
   return {
     enhancements,

@@ -13,7 +13,8 @@ import {
   LogOut,
   Menu,
   FlaskConical,
-  Activity
+  Activity,
+  Command
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -26,10 +27,14 @@ import {
 import { useAuth } from '@/contexts/auth'
 import { createClient } from '@/lib/supabase/client'
 import { BetaNotificationBadge } from '@/components/beta/BetaNotificationBadge'
+import { useCommandPalette } from '@/contexts/command-palette'
+import { useDensity } from '@/contexts/density'
 
 export function AppHeader() {
   const { user } = useAuth();
   const [isBetaUser, setIsBetaUser] = useState(false);
+  const { openPalette } = useCommandPalette();
+  const { mode, toggle } = useDensity();
 
   useEffect(() => {
     const checkBetaStatus = async () => {
@@ -54,7 +59,7 @@ export function AppHeader() {
     checkBetaStatus();
   }, [user]);
   return (
-    <header className="border-b border-gray-200 bg-white">
+    <header className="border-b border-border bg-background">
       <nav className="container mx-auto px-4" aria-label="Global">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-8">
@@ -62,27 +67,27 @@ export function AppHeader() {
               <div className="h-8 w-8 rounded-lg bg-gradient-to-r from-primary to-secondary flex items-center justify-center">
                 <Sparkles className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900">BeautifyAI</span>
+              <span className="text-xl font-bold text-foreground">BeautifyAI</span>
             </Link>
             
             <div className="hidden md:flex items-center gap-6">
-              <Link href="/dashboard" className="text-sm font-medium text-gray-700 hover:text-primary transition-colors">
+              <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
                 Dashboard
               </Link>
-              <Link href="/upload" className="text-sm font-medium text-gray-700 hover:text-primary transition-colors">
+              <Link href="/upload" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
                 Upload
               </Link>
-              <Link href="/history" className="text-sm font-medium text-gray-700 hover:text-primary transition-colors">
+              <Link href="/history" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
                 History
               </Link>
               {isBetaUser && (
-                <Link href="/beta/dashboard" className="text-sm font-medium text-gray-700 hover:text-primary transition-colors flex items-center gap-1">
+                <Link href="/beta/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors flex items-center gap-1">
                   <FlaskConical className="h-4 w-4" />
                   Beta
                 </Link>
               )}
               {user?.subscription_tier === 'admin' && (
-                <Link href="/monitoring" className="text-sm font-medium text-gray-700 hover:text-primary transition-colors flex items-center gap-1">
+                <Link href="/monitoring" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors flex items-center gap-1">
                   <Activity className="h-4 w-4" />
                   Monitoring
                 </Link>
@@ -98,6 +103,29 @@ export function AppHeader() {
             {isBetaUser && (
               <BetaNotificationBadge />
             )}
+
+            {/* Command Palette Trigger (Cmd/Ctrl+K) */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="hidden md:flex items-center gap-1"
+              onClick={openPalette}
+              aria-label="Open command palette"
+            >
+              <Command className="h-4 w-4" />
+              <span className="hidden lg:inline">Search or jump…</span>
+              <span className="ml-1 hidden xl:inline text-xs text-muted-foreground">⌘K</span>
+            </Button>
+
+            {/* Density toggle */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggle}
+              aria-label="Toggle density"
+            >
+              {mode === 'compact' ? 'Compact' : 'Comfortable'}
+            </Button>
             
             <Link href="/upload" className="hidden md:block">
               <Button variant="gradient" size="sm" className="gap-2">
@@ -165,6 +193,8 @@ export function AppHeader() {
           </div>
         </div>
       </nav>
+      {/* Mount Command Palette so keyboard works globally */}
+      <CommandPalette />
     </header>
   )
 }

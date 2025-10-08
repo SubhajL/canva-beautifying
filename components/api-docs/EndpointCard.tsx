@@ -17,11 +17,11 @@ interface EndpointCardProps {
 }
 
 const methodColors = {
-  GET: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
-  POST: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
-  PUT: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
-  DELETE: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
-  PATCH: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
+  GET: 'bg-info/10 text-info',
+  POST: 'bg-success/10 text-success',
+  PUT: 'bg-warning/10 text-warning',
+  DELETE: 'bg-error/10 text-error',
+  PATCH: 'bg-accent/10 text-accent',
 }
 
 export function EndpointCard({ endpoint, isExpanded, onToggle }: EndpointCardProps) {
@@ -57,7 +57,7 @@ export function EndpointCard({ endpoint, isExpanded, onToggle }: EndpointCardPro
               }}
             >
               {copiedPath ? (
-                <CheckCircle className="h-4 w-4 text-green-500" />
+                <CheckCircle className="h-4 w-4 text-success" />
               ) : (
                 <Copy className="h-4 w-4 text-gray-500" />
               )}
@@ -121,7 +121,7 @@ export function EndpointCard({ endpoint, isExpanded, onToggle }: EndpointCardPro
                               {param.name}
                             </code>
                             {param.required && (
-                              <span className="text-red-500 ml-1">*</span>
+                              <span className="text-error ml-1">*</span>
                             )}
                           </td>
                           <td className="py-2 pr-4 text-gray-600 dark:text-gray-400">
@@ -157,7 +157,7 @@ export function EndpointCard({ endpoint, isExpanded, onToggle }: EndpointCardPro
                 <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
                   Request Body
                   {endpoint.requestBody.required && (
-                    <span className="text-red-500 ml-1">*</span>
+                    <span className="text-error ml-1">*</span>
                   )}
                 </h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
@@ -186,8 +186,8 @@ export function EndpointCard({ endpoint, isExpanded, onToggle }: EndpointCardPro
                         variant="outline" 
                         className={cn(
                           response.status >= 200 && response.status < 300 
-                            ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900 dark:text-green-300' 
-                            : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900 dark:text-red-300'
+                            ? 'bg-success/10 text-success border-success/20' 
+                            : 'bg-error/10 text-error border-error/20'
                         )}
                       >
                         {response.status}

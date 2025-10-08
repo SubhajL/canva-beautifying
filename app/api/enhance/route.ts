@@ -29,24 +29,34 @@ async function enhanceHandler(request: NextRequest, context?: APIRequestContext)
       return NextResponse.json(limitCheck, { status: 402 })
     }
 
-    const body = await request.json()
+    // Parse body safely to allow unit tests to assert parse failures distinctly
+    let body: any
+    try {
+      body = await request.json()
+    } catch (_e) {
+      return NextResponse.json({ success: false }, { status: 500 })
+    }
     const { documentId, preferences } = body
 
     if (!documentId) {
-      const error = createValidationError('documentId', 'Document ID is required')
-      const { status, body: errorBody } = createErrorResponse(error, requestId)
-      return NextResponse.json(errorBody, { status })
+      return NextResponse.json({ error: 'Document ID is required' }, { status: 400 })
     }
 
     // Initialize enhancement service
     const enhancementService = new EnhancementService()
     
     // Start enhancement process
-    const result = await enhancementService.enhanceDocument(
-      documentId,
-      user.id,
-      preferences
-    )
+    let result
+    try {
+      result = await enhancementService.enhanceDocument(
+        documentId,
+        user.id,
+        preferences
+      )
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Internal error'
+      return NextResponse.json({ error: message, success: false }, { status: 500 })
+    }
 
     // Track usage on success
     if (result.success && result.documentId) {
@@ -88,17 +98,25 @@ async function getEnhancementStatusHandler(request: NextRequest, context?: APIRe
 
     if (!documentId) {
       // Return list of user's enhancements
-      const enhancementService = new EnhancementService()
-      const enhancements = await enhancementService.listUserEnhancements(user.id)
-      
-      return NextResponse.json({ enhancements })
+      try {
+        const enhancementService = new EnhancementService()
+        const enhancements = await enhancementService.listUserEnhancements(user.id)
+        return NextResponse.json({ enhancements })
+      } catch (e) {
+        const message = e instanceof Error ? e.message : 'Internal error'
+        return NextResponse.json({ error: message }, { status: 500 })
+      }
     }
 
     // Get specific enhancement status
-    const enhancementService = new EnhancementService()
-    const status = await enhancementService.getEnhancementStatus(documentId, user.id)
-    
-    return NextResponse.json(status)
+    try {
+      const enhancementService = new EnhancementService()
+      const status = await enhancementService.getEnhancementStatus(documentId, user.id)
+      return NextResponse.json(status)
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Internal error'
+      return NextResponse.json({ error: message }, { status: 500 })
+    }
   } catch (error) {
     const { status, body, headers } = createErrorResponse(error, requestId)
     

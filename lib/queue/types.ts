@@ -6,8 +6,9 @@ export interface DocumentAnalysisJobData {
   fileUrl: string
   fileName: string
   fileType: string
-  subscriptionTier: 'free' | 'basic' | 'pro' | 'premium'
-  priority?: number
+  subscriptionTier: 'free' | 'basic' | 'pro' | 'premium';
+  priority?: number;
+  traceCarrier?: Record<string, string>;
 }
 
 export interface EnhancementJobData {
@@ -28,6 +29,7 @@ export interface EnhancementJobData {
   }
   subscriptionTier: 'free' | 'basic' | 'pro' | 'premium'
   priority?: number
+  traceCarrier?: Record<string, string>
 }
 
 export interface ExportJobData {
@@ -42,6 +44,7 @@ export interface ExportJobData {
   }
   subscriptionTier: 'free' | 'basic' | 'pro' | 'premium'
   priority?: number
+  traceCarrier?: Record<string, string>
 }
 
 export interface EmailJobData {

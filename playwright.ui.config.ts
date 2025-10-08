@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import fs from 'fs'
 import dotenv from 'dotenv';
 import path from 'path';
 
@@ -20,8 +21,9 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   
   reporter: [
-    ['html', { outputFolder: 'playwright-report' }],
-    ['list']
+    ['html', { outputFolder: 'playwright-report', open: 'never' }],
+    ['list'],
+    [require.resolve('./e2e/reporters/heartbeat-reporter'), { idleLogMs: 30000, exitAfterMs: 0 }],
   ],
   
   use: {
@@ -36,15 +38,15 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: { ...devices['Desktop Chrome'], storageState: process.env.E2E_IGNORE_STORAGE === 'true' || !fs.existsSync('e2e/.auth/free-user.json') ? undefined : 'e2e/.auth/free-user.json' },
     },
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      use: { ...devices['Desktop Firefox'], storageState: process.env.E2E_IGNORE_STORAGE === 'true' || !fs.existsSync('e2e/.auth/free-user.json') ? undefined : 'e2e/.auth/free-user.json' },
     },
     {
       name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+      use: { ...devices['Desktop Safari'], storageState: process.env.E2E_IGNORE_STORAGE === 'true' || !fs.existsSync('e2e/.auth/free-user.json') ? undefined : 'e2e/.auth/free-user.json' },
     },
   ],
 

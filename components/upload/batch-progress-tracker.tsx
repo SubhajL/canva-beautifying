@@ -136,9 +136,9 @@ export function BatchProgressTracker({ files, className }: BatchProgressTrackerP
                   key={file.id}
                   className={cn(
                     'p-3 rounded-lg border transition-colors',
-                    isActive && 'border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/20',
-                    file.status === 'error' && 'border-red-200 bg-red-50/50 dark:border-red-900 dark:bg-red-950/20',
-                    file.status === 'completed' && 'border-green-200 bg-green-50/50 dark:border-green-900 dark:bg-green-950/20'
+                    isActive && 'border-info/20 bg-info/10',
+                    file.status === 'error' && 'border-error/20 bg-error/10',
+                    file.status === 'completed' && 'border-success/20 bg-success/10'
                   )}
                 >
                   <div className="flex items-start justify-between mb-2">
@@ -149,7 +149,7 @@ export function BatchProgressTracker({ files, className }: BatchProgressTrackerP
                           {file.file.name}
                         </p>
                         {file.error && (
-                          <p className="text-xs text-red-600 mt-1">{file.error}</p>
+                          <p className="text-xs text-error mt-1">{file.error}</p>
                         )}
                       </div>
                     </div>
@@ -182,7 +182,7 @@ export function BatchProgressTracker({ files, className }: BatchProgressTrackerP
                   )}
 
                   {file.status === 'completed' && (
-                    <p className="text-xs text-green-600 mt-1">
+                    <p className="text-xs text-success mt-1">
                       Enhancement complete
                     </p>
                   )}

@@ -302,7 +302,7 @@ export default function TicketDetailPage() {
                     <RadioGroupItem value={value.toString()} id={`rating-${value}`} />
                     <Label htmlFor={`rating-${value}`} className="flex items-center gap-1 cursor-pointer">
                       {[...Array(value)].map((_, i) => (
-                        <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <Star key={i} className="h-4 w-4 fill-warning text-warning" />
                       ))}
                       <span className="ml-2 text-sm text-muted-foreground">
                         {value === 5 && 'Excellent'}
@@ -507,8 +507,8 @@ export default function TicketDetailPage() {
                       key={i}
                       className={`h-5 w-5 ${
                         i < ticket.satisfaction_rating!
-                          ? 'fill-yellow-400 text-yellow-400'
-                          : 'text-gray-300'
+                          ? 'fill-warning text-warning'
+                          : 'text-muted-foreground/30'
                       }`}
                     />
                   ))}

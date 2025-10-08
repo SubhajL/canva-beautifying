@@ -71,8 +71,8 @@ export function FeedbackForm({ enhancementId, userId }: FeedbackFormProps) {
     return (
       <Card>
         <CardContent className="py-8 text-center">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-100 mb-4">
-            <ThumbsUp className="h-6 w-6 text-green-600" />
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-success/10 mb-4">
+            <ThumbsUp className="h-6 w-6 text-success" />
           </div>
           <h3 className="text-lg font-semibold mb-2">Thank You for Your Feedback!</h3>
           <p className="text-muted-foreground">
@@ -108,8 +108,8 @@ export function FeedbackForm({ enhancementId, userId }: FeedbackFormProps) {
                 <Star
                   className={`h-8 w-8 ${
                     star <= (hoveredRating || rating)
-                      ? 'fill-yellow-400 text-yellow-400'
-                      : 'text-gray-300'
+                      ? 'fill-warning text-warning'
+                      : 'text-muted-foreground/30'
                   }`}
                 />
               </button>

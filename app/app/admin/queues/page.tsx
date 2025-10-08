@@ -147,15 +147,15 @@ export default function QueueMonitoringPage() {
             </div>
             <div>
               <p className="text-muted-foreground">Completed</p>
-              <p className="text-2xl font-bold text-green-600">{queue.completed}</p>
+              <p className="text-2xl font-bold text-success">{queue.completed}</p>
             </div>
             <div>
               <p className="text-muted-foreground">Failed</p>
-              <p className="text-2xl font-bold text-red-600">{queue.failed}</p>
+              <p className="text-2xl font-bold text-error">{queue.failed}</p>
             </div>
             <div>
               <p className="text-muted-foreground">Delayed</p>
-              <p className="text-2xl font-bold text-yellow-600">{queue.delayed}</p>
+              <p className="text-2xl font-bold text-warning">{queue.delayed}</p>
             </div>
           </div>
 
@@ -257,7 +257,7 @@ export default function QueueMonitoringPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-bold text-red-600">
+                <p className="text-3xl font-bold text-error">
                   {metrics.documentAnalysis.failed +
                     metrics.enhancement.failed +
                     metrics.export.failed +

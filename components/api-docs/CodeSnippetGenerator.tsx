@@ -259,7 +259,7 @@ export function CodeSnippetGenerator({ endpoint, example }: CodeSnippetGenerator
               >
                 {copied === lang.id ? (
                   <>
-                    <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                    <CheckCircle className="h-4 w-4 text-success mr-2" />
                     Copied
                   </>
                 ) : (

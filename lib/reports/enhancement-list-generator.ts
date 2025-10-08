@@ -1,5 +1,6 @@
 import { EnhancementStrategy } from '@/lib/enhancement/types'
 import { AppliedEnhancement } from './types'
+import { REPORT_COLORS } from './palette'
 
 export class EnhancementListGenerator {
   generateEnhancementList(
@@ -186,7 +187,7 @@ export class EnhancementListGenerator {
     text: string
   }): { before: string; after: string } {
     // Generate simple SVG color swatches
-    const beforeColors = ['#cccccc', '#999999', '#666666', '#333333']
+    const beforeColors = [REPORT_COLORS.border, '#999999', REPORT_COLORS.textMuted, '#333333']
     const afterColors = [palette.primary, ...palette.secondary.slice(0, 2), palette.accent]
     
     const generateSwatch = (colors: string[]): string => {
@@ -196,7 +197,7 @@ export class EnhancementListGenerator {
       
       let svg = `<svg width="${width}" height="${size}" xmlns="http://www.w3.org/2000/svg">`
       colors.forEach((color, i) => {
-        svg += `<rect x="${i * (size + gap)}" y="0" width="${size}" height="${size}" fill="${color}" stroke="#e5e7eb"/>`
+        svg += `<rect x="${i * (size + gap)}" y="0" width="${size}" height="${size}" fill="${color}" stroke="${REPORT_COLORS.border}"/>`
       })
       svg += '</svg>'
       

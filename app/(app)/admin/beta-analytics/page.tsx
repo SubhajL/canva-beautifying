@@ -79,7 +79,14 @@ interface AnalyticsData {
   }>;
 }
 
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+const COLORS = [
+  'hsl(var(--info))',
+  'hsl(var(--success))',
+  'hsl(var(--warning))',
+  'hsl(var(--error))',
+  'hsl(var(--accent))',
+  'hsl(var(--primary))',
+];
 
 export default function BetaAnalyticsDashboard() {
   const router = useRouter();
@@ -437,7 +444,7 @@ export default function BetaAnalyticsDashboard() {
               {analyticsData?.overview.activeUsers || 0}
               {analyticsData?.overview.userGrowth !== undefined && (
                 <span className={`text-sm flex items-center ${
-                  analyticsData.overview.userGrowth >= 0 ? 'text-green-600' : 'text-red-600'
+                  analyticsData.overview.userGrowth >= 0 ? 'text-success' : 'text-error'
                 }`}>
                   {analyticsData.overview.userGrowth >= 0 ? (
                     <ArrowUpRight className="h-4 w-4" />
@@ -509,8 +516,8 @@ export default function BetaAnalyticsDashboard() {
                       type="monotone" 
                       dataKey="events" 
                       stackId="1"
-                      stroke="#3b82f6" 
-                      fill="#3b82f6" 
+                      stroke={"hsl(var(--info))"}
+                      fill={"hsl(var(--info))"}
                       fillOpacity={0.6}
                       name="Events"
                     />
@@ -518,8 +525,8 @@ export default function BetaAnalyticsDashboard() {
                       type="monotone" 
                       dataKey="activeUsers" 
                       stackId="2"
-                      stroke="#10b981" 
-                      fill="#10b981" 
+                      stroke={"hsl(var(--success))"}
+                      fill={"hsl(var(--success))"}
                       fillOpacity={0.6}
                       name="Active Users"
                     />
@@ -527,8 +534,8 @@ export default function BetaAnalyticsDashboard() {
                       type="monotone" 
                       dataKey="newUsers" 
                       stackId="3"
-                      stroke="#f59e0b" 
-                      fill="#f59e0b" 
+                      stroke={"hsl(var(--warning))"}
+                      fill={"hsl(var(--warning))"}
                       fillOpacity={0.6}
                       name="New Users"
                     />
@@ -556,8 +563,8 @@ export default function BetaAnalyticsDashboard() {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey="usage" fill="#3b82f6" name="Total Usage" />
-                    <Bar dataKey="users" fill="#10b981" name="Unique Users" />
+                    <Bar dataKey="usage" fill={"hsl(var(--info))"} name="Total Usage" />
+                    <Bar dataKey="users" fill={"hsl(var(--success))"} name="Unique Users" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -586,7 +593,7 @@ export default function BetaAnalyticsDashboard() {
                         cx="50%"
                         cy="50%"
                         outerRadius={80}
-                        fill="#8884d8"
+                        fill={"hsl(var(--accent))"}
                         dataKey="value"
                         label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                       >
@@ -614,7 +621,7 @@ export default function BetaAnalyticsDashboard() {
                   <span className="text-sm text-muted-foreground">Average Rating</span>
                   <span className="text-2xl font-bold flex items-center gap-1">
                     {analyticsData?.feedbackStats.avgRating.toFixed(1) || 0}
-                    <span className="text-yellow-500">★</span>
+                    <span className="text-warning">★</span>
                   </span>
                 </div>
                 <div className="flex items-center justify-between">

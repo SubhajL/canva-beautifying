@@ -210,8 +210,8 @@ export default function BetaSupportDashboard() {
                     key={i}
                     className={`h-3 w-3 ${
                       i < Math.floor(stats.satisfaction_score)
-                        ? 'fill-yellow-400 text-yellow-400'
-                        : 'text-gray-300'
+                        ? 'fill-warning text-warning'
+                        : 'text-muted-foreground/30'
                     }`}
                   />
                 ))}

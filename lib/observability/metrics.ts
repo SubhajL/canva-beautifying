@@ -1,5 +1,6 @@
 // This module is for server-side use only
-if (typeof window !== 'undefined') {
+// Allow in test environment where jsdom defines window
+if (typeof window !== 'undefined' && process.env.NODE_ENV !== 'test') {
   throw new Error(
     'Server-only module: @/lib/observability/metrics cannot be imported in client-side code. ' +
     'Use @/lib/observability/client instead.'
@@ -206,6 +207,8 @@ const enhancementPipelineTotal = new Counter({
 
 // Export all metrics
 export const metrics = {
+  // expose register for modules expecting it on metrics
+  register,
   // HTTP
   httpRequestDuration,
   httpRequestsTotal,

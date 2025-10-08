@@ -5,11 +5,10 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { ButtonGroup } from '@/components/ui/button-group'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
-  Share2, 
-  ChevronDown, 
   ChevronUp,
   ArrowRight,
   Palette,
@@ -20,11 +19,24 @@ import {
 } from 'lucide-react'
 import { BeforeAfterSlider } from '@/components/results/before-after-slider'
 import { EnhancementReport } from '@/components/results/enhancement-report'
-import { DownloadOptions } from '@/components/results/download-options'
 import { ShareDialog } from '@/components/results/share-dialog'
 import { FeedbackForm } from '@/components/results/feedback-form'
 import { RelatedEnhancements } from '@/components/results/related-enhancements'
 import { useAuth } from '@/contexts/auth-context'
+import { useUserPrefs } from '@/lib/prefs/user-prefs'
+import {
+  Breadcrumb,
+  BreadcrumbEllipsis,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb'
+import { ShareDownloadSplit } from '@/components/results/ShareDownloadSplit'
+import { ResultsBreadcrumb } from '@/components/results/ResultsBreadcrumb'
+import { usePersistedTab } from '@/hooks/use-persisted-tab'
+import { densityClass } from '@/lib/ui/density'
 
 interface ResultsPageProps {
   params: { id: string }
@@ -82,7 +94,8 @@ export default function ResultsPage({ params }: ResultsPageProps) {
   const [error, setError] = useState<string | null>(null)
   const [showDetails, setShowDetails] = useState(false)
   const [showShareDialog, setShowShareDialog] = useState(false)
-  const [activeTab, setActiveTab] = useState('comparison')
+  const [activeTab, setActiveTab] = usePersistedTab(`results-tab:${id}`, 'comparison')
+  const { setResultsLastSettings } = useUserPrefs()
 
   useEffect(() => {
     // Wait for auth to load before fetching enhancement data
@@ -152,12 +165,26 @@ export default function ResultsPage({ params }: ResultsPageProps) {
     )
   }
 
+  // Persist last selected tab per enhancement
+  useEffect(() => {
+    if (!id) return
+    const stored = typeof window !== 'undefined' ? window.localStorage.getItem(`results-tab:${id}`) : null
+    if (stored) setActiveTab(stored)
+  }, [id])
+
+  useEffect(() => {
+    if (!id) return
+    try {
+      window.localStorage.setItem(`results-tab:${id}`, activeTab)
+    } catch {}
+  }, [id, activeTab])
+
   if (error) {
     return (
       <div className="container mx-auto py-8">
         <Card>
           <CardContent className="py-8 text-center">
-            <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <XCircle className="h-12 w-12 text-error mx-auto mb-4" />
             <h2 className="text-xl font-semibold mb-2">Error Loading Results</h2>
             <p className="text-muted-foreground">{error}</p>
             <Button 
@@ -182,7 +209,27 @@ export default function ResultsPage({ params }: ResultsPageProps) {
     : 0
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
+    <div className={`container mx-auto py-8 ${densityClass('space-y-5','space-y-6')}`}>
+      {/* Breadcrumb */}
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/app/dashboard">Dashboard</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/app/upload">Upload</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Results</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
+      {/* Breadcrumb */}
+      <ResultsBreadcrumb documentName={document?.name} />
+
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -190,27 +237,21 @@ export default function ResultsPage({ params }: ResultsPageProps) {
           <p className="text-muted-foreground">{document.name}</p>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setShowShareDialog(true)}
-          >
-            <Share2 className="h-4 w-4 mr-2" />
-            Share
-          </Button>
-          <DownloadOptions
+          <ShareDownloadSplit
             enhancementId={enhancement.id}
             documentName={document.name}
             enhancedUrl={enhancement.enhanced_url}
             originalUrl={document.original_url}
             reportUrl={enhancement.report_url}
+            onOpenShare={() => setShowShareDialog(true)}
           />
         </div>
       </div>
 
       {/* Improvement Summary */}
       <Card>
-        <CardContent className="py-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <CardContent className={densityClass('py-4','py-6')}>
+          <div className={densityClass('grid grid-cols-1 md:grid-cols-4 gap-3','grid grid-cols-1 md:grid-cols-4 gap-6')}>
             <div className="text-center">
               <div className="text-3xl font-bold text-primary">
                 {improvementPercentage}%
@@ -219,11 +260,11 @@ export default function ResultsPage({ params }: ResultsPageProps) {
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center gap-2">
-                <span className="text-2xl font-semibold text-red-500">
+                <span className="text-2xl font-semibold text-error">
                   {improvements.before}
                 </span>
                 <ArrowRight className="h-5 w-5" />
-                <span className="text-2xl font-semibold text-green-500">
+                <span className="text-2xl font-semibold text-success">
                   {improvements.after}
                 </span>
               </div>
@@ -253,7 +294,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
           <TabsTrigger value="details">Details</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="comparison" className="space-y-4">
+        <TabsContent value="comparison" className={densityClass('space-y-3','space-y-4')}>
           <BeforeAfterSlider
             beforeUrl={document.original_url}
             afterUrl={enhancement.enhanced_url}
@@ -261,9 +302,9 @@ export default function ResultsPage({ params }: ResultsPageProps) {
           />
           
           {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className={densityClass('grid grid-cols-1 md:grid-cols-3 gap-2','grid grid-cols-1 md:grid-cols-3 gap-4')}>
             <Card>
-              <CardHeader className="pb-3">
+              <CardHeader className={densityClass('pb-2','pb-3')}>
                 <CardTitle className="text-base">Applied Enhancements</CardTitle>
               </CardHeader>
               <CardContent>
@@ -278,7 +319,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
             </Card>
 
             <Card>
-              <CardHeader className="pb-3">
+              <CardHeader className={densityClass('pb-2','pb-3')}>
                 <CardTitle className="text-base">Enhancement Style</CardTitle>
               </CardHeader>
               <CardContent>
@@ -292,7 +333,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
             </Card>
 
             <Card>
-              <CardHeader className="pb-3">
+              <CardHeader className={densityClass('pb-2','pb-3')}>
                 <CardTitle className="text-base">Target Audience</CardTitle>
               </CardHeader>
               <CardContent>
@@ -307,7 +348,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
           </div>
         </TabsContent>
 
-        <TabsContent value="report">
+        <TabsContent value="report" className={densityClass('space-y-3','space-y-4')}>
           <EnhancementReport
             enhancementId={enhancement.id}
             reportData={enhancement.enhancement_data}
@@ -315,7 +356,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
           />
         </TabsContent>
 
-        <TabsContent value="details" className="space-y-4">
+        <TabsContent value="details" className={densityClass('space-y-3','space-y-4')}>
           {/* Enhancement Details */}
           <Card>
             <CardHeader>
@@ -332,7 +373,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
             </CardHeader>
             {showDetails && (
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className={densityClass('grid grid-cols-2 gap-2 text-sm','grid grid-cols-2 gap-4 text-sm')}>
                   <div>
                     <p className="font-medium">Enhancement ID</p>
                     <p className="text-muted-foreground">{enhancement.id}</p>
@@ -379,25 +420,25 @@ export default function ResultsPage({ params }: ResultsPageProps) {
 
           {/* Further Enhancement Suggestions */}
           <Card>
-            <CardHeader>
+            <CardHeader className={densityClass('pb-2','pb-4')}>
               <CardTitle>Further Enhancement Suggestions</CardTitle>
               <CardDescription>
                 Based on the analysis, here are additional improvements you could make
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
+              <div className={densityClass('space-y-2','space-y-3')}>
                 {enhancement.enhancement_data?.improvements && enhancement.enhancement_data.improvements.length > 0 ? (
                   enhancement.enhancement_data.improvements.slice(0, 5).map((improvement, index) => (
-                    <div key={index} className="flex items-start gap-3">
-                      <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
+                    <div key={index} className={densityClass('flex items-start gap-2','flex items-start gap-3')}>
+                      <CheckCircle className="h-5 w-5 text-success mt-0.5" />
                       <div>
                         <p className="font-medium">{improvement.category}</p>
                         <p className="text-sm text-muted-foreground">
                           {improvement.description}
                         </p>
                         {improvement.impact && (
-                          <div className="mt-1">
+                          <div className={densityClass('mt-0.5','mt-1')}>
                             <span className="text-xs text-muted-foreground">
                               Impact: {Math.round(improvement.impact * 100)}%
                             </span>
@@ -411,9 +452,14 @@ export default function ResultsPage({ params }: ResultsPageProps) {
                     No additional suggestions available at this time.
                   </p>
                 )}
-                <Button className="w-full mt-4">
+                <Button className={densityClass('w-full mt-3','w-full mt-4')} onClick={() => {
+                  const s = enhancement.settings?.enhancementSettings
+                  if (s) setResultsLastSettings(s as unknown as Record<string, unknown>)
+                }}>
                   <Sparkles className="h-4 w-4 mr-2" />
-                  Enhance Again with Different Settings
+                  {enhancement.settings?.enhancementSettings?.style || enhancement.settings?.enhancementSettings?.targetAudience
+                    ? `Enhance Again · ${enhancement.settings?.enhancementSettings?.style || 'Auto'}${enhancement.settings?.enhancementSettings?.targetAudience ? ` · ${enhancement.settings.enhancementSettings.targetAudience}` : ''}`
+                    : 'Enhance Again with Different Settings'}
                 </Button>
               </div>
             </CardContent>

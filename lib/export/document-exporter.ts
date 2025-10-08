@@ -1,5 +1,6 @@
 import sharp from 'sharp'
 import { PDFDocument } from 'pdf-lib'
+import { REPORT_COLORS } from '@/lib/reports/palette'
 
 export interface DocumentExporterConfig {
   subscriptionTier: 'free' | 'basic' | 'pro' | 'premium'
@@ -175,7 +176,7 @@ export class DocumentExporter {
   private async createWatermark(): Promise<Buffer> {
     const watermarkSvg = `
       <svg width="300" height="50">
-        <text x="10" y="30" font-family="Arial" font-size="14" fill="#666" opacity="0.5">
+        <text x="10" y="30" font-family="Arial" font-size="14" fill="${REPORT_COLORS.textMuted}" opacity="0.5">
           Enhanced with Canva Beautifying - Free Plan
         </text>
       </svg>

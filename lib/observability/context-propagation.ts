@@ -197,16 +197,13 @@ export function createTraceCarrier(): Record<string, string> {
  * Restore context from a trace carrier
  */
 export function restoreFromCarrier(
-  carrier: Record<string, string>, 
-  fn: () => void
-): void {
-  const restoredContext = getPropagator().extract(
+  carrier: Record<string, string>
+): Context {
+  return getPropagator().extract(
     context.active(), 
     carrier, 
     headersGetter
   );
-  
-  context.with(restoredContext, fn);
 }
 
 /**

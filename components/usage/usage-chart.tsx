@@ -24,6 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { UsageForecast } from './usage-forecast';
+import { chartColors } from '@/lib/ui/chart-palette'
 import { Loading } from '@/components/ui/loading';
 
 interface UsageStats {
@@ -40,7 +41,7 @@ interface UsageStats {
   };
 }
 
-const COLORS = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b'];
+const COLORS = [chartColors.accent, chartColors.info, chartColors.success, chartColors.warning];
 
 export function UsageChart() {
   const { user } = useAuth();
@@ -182,16 +183,16 @@ export function UsageChart() {
               <div className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={dailyChartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
+                    <XAxis dataKey="date" stroke={chartColors.grid} tick={{ fill: chartColors.neutral }} />
+                    <YAxis stroke={chartColors.grid} tick={{ fill: chartColors.neutral }} />
                     <Tooltip />
                     <Line 
                       type="monotone" 
                       dataKey="credits" 
-                      stroke="#8b5cf6" 
+                      stroke={chartColors.accent} 
                       strokeWidth={2}
-                      dot={{ fill: '#8b5cf6' }}
+                      dot={{ fill: chartColors.accent }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -220,7 +221,7 @@ export function UsageChart() {
                         labelLine={false}
                         label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                         outerRadius={80}
-                        fill="#8884d8"
+                        fill={chartColors.accent}
                         dataKey="value"
                       >
                         {actionData.map((entry, index) => (
@@ -246,10 +247,10 @@ export function UsageChart() {
 
       {/* Upgrade Prompt */}
       {usagePercentage >= 80 && hasCredits() && (
-        <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
+        <Card className="border-warning/20 bg-warning/10">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-amber-600" />
+              <AlertCircle className="h-5 w-5 text-warning" />
               Approaching Usage Limit
             </CardTitle>
             <CardDescription>

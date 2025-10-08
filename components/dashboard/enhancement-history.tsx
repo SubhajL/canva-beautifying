@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState, KeyboardEvent } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,6 +42,7 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { useEnhancements } from '@/hooks/use-enhancements';
+import { useInfiniteEnhancements } from '@/hooks/use-infinite-enhancements';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -49,29 +51,40 @@ type SortField = 'created_at' | 'title' | 'status';
 type SortOrder = 'asc' | 'desc';
 
 export function EnhancementHistory() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [sortField, setSortField] = useState<SortField>('created_at');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [fileType, setFileType] = useState<string>('all');
+  const [datePreset, setDatePreset] = useState<string>('all');
 
-  const { 
-    enhancements, 
-    loading, 
-    error, 
-    totalCount,
-    refetch 
-  } = useEnhancements({
-    search: searchTerm,
-    status: statusFilter === 'all' ? undefined : statusFilter,
-    sortBy: sortField,
-    sortOrder,
-    page: currentPage,
+  const fromDate = useMemo(() => {
+    const now = new Date()
+    if (datePreset === '7d') return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()
+    if (datePreset === '30d') return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString()
+    if (datePreset === '90d') return new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString()
+    return undefined
+  }, [datePreset])
+
+  // Debounce search term (300ms)
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(searchTerm), 300)
+    return () => clearTimeout(t)
+  }, [searchTerm])
+
+  const { items, loading, error, hasMore, fetchNext, totalCount } = useInfiniteEnhancements({
     limit: itemsPerPage,
-  });
-
-  const totalPages = Math.ceil((totalCount || 0) / itemsPerPage);
+    search: debouncedSearch,
+    status: statusFilter === 'all' ? undefined : statusFilter,
+    fileType: fileType === 'all' ? undefined : fileType,
+    fromDate,
+  })
 
   const handleSort = (field: SortField) => {
     if (field === sortField) {
@@ -82,23 +95,30 @@ export function EnhancementHistory() {
     }
   };
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    document.getElementById('enhancement-history')?.scrollIntoView({ 
-      behavior: 'smooth' 
-    });
-  };
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const observer = new IntersectionObserver((entries) => {
+      const first = entries[0]
+      if (first.isIntersecting && hasMore && !loading) {
+        fetchNext()
+      }
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [hasMore, loading, fetchNext])
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20';
+        return 'bg-success/10 text-success border-success/20';
       case 'processing':
-        return 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20';
+        return 'bg-info/10 text-info border-info/20';
       case 'failed':
-        return 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20';
+        return 'bg-error/10 text-error border-error/20';
       default:
-        return 'bg-gray-500/10 text-gray-700 dark:text-gray-400 border-gray-500/20';
+        return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -120,9 +140,9 @@ export function EnhancementHistory() {
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className={"pt-0 " + (/* density */ (typeof document !== 'undefined' && document.body.dataset.density === 'compact' ? 'p-4' : 'p-6'))}>
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <div className={"flex flex-col sm:flex-row mb-6 " + ((typeof document !== 'undefined' && document.body.dataset.density === 'compact') ? 'gap-2' : 'gap-4')}>
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
@@ -144,10 +164,34 @@ export function EnhancementHistory() {
               <SelectItem value="failed">Failed</SelectItem>
             </SelectContent>
           </Select>
+          <Select value={fileType} onValueChange={setFileType}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="application/pdf">PDF</SelectItem>
+              <SelectItem value="image/png">PNG</SelectItem>
+              <SelectItem value="image/jpeg">JPEG</SelectItem>
+              <SelectItem value="image/jpg">JPG</SelectItem>
+              <SelectItem value="image/webp">WEBP</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={datePreset} onValueChange={setDatePreset}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Date" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Time</SelectItem>
+              <SelectItem value="7d">Last 7 days</SelectItem>
+              <SelectItem value="30d">Last 30 days</SelectItem>
+              <SelectItem value="90d">Last 90 days</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Table */}
-        {loading ? (
+        {loading && (!items || items.length === 0) ? (
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
               <Skeleton key={i} className="h-16 w-full" />
@@ -160,7 +204,7 @@ export function EnhancementHistory() {
               Try Again
             </Button>
           </div>
-        ) : !enhancements || enhancements.length === 0 ? (
+        ) : !items || items.length === 0 ? (
           <div className="text-center py-12">
             <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
             <p className="text-muted-foreground">No enhancements found</p>
@@ -221,11 +265,24 @@ export function EnhancementHistory() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {enhancements.map((enhancement) => (
-                    <TableRow key={enhancement.id}>
+                  {items.map((enhancement) => (
+                    <TableRow 
+                      key={enhancement.id}
+                      className="cursor-pointer hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                      onClick={() => router.push(`/app/results/${enhancement.id}`)}
+                      onKeyDown={(e: KeyboardEvent<HTMLTableRowElement>) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          router.push(`/app/results/${enhancement.id}`)
+                        }
+                      }}
+                      tabIndex={0}
+                      aria-label={`View results for ${enhancement.title || 'document'}`}
+                      data-testid={`history-row-${enhancement.id}`}
+                    >
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded bg-muted flex items-center justify-center">
+                          <div className={(typeof document!=='undefined' && document.body.dataset.density==='compact' ? 'h-9 w-9' : 'h-10 w-10') + " rounded bg-muted flex items-center justify-center"}>
                             <FileText className="h-5 w-5 text-muted-foreground" />
                           </div>
                           <div>
@@ -268,22 +325,25 @@ export function EnhancementHistory() {
                         </p>
                       </TableCell>
                       <TableCell className="text-right">
+                        <Button asChild size="sm" variant="outline" className="mr-2">
+                          <Link href={`/app/results/${enhancement.id}`} onClick={(e) => e.stopPropagation()}>View</Link>
+                        </Button>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
+                            <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
                               <MoreVertical className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem asChild>
-                              <Link href={`/enhance/${enhancement.id}`}>
+                              <Link href={`/app/results/${enhancement.id}`} onClick={(e) => e.stopPropagation()}>
                                 <Eye className="mr-2 h-4 w-4" />
                                 View Details
                               </Link>
                             </DropdownMenuItem>
                             {enhancement.enhanced_url && (
                               <DropdownMenuItem asChild>
-                                <a href={enhancement.enhanced_url} download>
+                                <a href={enhancement.enhanced_url} download onClick={(e) => e.stopPropagation()}>
                                   <Download className="mr-2 h-4 w-4" />
                                   Download
                                 </a>
@@ -294,57 +354,14 @@ export function EnhancementHistory() {
                       </TableCell>
                     </TableRow>
                   ))}
+
                 </TableBody>
               </Table>
             </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between px-2 py-4">
-                <p className="text-sm text-muted-foreground">
-                  Showing {((currentPage - 1) * itemsPerPage) + 1} to{' '}
-                  {Math.min(currentPage * itemsPerPage, totalCount || 0)} of{' '}
-                  {totalCount || 0} results
-                </p>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                    Previous
-                  </Button>
-                  <div className="flex items-center gap-1">
-                    {[...Array(Math.min(5, totalPages))].map((_, i) => {
-                      const pageNumber = i + 1;
-                      return (
-                        <Button
-                          key={pageNumber}
-                          variant={pageNumber === currentPage ? 'default' : 'outline'}
-                          size="sm"
-                          className="w-8"
-                          onClick={() => handlePageChange(pageNumber)}
-                        >
-                          {pageNumber}
-                        </Button>
-                      );
-                    })}
-                    {totalPages > 5 && <span className="px-2">...</span>}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            )}
+            {/* Infinite scroll sentinel */}
+            <div ref={sentinelRef} className="h-8 flex items-center justify-center text-xs text-muted-foreground">
+              {hasMore ? 'Loading more…' : `End of results (${totalCount ?? items.length} total)`}
+            </div>
           </>
         )}
       </CardContent>

@@ -46,7 +46,7 @@ export function ReportHistory() {
     return (
       <Card>
         <CardContent className="py-8 text-center">
-          <p className="text-red-500">Error loading reports: {error}</p>
+          <p className="text-error">Error loading reports: {error}</p>
           <Button onClick={loadReports} className="mt-4">
             Try Again
           </Button>

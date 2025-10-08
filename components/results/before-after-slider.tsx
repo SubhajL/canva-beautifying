@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { densityClass } from '@/lib/ui/density'
 import { Card } from '@/components/ui/card'
 import { Slider } from '@/components/ui/slider'
 import { Button } from '@/components/ui/button'
@@ -146,7 +147,7 @@ export function BeforeAfterSlider({ beforeUrl, afterUrl, documentType }: BeforeA
   }
 
   const content = (
-    <div className="space-y-4">
+    <div className={densityClass('space-y-3','space-y-4')}>
       <div
         ref={containerRef}
         className={`relative bg-gray-50 rounded-lg overflow-hidden cursor-ew-resize ${
@@ -229,5 +230,5 @@ export function BeforeAfterSlider({ beforeUrl, afterUrl, documentType }: BeforeA
     )
   }
 
-  return <Card className="p-6">{content}</Card>
+  return <Card className={densityClass('p-4','p-6')}>{content}</Card>
 }

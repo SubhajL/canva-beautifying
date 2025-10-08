@@ -1,6 +1,7 @@
 import { DocumentAnalysis } from '@/lib/ai/types'
 import { AnalysisSnapshot, ImprovementMetrics } from './types'
 import sharp from 'sharp'
+import { REPORT_COLORS } from './palette'
 
 export class ComparisonGenerator {
   async generateComparison(
@@ -130,14 +131,14 @@ export class ComparisonGenerator {
     const barWidth = chartWidth / categories.length / 3
     
     let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">`
-    svg += `<rect width="${width}" height="${height}" fill="white"/>`
+    svg += `<rect width="${width}" height="${height}" fill="${REPORT_COLORS.background}"/>`
     
     // Add title
     svg += `<text x="${width/2}" y="${margin.top}" text-anchor="middle" font-size="16" font-weight="bold">Score Improvements</text>`
     
     // Add axes
-    svg += `<line x1="${margin.left}" y1="${height - margin.bottom}" x2="${width - margin.right}" y2="${height - margin.bottom}" stroke="black"/>`
-    svg += `<line x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${height - margin.bottom}" stroke="black"/>`
+    svg += `<line x1="${margin.left}" y1="${height - margin.bottom}" x2="${width - margin.right}" y2="${height - margin.bottom}" stroke="${REPORT_COLORS.grid}"/>`
+    svg += `<line x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${height - margin.bottom}" stroke="${REPORT_COLORS.grid}"/>`
     
     // Add bars
     categories.forEach((cat, i) => {
@@ -148,10 +149,10 @@ export class ComparisonGenerator {
       const y2 = height - margin.bottom - afterHeight
       
       // Before bar
-      svg += `<rect x="${x}" y="${y1}" width="${barWidth}" height="${beforeHeight}" fill="#94a3b8" opacity="0.7"/>`
+      svg += `<rect x="${x}" y="${y1}" width="${barWidth}" height="${beforeHeight}" fill="${REPORT_COLORS.neutral}" opacity="0.7"/>`
       
       // After bar
-      svg += `<rect x="${x + barWidth + 5}" y="${y2}" width="${barWidth}" height="${afterHeight}" fill="#3b82f6" opacity="0.7"/>`
+      svg += `<rect x="${x + barWidth + 5}" y="${y2}" width="${barWidth}" height="${afterHeight}" fill="${REPORT_COLORS.primary}" opacity="0.7"/>`
       
       // Label
       svg += `<text x="${x + barWidth}" y="${height - 10}" text-anchor="middle" font-size="10">${cat.name}</text>`
@@ -162,9 +163,9 @@ export class ComparisonGenerator {
     })
     
     // Add legend
-    svg += `<rect x="${width - 100}" y="${margin.top + 10}" width="${15}" height="${15}" fill="#94a3b8" opacity="0.7"/>`
+    svg += `<rect x="${width - 100}" y="${margin.top + 10}" width="${15}" height="${15}" fill="${REPORT_COLORS.neutral}" opacity="0.7"/>`
     svg += `<text x="${width - 80}" y="${margin.top + 22}" font-size="12">Before</text>`
-    svg += `<rect x="${width - 100}" y="${margin.top + 30}" width="${15}" height="${15}" fill="#3b82f6" opacity="0.7"/>`
+    svg += `<rect x="${width - 100}" y="${margin.top + 30}" width="${15}" height="${15}" fill="${REPORT_COLORS.primary}" opacity="0.7"/>`
     svg += `<text x="${width - 80}" y="${margin.top + 42}" font-size="12">After</text>`
     
     svg += '</svg>'

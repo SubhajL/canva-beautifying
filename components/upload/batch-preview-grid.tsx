@@ -36,9 +36,9 @@ export function BatchPreviewGrid({
       case 'processing':
         return <Loader2 className="h-4 w-4 animate-spin" />;
       case 'completed':
-        return <Check className="h-4 w-4 text-green-600" />;
+        return <Check className="h-4 w-4 text-success" />;
       case 'error':
-        return <AlertCircle className="h-4 w-4 text-red-600" />;
+        return <AlertCircle className="h-4 w-4 text-error" />;
       default:
         return null;
     }
@@ -67,11 +67,11 @@ export function BatchPreviewGrid({
     switch (status) {
       case 'uploading':
       case 'processing':
-        return 'text-blue-600';
+        return 'text-info';
       case 'completed':
-        return 'text-green-600';
+        return 'text-success';
       case 'error':
-        return 'text-red-600';
+        return 'text-error';
       default:
         return 'text-gray-600';
     }
@@ -131,7 +131,7 @@ export function BatchPreviewGrid({
               className={cn(
                 'relative group rounded-lg border bg-card overflow-hidden transition-all',
                 file.selected && !readOnly && 'ring-2 ring-primary',
-                file.status === 'error' && 'border-red-500'
+                file.status === 'error' && 'border-error'
               )}
             >
               {/* Selection checkbox */}
@@ -202,7 +202,7 @@ export function BatchPreviewGrid({
                   </div>
                 </div>
                 {file.error && (
-                  <p className="text-xs text-red-600 truncate" title={file.error}>
+                  <p className="text-xs text-error truncate" title={file.error}>
                     {file.error}
                   </p>
                 )}

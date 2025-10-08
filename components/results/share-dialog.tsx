@@ -29,6 +29,7 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { createClient } from '@/lib/supabase/client'
 import QRCode from 'qrcode'
+import { densityClass } from '@/lib/ui/density'
 
 interface ShareDialogProps {
   open: boolean
@@ -163,9 +164,9 @@ export function ShareDialog({ open, onOpenChange, enhancementId, documentName }:
             <TabsTrigger value="social">Social</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="link" className="space-y-4">
+          <TabsContent value="link" className={densityClass('space-y-3','space-y-4')}>
             {!shareUrl ? (
-              <div className="space-y-4">
+              <div className={densityClass('space-y-3','space-y-4')}>
                 <div className="flex items-center justify-between">
                   <Label htmlFor="public-share">Public Access</Label>
                   <Switch
@@ -218,7 +219,7 @@ export function ShareDialog({ open, onOpenChange, enhancementId, documentName }:
                     onClick={copyToClipboard}
                   >
                     {copied ? (
-                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <CheckCircle className="h-4 w-4 text-success" />
                     ) : (
                       <Copy className="h-4 w-4" />
                     )}
@@ -248,7 +249,7 @@ export function ShareDialog({ open, onOpenChange, enhancementId, documentName }:
             )}
           </TabsContent>
 
-          <TabsContent value="qr" className="space-y-4">
+          <TabsContent value="qr" className={densityClass('space-y-3','space-y-4')}>
             {!qrCodeUrl ? (
               <div className="text-center py-8">
                 <QrCode className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
@@ -260,7 +261,7 @@ export function ShareDialog({ open, onOpenChange, enhancementId, documentName }:
                 </Button>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className={densityClass('space-y-3','space-y-4')}>
                 <div className="bg-white p-4 rounded-lg border">
                   <div className="relative w-full max-w-[256px] h-[256px] mx-auto">
                     <Image
@@ -283,7 +284,7 @@ export function ShareDialog({ open, onOpenChange, enhancementId, documentName }:
             )}
           </TabsContent>
 
-          <TabsContent value="social" className="space-y-4">
+          <TabsContent value="social" className={densityClass('space-y-3','space-y-4')}>
             {!shareUrl ? (
               <div className="text-center py-8">
                 <p className="text-muted-foreground mb-4">

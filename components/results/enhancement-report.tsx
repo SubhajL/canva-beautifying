@@ -19,6 +19,7 @@ import {
   Users,
   Target
 } from 'lucide-react'
+import { densityClass } from '@/lib/ui/density'
 
 interface EnhancementReportProps {
   enhancementId: string
@@ -141,31 +142,31 @@ export function EnhancementReport({ enhancementId: _enhancementId, reportData, r
   const getStatusColor = (status?: string) => {
     switch (status) {
       case 'success':
-        return 'text-green-600'
+        return 'text-success'
       case 'warning':
-        return 'text-yellow-600'
+        return 'text-warning'
       case 'error':
-        return 'text-red-600'
+        return 'text-error'
       default:
-        return 'text-gray-600'
+        return 'text-muted-foreground'
     }
   }
 
   const getStatusIcon = (status?: string) => {
     switch (status) {
       case 'success':
-        return <CheckCircle className="h-4 w-4 text-green-600" />
+        return <CheckCircle className="h-4 w-4 text-success" />
       case 'warning':
-        return <AlertCircle className="h-4 w-4 text-yellow-600" />
+        return <AlertCircle className="h-4 w-4 text-warning" />
       case 'error':
-        return <AlertCircle className="h-4 w-4 text-red-600" />
+        return <AlertCircle className="h-4 w-4 text-error" />
       default:
         return null
     }
   }
 
   return (
-    <div className="space-y-6">
+    <div className={densityClass('space-y-4','space-y-6')}>
       {/* Report Summary */}
       <Card>
         <CardHeader>
@@ -193,7 +194,7 @@ export function EnhancementReport({ enhancementId: _enhancementId, reportData, r
         </CardHeader>
         <CardContent>
           {/* Overall Score */}
-          <div className="mb-6 p-4 bg-muted rounded-lg">
+          <div className={densityClass('mb-4 p-3','mb-6 p-4') + ' bg-muted rounded-lg'}>
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium">Overall Improvement Score</span>
               <span className="text-2xl font-bold text-primary">92/100</span>
@@ -202,43 +203,43 @@ export function EnhancementReport({ enhancementId: _enhancementId, reportData, r
           </div>
 
           {/* Key Achievements */}
-          <div className="mb-6">
-            <h4 className="font-medium mb-3 flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-yellow-500" />
+          <div className={densityClass('mb-4','mb-6')}>
+            <h4 className={densityClass('mb-2','mb-3') + ' font-medium flex items-center gap-2'}>
+              <Sparkles className="h-4 w-4 text-warning" />
               Key Achievements
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className={densityClass('gap-2','gap-3') + ' grid grid-cols-1 md:grid-cols-2'}>
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500" />
+                <CheckCircle className="h-4 w-4 text-success" />
                 <span className="text-sm">Enhanced visual hierarchy</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500" />
+                <CheckCircle className="h-4 w-4 text-success" />
                 <span className="text-sm">Improved color consistency</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500" />
+                <CheckCircle className="h-4 w-4 text-success" />
                 <span className="text-sm">Optimized typography</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500" />
+                <CheckCircle className="h-4 w-4 text-success" />
                 <span className="text-sm">Better content organization</span>
               </div>
             </div>
           </div>
 
           {/* Detailed Sections */}
-          <div className="space-y-4">
+          <div className={densityClass('space-y-3','space-y-4')}>
             {reportSections.map((section, index) => (
               <Card key={index} className="border-muted">
-                <CardHeader className="pb-3">
+                <CardHeader className={densityClass('pb-2','pb-3')}>
                   <CardTitle className="text-base flex items-center gap-2">
                     {section.icon}
                     {section.title}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
+                  <div className={densityClass('space-y-2','space-y-3')}>
                     {section.items.map((item, itemIndex) => (
                       <div key={itemIndex} className="flex items-start justify-between">
                         <div className="flex-1">
@@ -265,30 +266,30 @@ export function EnhancementReport({ enhancementId: _enhancementId, reportData, r
 
           {/* Target Audience Impact */}
           <Card className="mt-4 border-muted">
-            <CardHeader className="pb-3">
+            <CardHeader className={densityClass('pb-2','pb-3')}>
               <CardTitle className="text-base flex items-center gap-2">
                 <Users className="h-5 w-5" />
                 Target Audience Impact
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center p-3 bg-muted rounded">
+              <div className={densityClass('gap-3','gap-4') + ' grid grid-cols-1 md:grid-cols-3'}>
+                <div className={densityClass('p-2','p-3') + ' text-center bg-muted rounded'}>
                   <Target className="h-8 w-8 mx-auto mb-2 text-primary" />
                   <p className="text-sm font-medium">Professionals</p>
-                  <p className="text-2xl font-bold text-green-600">+85%</p>
+                  <p className="text-2xl font-bold text-success">+85%</p>
                   <p className="text-xs text-muted-foreground">Engagement</p>
                 </div>
-                <div className="text-center p-3 bg-muted rounded">
+                <div className={densityClass('p-2','p-3') + ' text-center bg-muted rounded'}>
                   <BarChart3 className="h-8 w-8 mx-auto mb-2 text-primary" />
                   <p className="text-sm font-medium">Clarity</p>
-                  <p className="text-2xl font-bold text-green-600">92%</p>
+                  <p className="text-2xl font-bold text-success">92%</p>
                   <p className="text-xs text-muted-foreground">Score</p>
                 </div>
-                <div className="text-center p-3 bg-muted rounded">
+                <div className={densityClass('p-2','p-3') + ' text-center bg-muted rounded'}>
                   <Sparkles className="h-8 w-8 mx-auto mb-2 text-primary" />
                   <p className="text-sm font-medium">Appeal</p>
-                  <p className="text-2xl font-bold text-green-600">High</p>
+                  <p className="text-2xl font-bold text-success">High</p>
                   <p className="text-xs text-muted-foreground">Rating</p>
                 </div>
               </div>

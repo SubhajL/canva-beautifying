@@ -90,7 +90,7 @@ export function FilePreview({ upload, onRemove }: FilePreviewProps) {
 
           {/* Status */}
           {upload.status === 'success' && (
-            <div className="flex items-center gap-1 mt-2 text-green-600">
+            <div className="flex items-center gap-1 mt-2 text-success">
               <CheckCircle className="w-4 h-4" />
               <span className="text-xs">Upload complete</span>
             </div>

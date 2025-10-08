@@ -199,6 +199,21 @@ jest.mock('next/navigation', () => ({
   },
 }))
 
+// Mock next/headers (cookies) for server-side Supabase client
+jest.mock('next/headers', () => {
+  const cookies = jest.fn(async () => {
+    const jar = new Map()
+    return {
+      get: (name) => jar.get(name),
+      set: ({ name, value }) => jar.set(name, { name, value }),
+    }
+  })
+  const headers = jest.fn(async () => ({
+    get: (_key) => null,
+  }))
+  return { cookies, headers }
+})
+
 // Mock canvas for PDF and image generation
 jest.mock('canvas', () => ({
   createCanvas: jest.fn(() => ({
@@ -501,3 +516,18 @@ jest.mock('@sentry/nextjs', () => ({
   addBreadcrumb: jest.fn(),
   withScope: jest.fn((callback) => callback({ setTag: jest.fn(), setExtra: jest.fn() })),
 }))
+
+// Mock Supabase server client at the infra seam for unit tests.
+// Individual tests can shape the returned client via mockResolvedValue.
+jest.mock('@/lib/supabase/server', () => ({
+  createClient: jest.fn(),
+}))
+
+// Partially mock R2: keep other exports, but allow tests to control uploadFile.
+jest.mock('@/lib/r2', () => {
+  const actual = jest.requireActual('@/lib/r2')
+  return {
+    ...actual,
+    uploadFile: jest.fn(),
+  }
+})

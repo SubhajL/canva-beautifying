@@ -60,7 +60,7 @@ export default function BetaProgramPage() {
       <section className="relative overflow-hidden px-4 py-20 sm:px-6 lg:px-8">
         <div className="absolute inset-0 -z-10">
           <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-primary/10 blur-3xl" />
-          <div className="absolute right-1/4 bottom-0 translate-x-1/2 translate-y-1/2 h-[400px] w-[400px] rounded-full bg-purple-500/10 blur-3xl" />
+          <div className="absolute right-1/4 bottom-0 translate-x-1/2 translate-y-1/2 h-[400px] w-[400px] rounded-full bg-accent/10 blur-3xl" />
         </div>
         
         <div className="mx-auto max-w-7xl text-center">
@@ -71,7 +71,7 @@ export default function BetaProgramPage() {
           
           <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">
             Be Among the First to
-            <span className="bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent"> Transform </span>
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"> Transform </span>
             Your Documents with AI
           </h1>
           
@@ -137,8 +137,8 @@ export default function BetaProgramPage() {
             
             <Card>
               <CardHeader>
-                <div className="mb-2 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-purple-500/10">
-                  <Gift className="h-6 w-6 text-purple-600" />
+                <div className="mb-2 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-accent/10">
+                  <Gift className="h-6 w-6 text-accent" />
                 </div>
                 <CardTitle>Free Premium Features</CardTitle>
               </CardHeader>
@@ -152,8 +152,8 @@ export default function BetaProgramPage() {
             
             <Card>
               <CardHeader>
-                <div className="mb-2 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-green-500/10">
-                  <MessageSquare className="h-6 w-6 text-green-600" />
+                <div className="mb-2 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-success/10">
+                  <MessageSquare className="h-6 w-6 text-success" />
                 </div>
                 <CardTitle>Shape the Product</CardTitle>
               </CardHeader>
@@ -192,7 +192,7 @@ export default function BetaProgramPage() {
                   'Early access to new features',
                 ].map((benefit, index) => (
                   <div key={index} className="flex items-start gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 shrink-0" />
+                    <CheckCircle2 className="h-5 w-5 text-success mt-0.5 shrink-0" />
                     <span className="text-muted-foreground">{benefit}</span>
                   </div>
                 ))}
@@ -201,7 +201,7 @@ export default function BetaProgramPage() {
             
             <div className="relative">
               <Card className="relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-purple-600/20" />
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20" />
                 <CardHeader className="relative">
                   <Badge className="w-fit mb-4">BETA EXCLUSIVE</Badge>
                   <CardTitle className="text-2xl">Premium Plus Access</CardTitle>
@@ -265,7 +265,7 @@ export default function BetaProgramPage() {
                 <CardHeader>
                   <div className="flex gap-1 mb-2">
                     {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+                      <Star key={i} className="h-4 w-4 fill-warning text-warning" />
                     ))}
                   </div>
                   <CardTitle className="text-lg">{testimonial.name}</CardTitle>

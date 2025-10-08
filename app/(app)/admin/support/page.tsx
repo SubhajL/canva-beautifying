@@ -267,36 +267,36 @@ export default function AdminSupportDashboard() {
       {/* Stats Overview */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-          <Card className="bg-orange-50 dark:bg-orange-950">
+          <Card className="bg-warning/10">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Open Tickets</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+              <div className="text-2xl font-bold text-warning">
                 {stats.total_open_tickets}
               </div>
               <p className="text-xs text-muted-foreground">Active cases</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-red-50 dark:bg-red-950">
+          <Card className="bg-error/10">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Urgent</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+              <div className="text-2xl font-bold text-error">
                 {stats.urgent_tickets}
               </div>
               <p className="text-xs text-muted-foreground">Need attention</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-yellow-50 dark:bg-yellow-950">
+          <Card className="bg-warning/10">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">SLA Risk</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+              <div className="text-2xl font-bold text-warning">
                 {stats.sla_at_risk}
               </div>
               <p className="text-xs text-muted-foreground">Near deadline</p>
@@ -313,24 +313,24 @@ export default function AdminSupportDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="bg-green-50 dark:bg-green-950">
+          <Card className="bg-success/10">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Agents Online</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+              <div className="text-2xl font-bold text-success">
                 {stats.agents_online}
               </div>
               <p className="text-xs text-muted-foreground">Available now</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-blue-50 dark:bg-blue-950">
+          <Card className="bg-info/10">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Resolved Today</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+              <div className="text-2xl font-bold text-info">
                 {stats.tickets_resolved_today}
               </div>
               <p className="text-xs text-muted-foreground">Cases closed</p>
@@ -406,7 +406,7 @@ export default function AdminSupportDashboard() {
                   <div
                     key={ticket.id}
                     className={`p-4 border rounded-lg hover:bg-accent cursor-pointer transition-colors ${
-                      isSlaDanger(ticket) ? 'border-red-500' : ''
+                      isSlaDanger(ticket) ? 'border-error' : ''
                     }`}
                     onClick={() => router.push(`/admin/support/ticket/${ticket.id}`)}
                   >
@@ -518,7 +518,7 @@ export default function AdminSupportDashboard() {
                       <div className="text-center">
                         <div className="flex items-center gap-1">
                           <p className="text-2xl font-bold">{agent.satisfaction_rating}</p>
-                          <span className="text-yellow-500">★</span>
+                          <span className="text-warning">★</span>
                         </div>
                         <p className="text-xs text-muted-foreground">Satisfaction</p>
                       </div>
