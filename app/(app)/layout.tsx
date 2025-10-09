@@ -10,6 +10,7 @@ import { BetaFeedbackWidget } from '@/components/beta/beta-feedback-widget'
 import { useAuth } from '@/contexts/auth'
 import { useFeatureFlag } from '@/lib/features/feature-flags'
 import { useBetaTracking } from '@/lib/tracking/beta-usage-tracker'
+import { DensityProvider } from '@/contexts/density'
 
 export default function AppLayout({
   children,
@@ -23,41 +24,43 @@ export default function AppLayout({
   useBetaTracking();
 
   return (
-    <LiveRegionProvider>
-      <div className="min-h-screen bg-gray-50">
-        <SkipNavigation />
-        
-        <Landmark
-          id="main-navigation"
-          as="header"
-          role="banner"
-          label="Main navigation"
-        >
-          <AppHeader />
-        </Landmark>
-        
-        <Landmark
-          id="main-content"
-          as="main"
-          role="main"
-          label="Main content"
-          className="container mx-auto px-4 py-8 pb-20 md:pb-8"
-        >
-          {children}
-        </Landmark>
-        
-        <MobileBottomNav />
-        <UsageNotification />
-        <UpsellPrompt />
-        
-        {/* Beta Feedback Widget */}
-        {user && showFeedbackWidget && (
-          <BetaFeedbackWidget 
-            userId={user.id}
-            position="bottom-right"
-          />
-        )}
-      </div>
-    </LiveRegionProvider>
+    <DensityProvider>
+      <LiveRegionProvider>
+        <div className="min-h-screen bg-gray-50">
+          <SkipNavigation />
+
+          <Landmark
+            id="main-navigation"
+            as="header"
+            role="banner"
+            label="Main navigation"
+          >
+            <AppHeader />
+          </Landmark>
+
+          <Landmark
+            id="main-content"
+            as="main"
+            role="main"
+            label="Main content"
+            className="container mx-auto px-4 py-8 pb-20 md:pb-8"
+          >
+            {children}
+          </Landmark>
+
+          <MobileBottomNav />
+          <UsageNotification />
+          <UpsellPrompt />
+
+          {/* Beta Feedback Widget */}
+          {user && showFeedbackWidget && (
+            <BetaFeedbackWidget
+              userId={user.id}
+              position="bottom-right"
+            />
+          )}
+        </div>
+      </LiveRegionProvider>
+    </DensityProvider>
   )
 }

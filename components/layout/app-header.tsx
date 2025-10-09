@@ -4,8 +4,8 @@ import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Sparkles, 
+import {
+  Sparkles,
   Upload,
   Home,
   History,
@@ -13,7 +13,9 @@ import {
   LogOut,
   Menu,
   FlaskConical,
-  Activity
+  Activity,
+  Maximize2,
+  Minimize2
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -26,9 +28,11 @@ import {
 import { useAuth } from '@/contexts/auth'
 import { createClient } from '@/lib/supabase/client'
 import { BetaNotificationBadge } from '@/components/beta/BetaNotificationBadge'
+import { useDensity } from '@/contexts/density'
 
 export function AppHeader() {
   const { user } = useAuth();
+  const { mode, toggle } = useDensity();
   const [isBetaUser, setIsBetaUser] = useState(false);
 
   useEffect(() => {
@@ -98,14 +102,28 @@ export function AppHeader() {
             {isBetaUser && (
               <BetaNotificationBadge />
             )}
-            
+
             <Link href="/upload" className="hidden md:block">
               <Button variant="gradient" size="sm" className="gap-2">
                 <Upload className="h-4 w-4" />
                 New Upload
               </Button>
             </Link>
-            
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggle}
+              aria-label={`Switch to ${mode === 'comfortable' ? 'compact' : 'comfortable'} mode`}
+              title={`Switch to ${mode === 'comfortable' ? 'compact' : 'comfortable'} mode`}
+            >
+              {mode === 'comfortable' ? (
+                <Minimize2 className="h-5 w-5" />
+              ) : (
+                <Maximize2 className="h-5 w-5" />
+              )}
+            </Button>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
