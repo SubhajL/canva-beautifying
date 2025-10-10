@@ -15,7 +15,8 @@ import {
   FlaskConical,
   Activity,
   Maximize2,
-  Minimize2
+  Minimize2,
+  Search
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -29,16 +30,18 @@ import { useAuth } from '@/contexts/auth'
 import { createClient } from '@/lib/supabase/client'
 import { BetaNotificationBadge } from '@/components/beta/BetaNotificationBadge'
 import { useDensity } from '@/contexts/density'
+import { useCommandPalette } from '@/contexts/command-palette'
 
 export function AppHeader() {
   const { user } = useAuth();
   const { mode, toggle } = useDensity();
+  const { openPalette } = useCommandPalette();
   const [isBetaUser, setIsBetaUser] = useState(false);
 
   useEffect(() => {
     const checkBetaStatus = async () => {
       if (!user) return;
-      
+
       try {
         const supabase = createClient();
         const { data, error } = await supabase
@@ -46,7 +49,7 @@ export function AppHeader() {
           .select('is_beta_user')
           .eq('id', user.id)
           .single();
-        
+
         if (!error && data) {
           setIsBetaUser(data.is_beta_user || false);
         }
@@ -57,6 +60,19 @@ export function AppHeader() {
 
     checkBetaStatus();
   }, [user]);
+
+  // Keyboard shortcut for command palette (Cmd/Ctrl + K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        openPalette();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [openPalette]);
   return (
     <header className="border-b border-gray-200 bg-white">
       <nav className="container mx-auto px-4" aria-label="Global">
@@ -109,6 +125,16 @@ export function AppHeader() {
                 New Upload
               </Button>
             </Link>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={openPalette}
+              aria-label="Open command palette (⌘K)"
+              title="Open command palette (⌘K)"
+            >
+              <Search className="h-5 w-5" />
+            </Button>
 
             <Button
               variant="ghost"

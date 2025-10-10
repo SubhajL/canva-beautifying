@@ -11,6 +11,8 @@ import { useAuth } from '@/contexts/auth'
 import { useFeatureFlag } from '@/lib/features/feature-flags'
 import { useBetaTracking } from '@/lib/tracking/beta-usage-tracker'
 import { DensityProvider } from '@/contexts/density'
+import { CommandProvider } from '@/contexts/command-palette'
+import CommandPalette from '@/components/command/CommandPalette'
 
 export default function AppLayout({
   children,
@@ -24,43 +26,48 @@ export default function AppLayout({
   useBetaTracking();
 
   return (
-    <DensityProvider>
-      <LiveRegionProvider>
-        <div className="min-h-screen bg-gray-50">
-          <SkipNavigation />
+    <CommandProvider>
+      <DensityProvider>
+        <LiveRegionProvider>
+          <div className="min-h-screen bg-gray-50">
+            <SkipNavigation />
 
-          <Landmark
-            id="main-navigation"
-            as="header"
-            role="banner"
-            label="Main navigation"
-          >
-            <AppHeader />
-          </Landmark>
+            <Landmark
+              id="main-navigation"
+              as="header"
+              role="banner"
+              label="Main navigation"
+            >
+              <AppHeader />
+            </Landmark>
 
-          <Landmark
-            id="main-content"
-            as="main"
-            role="main"
-            label="Main content"
-            className="container mx-auto px-4 py-8 pb-20 md:pb-8"
-          >
-            {children}
-          </Landmark>
+            <Landmark
+              id="main-content"
+              as="main"
+              role="main"
+              label="Main content"
+              className="container mx-auto px-4 py-8 pb-20 md:pb-8"
+            >
+              {children}
+            </Landmark>
 
-          <MobileBottomNav />
-          <UsageNotification />
-          <UpsellPrompt />
+            <MobileBottomNav />
+            <UsageNotification />
+            <UpsellPrompt />
 
-          {/* Beta Feedback Widget */}
-          {user && showFeedbackWidget && (
-            <BetaFeedbackWidget
-              userId={user.id}
-              position="bottom-right"
-            />
-          )}
-        </div>
-      </LiveRegionProvider>
-    </DensityProvider>
+            {/* Beta Feedback Widget */}
+            {user && showFeedbackWidget && (
+              <BetaFeedbackWidget
+                userId={user.id}
+                position="bottom-right"
+              />
+            )}
+
+            {/* Command Palette */}
+            <CommandPalette />
+          </div>
+        </LiveRegionProvider>
+      </DensityProvider>
+    </CommandProvider>
   )
 }
