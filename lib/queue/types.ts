@@ -1,5 +1,16 @@
 // Job data types for each queue
 
+/**
+ * W3C Trace Context for distributed tracing across queue boundaries.
+ * Allows trace propagation from API requests through async job processing.
+ */
+export interface TraceContext {
+  /** W3C traceparent header (version-traceId-spanId-flags) */
+  traceparent: string
+  /** Optional W3C tracestate header for vendor-specific data */
+  tracestate?: string
+}
+
 export interface DocumentAnalysisJobData {
   documentId: string
   userId: string
@@ -8,6 +19,7 @@ export interface DocumentAnalysisJobData {
   fileType: string
   subscriptionTier: 'free' | 'basic' | 'pro' | 'premium'
   priority?: number
+  traceContext?: TraceContext
 }
 
 export interface EnhancementJobData {
@@ -28,6 +40,7 @@ export interface EnhancementJobData {
   }
   subscriptionTier: 'free' | 'basic' | 'pro' | 'premium'
   priority?: number
+  traceContext?: TraceContext
 }
 
 export interface ExportJobData {
@@ -42,6 +55,7 @@ export interface ExportJobData {
   }
   subscriptionTier: 'free' | 'basic' | 'pro' | 'premium'
   priority?: number
+  traceContext?: TraceContext
 }
 
 export interface EmailJobData {

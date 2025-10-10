@@ -1,5 +1,6 @@
 import { Queue, QueueEvents } from 'bullmq'
 import { getQueueConnection, QUEUE_NAMES, DEFAULT_JOB_OPTIONS, PRIORITY_LEVELS } from './config'
+import { injectJobTraceContext } from '@/lib/observability/tracing'
 import type {
   DocumentAnalysisJobData,
   EnhancementJobData,
@@ -81,10 +82,13 @@ export const getPriorityByTier = (tier: string): number => {
 // Helper functions to add jobs to queues
 export const addDocumentAnalysisJob = async (data: DocumentAnalysisJobData) => {
   const priority = data.priority ?? getPriorityByTier(data.subscriptionTier)
-  
+
+  // Inject trace context for distributed tracing
+  const jobDataWithTrace = injectJobTraceContext(data)
+
   return await documentAnalysisQueue.add(
     `analyze-${data.documentId}`,
-    data,
+    jobDataWithTrace,
     {
       priority,
       removeOnComplete: true,
@@ -95,10 +99,13 @@ export const addDocumentAnalysisJob = async (data: DocumentAnalysisJobData) => {
 
 export const addEnhancementJob = async (data: EnhancementJobData) => {
   const priority = data.priority ?? getPriorityByTier(data.subscriptionTier)
-  
+
+  // Inject trace context for distributed tracing
+  const jobDataWithTrace = injectJobTraceContext(data)
+
   return await enhancementQueue.add(
     `enhance-${data.documentId}`,
-    data,
+    jobDataWithTrace,
     {
       priority,
       removeOnComplete: true,
@@ -109,10 +116,13 @@ export const addEnhancementJob = async (data: EnhancementJobData) => {
 
 export const addExportJob = async (data: ExportJobData) => {
   const priority = data.priority ?? getPriorityByTier(data.subscriptionTier)
-  
+
+  // Inject trace context for distributed tracing
+  const jobDataWithTrace = injectJobTraceContext(data)
+
   return await exportQueue.add(
     `export-${data.documentId}`,
-    data,
+    jobDataWithTrace,
     {
       priority,
       removeOnComplete: true,

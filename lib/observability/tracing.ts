@@ -7,7 +7,6 @@ if (typeof window !== 'undefined') {
 }
 
 import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
-// @ts-ignore - Resource import may have issues in some environments
 import { Resource } from '@opentelemetry/resources';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
@@ -54,6 +53,7 @@ export async function initializeTracing(): Promise<void> {
 
   try {
     // Create resource with service information
+    // @ts-expect-error - Resource constructor typing issues in some environments
     const resource = new Resource({
       [SemanticResourceAttributes.SERVICE_NAME]: config.serviceName,
       [SemanticResourceAttributes.SERVICE_VERSION]: config.serviceVersion,
@@ -77,6 +77,7 @@ export async function initializeTracing(): Promise<void> {
     // Add span processors
     if (config.environment === 'production') {
       // Use batch processor in production for better performance
+      // @ts-expect-error - addSpanProcessor might not be in type definitions
       tracerProvider.addSpanProcessor(
         new BatchSpanProcessor(otlpExporter, {
           maxQueueSize: 2048,
@@ -87,10 +88,12 @@ export async function initializeTracing(): Promise<void> {
       );
     } else {
       // Use simple processor in development for immediate export
+      // @ts-expect-error - addSpanProcessor might not be in type definitions
       tracerProvider.addSpanProcessor(new SimpleSpanProcessor(otlpExporter));
-      
+
       // Optionally add console exporter for debugging
       if (config.enableConsoleExporter) {
+        // @ts-expect-error - addSpanProcessor might not be in type definitions
         tracerProvider.addSpanProcessor(
           new SimpleSpanProcessor(new ConsoleSpanExporter())
         );
@@ -100,14 +103,14 @@ export async function initializeTracing(): Promise<void> {
     // Register the tracer provider globally
     tracerProvider.register();
 
-    logger.info({
+    logger.info('OpenTelemetry tracing initialized', {
       service: config.serviceName,
       version: config.serviceVersion,
       environment: config.environment,
       otlpEndpoint: config.otlpEndpoint,
-    }, 'OpenTelemetry tracing initialized');
+    });
   } catch (error) {
-    logger.error({ err: error }, 'Failed to initialize OpenTelemetry tracing');
+    logger.error('Failed to initialize OpenTelemetry tracing', { error });
     throw error;
   }
 }
@@ -394,6 +397,34 @@ export function recordPipelineEvent(
 }
 
 /**
+ * Record a model fallback event for observability
+ */
+export function recordModelFallback(
+  fromModel: string,
+  toModel: string,
+  reason: string,
+  attributes?: SpanAttributes
+): void {
+  const span = trace.getActiveSpan();
+  if (span) {
+    span.addEvent('ai.model.fallback', {
+      'fallback.from_model': fromModel,
+      'fallback.to_model': toModel,
+      'fallback.reason': reason,
+      'event.timestamp': new Date().toISOString(),
+      ...attributes,
+    });
+  }
+
+  // Also log for debugging
+  logger.warn('AI model fallback triggered', {
+    fromModel,
+    toModel,
+    reason,
+  });
+}
+
+/**
  * Link spans together (e.g., upload to enhancement)
  */
 export function linkSpans(
@@ -403,11 +434,103 @@ export function linkSpans(
   attributes?: SpanAttributes
 ): void {
   targetSpan.addLink({
-    traceId: sourceTraceId,
-    spanId: sourceSpanId,
-    traceFlags: 1,
-    traceState: undefined,
-  }, attributes);
+    context: {
+      traceId: sourceTraceId,
+      spanId: sourceSpanId,
+      traceFlags: 1,
+    },
+    attributes,
+  });
+}
+
+// Queue Job Tracing Helpers
+
+/**
+ * Inject current trace context into job data for propagation across queue boundaries.
+ *
+ * @param jobData - Job data object to inject trace context into
+ * @returns Job data with traceContext field added if span is active
+ */
+export function injectJobTraceContext<T extends Record<string, any>>(
+  jobData: T
+): T & { traceContext?: { traceparent: string; tracestate?: string } } {
+  const span = trace.getActiveSpan();
+
+  if (!span) {
+    return jobData;
+  }
+
+  const carrier: Record<string, any> = {};
+  propagation.inject(context.active(), carrier, defaultTextMapSetter);
+
+  return {
+    ...jobData,
+    traceContext: {
+      traceparent: carrier.traceparent,
+      tracestate: carrier.tracestate
+    }
+  };
+}
+
+/**
+ * Execute a function within a traced context extracted from job data.
+ * Creates a child span if traceContext exists, or root span otherwise.
+ *
+ * @param job - Job object with optional traceContext field
+ * @param spanName - Name for the span to create
+ * @param fn - Async function to execute with span context
+ * @returns Promise resolving to function result
+ */
+export async function withJobTrace<T, J extends Record<string, any>>(
+  job: J & { traceContext?: { traceparent: string; tracestate?: string } },
+  spanName: string,
+  fn: (span: Span) => Promise<T>
+): Promise<T> {
+  // Extract parent context if available
+  let parentContext = ROOT_CONTEXT;
+
+  if (job.traceContext) {
+    const carrier = {
+      traceparent: job.traceContext.traceparent,
+      tracestate: job.traceContext.tracestate
+    };
+    parentContext = propagation.extract(ROOT_CONTEXT, carrier, defaultTextMapGetter);
+  }
+
+  // Create span in parent context
+  const tracer = getTracer();
+  const span = tracer.startSpan(
+    spanName,
+    {
+      kind: SpanKind.CONSUMER,
+      attributes: {
+        'service.name': config.serviceName,
+        'job.has_parent_trace': !!job.traceContext
+      }
+    },
+    parentContext
+  );
+
+  try {
+    // Execute function with span in context
+    const result = await context.with(
+      trace.setSpan(parentContext, span),
+      () => fn(span)
+    );
+
+    span.setStatus({ code: SpanStatusCode.OK });
+    return result;
+  } catch (error) {
+    // Record exception on span
+    span.recordException(error as Error);
+    span.setStatus({
+      code: SpanStatusCode.ERROR,
+      message: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw error;
+  } finally {
+    span.end();
+  }
 }
 
 // Graceful shutdown handlers

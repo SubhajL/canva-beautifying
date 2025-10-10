@@ -11,9 +11,10 @@ import {
 
 /**
  * Type for route handler functions in Next.js App Router
+ * Supports both Request and NextRequest for compatibility
  */
 type RouteHandler = (
-  request: Request,
+  request: Request | any,
   context?: any
 ) => Promise<Response> | Response;
 

@@ -1,5 +1,5 @@
 import crypto from 'crypto'
-import { apiErrors } from '../response'
+import { apiErrors, apiErrorConstants } from '../response'
 
 // Configuration
 const TOKEN_EXPIRY_MINUTES = 60 // 1 hour default
@@ -92,31 +92,31 @@ export function validateSecureDownloadToken(
     Buffer.from(signature),
     Buffer.from(expectedSignature)
   )) {
-    throw apiErrors.INVALID_TOKEN
+    throw apiErrorConstants.INVALID_TOKEN
   }
-  
+
   // Parse token
   let tokenData: SecureDownloadToken
   try {
     const json = Buffer.from(token, 'base64url').toString('utf-8')
     tokenData = JSON.parse(json)
   } catch (error) {
-    throw apiErrors.INVALID_TOKEN
+    throw apiErrorConstants.INVALID_TOKEN
   }
-  
+
   // Validate token structure
   if (!tokenData.documentId || !tokenData.userId || !tokenData.expires || !tokenData.nonce) {
-    throw apiErrors.INVALID_TOKEN
+    throw apiErrorConstants.INVALID_TOKEN
   }
-  
+
   // Check expiration
   if (Date.now() > tokenData.expires) {
-    throw apiErrors.TOKEN_EXPIRED
+    throw apiErrorConstants.TOKEN_EXPIRED
   }
-  
+
   // Validate document ID if provided
   if (expectedDocumentId && tokenData.documentId !== expectedDocumentId) {
-    throw apiErrors.INVALID_TOKEN
+    throw apiErrorConstants.INVALID_TOKEN
   }
   
   return tokenData

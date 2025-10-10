@@ -22,9 +22,9 @@ export async function validateDownloadToken(
   const url = new URL(request.url)
   const token = url.searchParams.get('token')
   const signature = url.searchParams.get('sig')
-  
+
   if (!token || !signature) {
-    throw apiErrors.INVALID_TOKEN
+    throw apiErrors.unauthorized('Invalid or missing download token')
   }
   
   // Validate token
@@ -92,26 +92,27 @@ export async function logDownloadAccess(
   documentId: string,
   userId: string,
   success: boolean,
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 ): Promise<void> {
   const supabase = await createClient()
   
-  await supabase
-    .from('audit_logs')
-    .insert({
-      user_id: userId,
-      action: 'document_download',
-      resource_type: 'document',
-      resource_id: documentId,
-      success,
-      metadata: {
-        ...metadata,
-        timestamp: new Date().toISOString()
-      }
-    })
-    .select()
-    .single()
-    .catch(error => {
-      console.error('Failed to log download access:', error)
-    })
+  try {
+    await supabase
+      .from('audit_logs')
+      .insert({
+        user_id: userId,
+        action: 'document_download',
+        resource_type: 'document',
+        resource_id: documentId,
+        success,
+        metadata: {
+          ...metadata,
+          timestamp: new Date().toISOString()
+        }
+      })
+      .select()
+      .single()
+  } catch (error: unknown) {
+    console.error('Failed to log download access:', error)
+  }
 }
