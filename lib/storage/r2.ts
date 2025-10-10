@@ -11,28 +11,49 @@ export class R2NotConfiguredError extends Error {
 }
 
 /**
+ * Resolve R2 configuration from environment variables
+ * Supports both new (CLOUDFLARE_R2_*) and legacy (CLOUDFLARE_*) naming
+ */
+function resolveR2Config() {
+  return {
+    accountId:
+      process.env.CLOUDFLARE_R2_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID,
+    accessKeyId:
+      process.env.CLOUDFLARE_R2_ACCESS_KEY_ID ||
+      process.env.CLOUDFLARE_ACCESS_KEY_ID,
+    secretAccessKey:
+      process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY ||
+      process.env.CLOUDFLARE_SECRET_ACCESS_KEY,
+    bucketName:
+      process.env.CLOUDFLARE_R2_BUCKET_NAME || process.env.R2_BUCKET,
+  }
+}
+
+/**
  * Check if R2 storage is properly configured
  */
 function isConfigured(): boolean {
+  const config = resolveR2Config()
   return !!(
-    process.env.CLOUDFLARE_R2_ACCOUNT_ID &&
-    process.env.CLOUDFLARE_R2_ACCESS_KEY_ID &&
-    process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY &&
-    process.env.CLOUDFLARE_R2_BUCKET_NAME
+    config.accountId &&
+    config.accessKeyId &&
+    config.secretAccessKey &&
+    config.bucketName
   )
 }
 
 /**
  * Initialize R2 client
  */
+const config = resolveR2Config()
 export const r2Client = new S3Client({
   region: 'auto',
-  endpoint: process.env.CLOUDFLARE_R2_ACCOUNT_ID
-    ? `https://${process.env.CLOUDFLARE_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`
+  endpoint: config.accountId
+    ? `https://${config.accountId}.r2.cloudflarestorage.com`
     : undefined,
   credentials: {
-    accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID || '',
-    secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY || '',
+    accessKeyId: config.accessKeyId || '',
+    secretAccessKey: config.secretAccessKey || '',
   },
 })
 
@@ -59,7 +80,7 @@ export async function getFileFromR2(key: string): Promise<R2FileResponse | null>
     throw new R2NotConfiguredError()
   }
 
-  const bucketName = process.env.CLOUDFLARE_R2_BUCKET_NAME!
+  const bucketName = resolveR2Config().bucketName!
 
   try {
     const command = new GetObjectCommand({
