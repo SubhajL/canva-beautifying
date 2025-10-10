@@ -20,6 +20,7 @@ interface DownloadOptionsProps {
   enhancedUrl: string
   originalUrl: string
   reportUrl?: string
+  trigger?: React.ReactNode
 }
 
 export function DownloadOptions({
@@ -28,6 +29,7 @@ export function DownloadOptions({
   enhancedUrl,
   originalUrl,
   reportUrl,
+  trigger,
 }: DownloadOptionsProps) {
   const { toast } = useToast()
   const [downloading, setDownloading] = useState<string | null>(null)
@@ -111,10 +113,12 @@ export function DownloadOptions({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button aria-label="Download options">
-          <Download className="h-4 w-4 mr-2" />
-          Download
-        </Button>
+        {trigger || (
+          <Button aria-label="Download options">
+            <Download className="h-4 w-4 mr-2" />
+            Download
+          </Button>
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>Download Options</DropdownMenuLabel>
