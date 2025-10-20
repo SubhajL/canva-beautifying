@@ -2,7 +2,7 @@
  * Density utility functions for responsive spacing and sizing
  */
 
-import { DensityMode } from '@/contexts/density'
+import { DensityMode } from "@/contexts/density"
 
 export interface DensityClasses {
   gap: string
@@ -14,16 +14,16 @@ export interface DensityClasses {
  * Get Tailwind classes for a given density mode
  */
 export function getDensityClasses(mode: DensityMode): DensityClasses {
-  return mode === 'comfortable'
+  return mode === "comfortable"
     ? {
-        gap: 'gap-4',
-        padding: 'py-4 px-6',
-        text: 'text-base',
+        gap: "gap-4",
+        padding: "py-4 px-6",
+        text: "text-base",
       }
     : {
-        gap: 'gap-2',
-        padding: 'py-2 px-3',
-        text: 'text-sm',
+        gap: "gap-2",
+        padding: "py-2 px-3",
+        text: "text-sm",
       }
 }
 
@@ -39,7 +39,7 @@ export function getDensityString(mode: DensityMode): string {
  * Get spacing multiplier for density mode
  */
 export function getSpacingMultiplier(mode: DensityMode): number {
-  return mode === 'comfortable' ? 1 : 0.5
+  return mode === "comfortable" ? 1 : 0.5
 }
 
 /**

@@ -1,7 +1,13 @@
-import { BaseAIProvider } from './base-provider'
-import { GeminiProvider, OpenAIProvider, ClaudeProvider } from './providers'
-import { ModelSelector } from './model-selector'
-import { rateLimiter, apiKeyManager, costTracker, ModelSelectionLogger, ABTestManager } from './utils'
+import { BaseAIProvider } from "./base-provider"
+import { GeminiProvider, OpenAIProvider, ClaudeProvider } from "./providers"
+import { ModelSelector } from "./model-selector"
+import {
+  rateLimiter,
+  apiKeyManager,
+  costTracker,
+  ModelSelectionLogger,
+  ABTestManager,
+} from "./utils"
 import {
   AIModel,
   UserTier,
@@ -9,18 +15,35 @@ import {
   EnhancementRequest,
   EnhancementResult,
   AIProviderResponse,
-  HealthStatus
-} from './types'
-import { DocumentAnalysisEngine, SupabaseAnalysisCache, DocumentContext } from '@/lib/analysis'
-import { CircuitBreaker, getCircuitBreakerConfig, CircuitBreakerMetrics, CircuitState } from './circuit-breaker'
-import { ProviderHealthMonitor } from './provider-health-monitor'
-import { FallbackStrategySelector, CachedFallbackProvider } from './fallback-strategies'
-import { traceAIOperation, recordPipelineEvent, recordModelFallback } from '@/lib/observability/tracing'
-import { SpanStatusCode } from '@opentelemetry/api'
+  HealthStatus,
+} from "./types"
+import {
+  DocumentAnalysisEngine,
+  SupabaseAnalysisCache,
+  DocumentContext,
+} from "@/lib/analysis"
+import {
+  CircuitBreaker,
+  getCircuitBreakerConfig,
+  CircuitBreakerMetrics,
+  CircuitState,
+} from "./circuit-breaker"
+import { ProviderHealthMonitor } from "./provider-health-monitor"
+import {
+  FallbackStrategySelector,
+  CachedFallbackProvider,
+} from "./fallback-strategies"
+import {
+  traceAIOperation,
+  recordPipelineEvent,
+  recordModelFallback,
+} from "@/lib/observability/tracing"
+import { SpanStatusCode } from "@opentelemetry/api"
 
 export class AIService {
   private providers: Map<AIModel, BaseAIProvider> = new Map()
-  private circuitBreakers: Map<AIModel, CircuitBreaker<AIProviderResponse>> = new Map()
+  private circuitBreakers: Map<AIModel, CircuitBreaker<AIProviderResponse>> =
+    new Map()
   private analysisEngine: DocumentAnalysisEngine
   private analysisCache: SupabaseAnalysisCache
   private healthMonitor: ProviderHealthMonitor
@@ -38,35 +61,53 @@ export class AIService {
 
   private initializeProviders(): void {
     // Initialize Gemini provider
-    const geminiKey = apiKeyManager.getApiKey('gemini-2.0-flash')
+    const geminiKey = apiKeyManager.getApiKey("gemini-2.0-flash")
     if (geminiKey) {
-      this.providers.set('gemini-2.0-flash', new GeminiProvider({
-        model: 'gemini-2.0-flash',
-        apiKey: geminiKey
-      }))
+      this.providers.set(
+        "gemini-2.0-flash",
+        new GeminiProvider({
+          model: "gemini-2.0-flash",
+          apiKey: geminiKey,
+        })
+      )
     }
 
     // Initialize OpenAI provider
-    const openaiKey = apiKeyManager.getApiKey('gpt-4o-mini')
+    const openaiKey = apiKeyManager.getApiKey("gpt-4o-mini")
     if (openaiKey) {
-      this.providers.set('gpt-4o-mini', new OpenAIProvider({
-        model: 'gpt-4o-mini',
-        apiKey: openaiKey
-      }))
+      this.providers.set(
+        "gpt-4o-mini",
+        new OpenAIProvider({
+          model: "gpt-4o-mini",
+          apiKey: openaiKey,
+        })
+      )
     }
 
     // Initialize Claude providers
-    const claudeKey = apiKeyManager.getApiKey('claude-3.5-sonnet')
+    const claudeKey = apiKeyManager.getApiKey("claude-3.5-sonnet")
     if (claudeKey) {
-      this.providers.set('claude-3.5-sonnet', new ClaudeProvider({
-        model: 'claude-3.5-sonnet',
-        apiKey: claudeKey
-      }, 'claude-3.5-sonnet'))
+      this.providers.set(
+        "claude-3.5-sonnet",
+        new ClaudeProvider(
+          {
+            model: "claude-3.5-sonnet",
+            apiKey: claudeKey,
+          },
+          "claude-3.5-sonnet"
+        )
+      )
 
-      this.providers.set('claude-4-sonnet', new ClaudeProvider({
-        model: 'claude-4-sonnet',
-        apiKey: claudeKey
-      }, 'claude-4-sonnet'))
+      this.providers.set(
+        "claude-4-sonnet",
+        new ClaudeProvider(
+          {
+            model: "claude-4-sonnet",
+            apiKey: claudeKey,
+          },
+          "claude-4-sonnet"
+        )
+      )
     }
   }
 
@@ -79,13 +120,16 @@ export class AIService {
         config,
         async () => this.getFallbackResponse(model) // Request will be passed in context
       )
-      
+
       // Monitor circuit state changes
       breaker.onStateChange((name, oldState, newState, metrics) => {
-        console.log(`Circuit breaker ${name}: ${oldState} → ${newState}`, metrics)
+        console.log(
+          `Circuit breaker ${name}: ${oldState} → ${newState}`,
+          metrics
+        )
         // Could emit events here for monitoring systems
       })
-      
+
       this.circuitBreakers.set(model, breaker)
     }
   }
@@ -93,16 +137,20 @@ export class AIService {
   private setupHealthMonitoring(): void {
     // Start health monitoring with 30-second interval
     this.healthMonitor.startMonitoring(30000)
-    
+
     // Listen for health status changes
     this.healthMonitor.onHealthChange((model, oldStatus, newStatus, result) => {
-      console.log(`Health status changed for ${model}: ${oldStatus} → ${newStatus}`)
-      
+      console.log(
+        `Health status changed for ${model}: ${oldStatus} → ${newStatus}`
+      )
+
       // If a provider becomes unhealthy, open its circuit breaker
-      if (newStatus === 'unhealthy') {
+      if (newStatus === "unhealthy") {
         const breaker = this.circuitBreakers.get(model)
         if (breaker) {
-          console.warn(`Opening circuit breaker for unhealthy provider: ${model}`)
+          console.warn(
+            `Opening circuit breaker for unhealthy provider: ${model}`
+          )
           // The circuit breaker will handle its own state management
         }
       }
@@ -129,16 +177,21 @@ export class AIService {
           return {
             success: true,
             data: fallbackResponse.analysis || fallbackResponse.enhancements,
-            usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0, cost: 0 },
+            usage: {
+              promptTokens: 0,
+              completionTokens: 0,
+              totalTokens: 0,
+              cost: 0,
+            },
             metadata: {
               degraded: true,
               source: fallbackResponse.source,
-              message: fallbackResponse.message
-            }
+              message: fallbackResponse.message,
+            },
           }
         }
       } catch (error) {
-        console.error('Fallback strategy failed:', error)
+        console.error("Fallback strategy failed:", error)
       }
     }
 
@@ -147,7 +200,7 @@ export class AIService {
       success: false,
       error: `Service temporarily unavailable for ${failedModel}. Circuit breaker is open.`,
       data: null,
-      usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0, cost: 0 }
+      usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0, cost: 0 },
     }
   }
 
@@ -167,40 +220,40 @@ export class AIService {
     }
 
     // Create tracing span for AI operation
-    const span = traceAIOperation('document_analysis', model, {
-      'ai.document_type': request.documentType,
-      'ai.user_tier': request.userTier,
-      'ai.image_url': imageUrl,
+    const span = traceAIOperation("document_analysis", model, {
+      "ai.document_type": request.documentType,
+      "ai.user_tier": request.userTier,
+      "ai.image_url": imageUrl,
     })
 
     try {
-      recordPipelineEvent('ai.analysis.started', {
+      recordPipelineEvent("ai.analysis.started", {
         model,
         documentType: request.documentType,
       })
 
       const response = await breaker.execute(async () => {
         const response = await provider.analyzeDocument(imageUrl, request)
-        
+
         // Circuit breaker considers these as failures
         if (!response.success || !response.data) {
-          throw new Error(response.error || 'Analysis failed')
+          throw new Error(response.error || "Analysis failed")
         }
-        
+
         return response
       })
 
       // Record success metrics
       if (response.usage) {
         span.setAttributes({
-          'ai.tokens.prompt': response.usage.promptTokens,
-          'ai.tokens.completion': response.usage.completionTokens,
-          'ai.tokens.total': response.usage.totalTokens,
-          'ai.cost': response.usage.cost,
+          "ai.tokens.prompt": response.usage.promptTokens,
+          "ai.tokens.completion": response.usage.completionTokens,
+          "ai.tokens.total": response.usage.totalTokens,
+          "ai.cost": response.usage.cost,
         })
       }
 
-      recordPipelineEvent('ai.analysis.completed', {
+      recordPipelineEvent("ai.analysis.completed", {
         model,
         tokensUsed: response.usage?.totalTokens,
       })
@@ -215,8 +268,12 @@ export class AIService {
       })
 
       // If circuit breaker is open, try fallback with request context
-      if (error.message?.includes('Circuit breaker is open')) {
-        recordModelFallback(model, 'circuit-breaker-fallback', 'Circuit breaker open')
+      if (error.message?.includes("Circuit breaker is open")) {
+        recordModelFallback(
+          model,
+          "circuit-breaker-fallback",
+          "Circuit breaker open"
+        )
         return await this.getFallbackResponse(model, request)
       }
       throw error
@@ -241,40 +298,43 @@ export class AIService {
     }
 
     // Create tracing span for AI enhancement operation
-    const span = traceAIOperation('enhancement_generation', model, {
-      'ai.document_type': request.documentType,
-      'ai.user_tier': request.userTier,
-      'ai.analysis_score': analysis.overallScore,
+    const span = traceAIOperation("enhancement_generation", model, {
+      "ai.document_type": request.documentType,
+      "ai.user_tier": request.userTier,
+      "ai.analysis_score": analysis.overallScore,
     })
 
     try {
-      recordPipelineEvent('ai.enhancement.started', {
+      recordPipelineEvent("ai.enhancement.started", {
         model,
         documentType: request.documentType,
         analysisScore: analysis.overallScore,
       })
 
       const response = await breaker.execute(async () => {
-        const response = await provider.generateEnhancementPrompt(analysis, request)
-        
+        const response = await provider.generateEnhancementPrompt(
+          analysis,
+          request
+        )
+
         if (!response.success || !response.data) {
-          throw new Error(response.error || 'Enhancement generation failed')
+          throw new Error(response.error || "Enhancement generation failed")
         }
-        
+
         return response
       })
 
       // Record success metrics
       if (response.usage) {
         span.setAttributes({
-          'ai.tokens.prompt': response.usage.promptTokens,
-          'ai.tokens.completion': response.usage.completionTokens,
-          'ai.tokens.total': response.usage.totalTokens,
-          'ai.cost': response.usage.cost,
+          "ai.tokens.prompt": response.usage.promptTokens,
+          "ai.tokens.completion": response.usage.completionTokens,
+          "ai.tokens.total": response.usage.totalTokens,
+          "ai.cost": response.usage.cost,
         })
       }
 
-      recordPipelineEvent('ai.enhancement.completed', {
+      recordPipelineEvent("ai.enhancement.completed", {
         model,
         tokensUsed: response.usage?.totalTokens,
       })
@@ -289,8 +349,12 @@ export class AIService {
       })
 
       // If circuit breaker is open, try fallback with request context
-      if (error.message?.includes('Circuit breaker is open')) {
-        recordModelFallback(model, 'circuit-breaker-fallback', 'Circuit breaker open')
+      if (error.message?.includes("Circuit breaker is open")) {
+        recordModelFallback(
+          model,
+          "circuit-breaker-fallback",
+          "Circuit breaker open"
+        )
         return await this.getFallbackResponse(model, request)
       }
       throw error
@@ -311,25 +375,27 @@ export class AIService {
     // Determine initial processing priority
     const processingPriority = ModelSelector.determineProcessingPriority(
       request.userTier,
-      'medium', // Default complexity until we analyze
-      request.preferences?.style === 'professional' ? 'quality' : undefined
+      "medium", // Default complexity until we analyze
+      request.preferences?.style === "professional" ? "quality" : undefined
     )
 
     // Try models based on selection criteria
-    while (failedModels.length < 3) { // Max 3 attempts with different models
+    while (failedModels.length < 3) {
+      // Max 3 attempts with different models
       const model = ModelSelector.selectModel({
         userTier: request.userTier,
         processingPriority,
         previousFailures: failedModels,
         documentType: request.documentType,
-        costOptimization: request.userTier === 'free' || request.userTier === 'basic',
+        costOptimization:
+          request.userTier === "free" || request.userTier === "basic",
         estimatedTokens: 2500, // Rough estimate for document analysis
-        userId
+        userId,
       })
 
       // Check health status before proceeding
       const healthStatus = this.healthMonitor.getHealthStatus(model)
-      if (healthStatus && healthStatus.status === 'unhealthy') {
+      if (healthStatus && healthStatus.status === "unhealthy") {
         lastError = new Error(`Provider ${model} is unhealthy`)
         failedModels.push(model)
         console.warn(`Skipping unhealthy provider: ${model}`)
@@ -337,9 +403,16 @@ export class AIService {
       }
 
       // Check rate limit with user tier and estimated tokens
-      const rateLimitCheck = await rateLimiter.checkLimit(model, userId, request.userTier, 2500)
+      const rateLimitCheck = await rateLimiter.checkLimit(
+        model,
+        userId,
+        request.userTier,
+        2500
+      )
       if (!rateLimitCheck.allowed) {
-        lastError = new Error(`Rate limit exceeded. Retry after ${rateLimitCheck.retryAfter} seconds`)
+        lastError = new Error(
+          `Rate limit exceeded. Retry after ${rateLimitCheck.retryAfter} seconds`
+        )
         failedModels.push(model)
         continue
       }
@@ -353,7 +426,11 @@ export class AIService {
 
       try {
         // Perform document analysis with circuit breaker protection
-        const analysisResponse = await this.analyzeWithCircuitBreaker(model, imageUrl, request)
+        const analysisResponse = await this.analyzeWithCircuitBreaker(
+          model,
+          imageUrl,
+          request
+        )
         const analysis = analysisResponse.data!
 
         // Track costs and token usage for rate limiting
@@ -365,7 +442,7 @@ export class AIService {
             analysisResponse.usage.totalTokens,
             analysisResponse.usage.cost
           )
-          
+
           // Track token usage for rate limiting
           await rateLimiter.trackTokenUsage(
             model,
@@ -376,7 +453,11 @@ export class AIService {
         }
 
         // Generate enhancement suggestions with circuit breaker protection
-        const enhancementResponse = await this.enhanceWithCircuitBreaker(model, analysis, request)
+        const enhancementResponse = await this.enhanceWithCircuitBreaker(
+          model,
+          analysis,
+          request
+        )
 
         // Track enhancement costs and token usage
         if (enhancementResponse.usage) {
@@ -387,7 +468,7 @@ export class AIService {
             enhancementResponse.usage.totalTokens,
             enhancementResponse.usage.cost
           )
-          
+
           // Track token usage for rate limiting
           await rateLimiter.trackTokenUsage(
             model,
@@ -399,10 +480,13 @@ export class AIService {
 
         // Determine complexity and estimate processing time
         const complexity = ModelSelector.determineComplexityWithContext(
-          analysis, 
+          analysis,
           request.documentType
         )
-        const estimatedTime = ModelSelector.estimateProcessingTime(model, complexity)
+        const estimatedTime = ModelSelector.estimateProcessingTime(
+          model,
+          complexity
+        )
 
         // Parse enhancement suggestions from the prompt
         const suggestedEnhancements = this.parseEnhancementSuggestions(
@@ -412,9 +496,10 @@ export class AIService {
 
         // Update performance metrics
         const totalTime = Date.now() - startTime
-        const totalTokens = (analysisResponse.usage?.totalTokens || 0) + 
-                          (enhancementResponse.usage?.totalTokens || 0)
-        
+        const totalTokens =
+          (analysisResponse.usage?.totalTokens || 0) +
+          (enhancementResponse.usage?.totalTokens || 0)
+
         ModelSelector.updatePerformanceMetrics(
           model,
           totalTime,
@@ -430,23 +515,45 @@ export class AIService {
           userTier: request.userTier,
           documentType: request.documentType,
           documentComplexity: complexity,
-          processingPriority: processingPriority || 'balanced',
+          processingPriority: processingPriority || "balanced",
           selectionReason: `Selected based on tier: ${request.userTier}, complexity: ${complexity}`,
-          alternativeModels: this.getAvailableModels(request.userTier).filter(m => m !== model),
+          alternativeModels: this.getAvailableModels(request.userTier).filter(
+            (m) => m !== model
+          ),
           success: true,
           responseTime: totalTime,
           tokensUsed: totalTokens,
-          cost: (analysisResponse.usage?.cost || 0) + (enhancementResponse.usage?.cost || 0)
+          cost:
+            (analysisResponse.usage?.cost || 0) +
+            (enhancementResponse.usage?.cost || 0),
         })
 
         // Record A/B test metrics if applicable
         if (userId) {
-          const activeTests = ABTestManager.getActiveTestsForUser(userId, request.userTier)
+          const activeTests = ABTestManager.getActiveTestsForUser(
+            userId,
+            request.userTier
+          )
           for (const test of activeTests) {
-            ABTestManager.recordTestMetric(test.id, userId, 'completion_rate', 1)
-            ABTestManager.recordTestMetric(test.id, userId, 'response_time', totalTime)
-            ABTestManager.recordTestMetric(test.id, userId, 'cost_per_request', 
-              (analysisResponse.usage?.cost || 0) + (enhancementResponse.usage?.cost || 0))
+            ABTestManager.recordTestMetric(
+              test.id,
+              userId,
+              "completion_rate",
+              1
+            )
+            ABTestManager.recordTestMetric(
+              test.id,
+              userId,
+              "response_time",
+              totalTime
+            )
+            ABTestManager.recordTestMetric(
+              test.id,
+              userId,
+              "cost_per_request",
+              (analysisResponse.usage?.cost || 0) +
+                (enhancementResponse.usage?.cost || 0)
+            )
           }
         }
 
@@ -454,9 +561,8 @@ export class AIService {
           analysis,
           suggestedEnhancements,
           estimatedProcessingTime: estimatedTime,
-          modelUsed: model
+          modelUsed: model,
         }
-
       } catch (error) {
         console.error(`Error with model ${model}:`, error)
         lastError = error as Error
@@ -469,13 +575,18 @@ export class AIService {
             processingPriority,
             previousFailures: [...failedModels, model],
             documentType: request.documentType,
-            costOptimization: request.userTier === 'free' || request.userTier === 'basic',
+            costOptimization:
+              request.userTier === "free" || request.userTier === "basic",
             estimatedTokens: 2500,
-            userId
+            userId,
           })
-          
+
           if (nextModel !== model) {
-            recordModelFallback(model, nextModel, error instanceof Error ? error.message : 'Unknown error')
+            recordModelFallback(
+              model,
+              nextModel,
+              error instanceof Error ? error.message : "Unknown error"
+            )
           }
         }
 
@@ -494,29 +605,31 @@ export class AIService {
           selectedModel: model,
           userTier: request.userTier,
           documentType: request.documentType,
-          documentComplexity: 'medium', // Default as we haven't analyzed yet
-          processingPriority: processingPriority || 'balanced',
-          selectionReason: `Failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          alternativeModels: this.getAvailableModels(request.userTier).filter(m => m !== model),
+          documentComplexity: "medium", // Default as we haven't analyzed yet
+          processingPriority: processingPriority || "balanced",
+          selectionReason: `Failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+          alternativeModels: this.getAvailableModels(request.userTier).filter(
+            (m) => m !== model
+          ),
           success: false,
           responseTime: Date.now() - startTime,
-          error: error instanceof Error ? error.message : 'Unknown error'
+          error: error instanceof Error ? error.message : "Unknown error",
         })
       }
     }
 
     // All models failed
-    throw lastError || new Error('All AI models failed to process the document')
+    throw lastError || new Error("All AI models failed to process the document")
   }
 
   async analyzeDocumentLocal(
     imageData: ImageData,
     documentId: string,
-    documentType: 'worksheet' | 'presentation' | 'marketing',
+    documentType: "worksheet" | "presentation" | "marketing",
     userPreferences?: {
-      style?: 'modern' | 'classic' | 'playful' | 'professional'
-      colorScheme?: 'vibrant' | 'muted' | 'monochrome'
-      targetAudience?: 'children' | 'teens' | 'adults' | 'business'
+      style?: "modern" | "classic" | "playful" | "professional"
+      colorScheme?: "vibrant" | "muted" | "monochrome"
+      targetAudience?: "children" | "teens" | "adults" | "business"
     }
   ): Promise<DocumentAnalysis> {
     // Check cache first
@@ -531,11 +644,11 @@ export class AIService {
       metadata: {
         width: imageData.width,
         height: imageData.height,
-        format: 'bitmap',
-        size: imageData.data.length
+        format: "bitmap",
+        size: imageData.data.length,
       },
       type: documentType,
-      userPreferences
+      userPreferences,
     }
 
     // Run local analysis
@@ -547,46 +660,49 @@ export class AIService {
     return analysis
   }
 
-  private parseEnhancementSuggestions(prompt: string, analysis: DocumentAnalysis): Enhancement[] {
+  private parseEnhancementSuggestions(
+    prompt: string,
+    analysis: DocumentAnalysis
+  ): Enhancement[] {
     const enhancements: Enhancement[] = []
 
     // Extract layout improvements
     if (analysis.layout.score < 80) {
       enhancements.push({
-        type: 'layout',
-        description: 'Improve document structure and spacing',
-        priority: analysis.layout.score < 50 ? 'high' : 'medium',
-        estimatedImpact: 100 - analysis.layout.score
+        type: "layout",
+        description: "Improve document structure and spacing",
+        priority: analysis.layout.score < 50 ? "high" : "medium",
+        estimatedImpact: 100 - analysis.layout.score,
       })
     }
 
     // Extract color improvements
     if (analysis.colors.score < 80) {
       enhancements.push({
-        type: 'color',
-        description: 'Enhance color palette for better harmony and contrast',
-        priority: analysis.colors.score < 50 ? 'high' : 'medium',
-        estimatedImpact: 100 - analysis.colors.score
+        type: "color",
+        description: "Enhance color palette for better harmony and contrast",
+        priority: analysis.colors.score < 50 ? "high" : "medium",
+        estimatedImpact: 100 - analysis.colors.score,
       })
     }
 
     // Extract typography improvements
     if (analysis.typography.score < 80) {
       enhancements.push({
-        type: 'typography',
-        description: 'Optimize font choices and text hierarchy',
-        priority: analysis.typography.score < 50 ? 'high' : 'medium',
-        estimatedImpact: 100 - analysis.typography.score
+        type: "typography",
+        description: "Optimize font choices and text hierarchy",
+        priority: analysis.typography.score < 50 ? "high" : "medium",
+        estimatedImpact: 100 - analysis.typography.score,
       })
     }
 
     // Add graphic enhancement if overall score is low
     if (analysis.overallScore < 70) {
       enhancements.push({
-        type: 'graphic',
-        description: 'Add visual elements to increase engagement',
-        priority: 'medium',
-        estimatedImpact: 30
+        type: "graphic",
+        description: "Add visual elements to increase engagement",
+        priority: "medium",
+        estimatedImpact: 30,
       })
     }
 
@@ -594,25 +710,9 @@ export class AIService {
   }
 
   // Get provider status with circuit breaker and health information
-  getProviderStatus(): Record<AIModel, {
-    available: boolean
-    circuitState?: CircuitState
-    circuitMetrics?: CircuitBreakerMetrics
-    healthStatus?: HealthStatus
-    healthMetrics?: {
-      responseTime: number
-      errorRate: number
-      lastChecked: Date
-    }
-  }> {
-    const models: AIModel[] = [
-      'gemini-2.0-flash',
-      'gpt-4o-mini',
-      'claude-3.5-sonnet',
-      'claude-4-sonnet'
-    ]
-
-    const status: Record<AIModel, {
+  getProviderStatus(): Record<
+    AIModel,
+    {
       available: boolean
       circuitState?: CircuitState
       circuitMetrics?: CircuitBreakerMetrics
@@ -622,22 +722,46 @@ export class AIService {
         errorRate: number
         lastChecked: Date
       }
-    }> = {} as any
+    }
+  > {
+    const models: AIModel[] = [
+      "gemini-2.0-flash",
+      "gpt-4o-mini",
+      "claude-3.5-sonnet",
+      "claude-4-sonnet",
+    ]
+
+    const status: Record<
+      AIModel,
+      {
+        available: boolean
+        circuitState?: CircuitState
+        circuitMetrics?: CircuitBreakerMetrics
+        healthStatus?: HealthStatus
+        healthMetrics?: {
+          responseTime: number
+          errorRate: number
+          lastChecked: Date
+        }
+      }
+    > = {} as any
 
     for (const model of models) {
       const breaker = this.circuitBreakers.get(model)
       const health = this.healthMonitor.getHealthStatus(model)
-      
+
       status[model] = {
         available: this.providers.has(model),
         circuitState: breaker?.getMetrics().state,
         circuitMetrics: breaker?.getMetrics(),
         healthStatus: health?.status,
-        healthMetrics: health ? {
-          responseTime: health.responseTime,
-          errorRate: health.errorRate,
-          lastChecked: health.lastChecked
-        } : undefined
+        healthMetrics: health
+          ? {
+              responseTime: health.responseTime,
+              errorRate: health.errorRate,
+              lastChecked: health.lastChecked,
+            }
+          : undefined,
       }
     }
 
@@ -647,11 +771,11 @@ export class AIService {
   // Get circuit breaker metrics for all providers
   getCircuitBreakerMetrics(): Record<AIModel, CircuitBreakerMetrics | null> {
     const metrics: Record<AIModel, CircuitBreakerMetrics | null> = {} as any
-    
+
     for (const [model, breaker] of this.circuitBreakers.entries()) {
       metrics[model] = breaker.getMetrics()
     }
-    
+
     return metrics
   }
 
@@ -668,13 +792,22 @@ export class AIService {
   // Get available models for a user tier
   private getAvailableModels(userTier: UserTier): AIModel[] {
     const tierModels = {
-      free: ['gemini-2.0-flash'] as AIModel[],
-      basic: ['gemini-2.0-flash', 'gpt-4o-mini'] as AIModel[],
-      pro: ['gpt-4o-mini', 'claude-3.5-sonnet', 'gemini-2.0-flash'] as AIModel[],
-      premium: ['claude-4-sonnet', 'claude-3.5-sonnet', 'gpt-4o-mini', 'gemini-2.0-flash'] as AIModel[]
+      free: ["gemini-2.0-flash"] as AIModel[],
+      basic: ["gemini-2.0-flash", "gpt-4o-mini"] as AIModel[],
+      pro: [
+        "gpt-4o-mini",
+        "claude-3.5-sonnet",
+        "gemini-2.0-flash",
+      ] as AIModel[],
+      premium: [
+        "claude-4-sonnet",
+        "claude-3.5-sonnet",
+        "gpt-4o-mini",
+        "gemini-2.0-flash",
+      ] as AIModel[],
     }
-    
-    return tierModels[userTier].filter(model => this.providers.has(model))
+
+    return tierModels[userTier].filter((model) => this.providers.has(model))
   }
 
   // Validate configuration
@@ -683,11 +816,11 @@ export class AIService {
     issues: string[]
   } {
     const issues: string[] = []
-    
+
     // Check API keys
     const keyStatus = apiKeyManager.validateKeys()
     if (!keyStatus.valid) {
-      issues.push(`Missing API keys for: ${keyStatus.missing.join(', ')}`)
+      issues.push(`Missing API keys for: ${keyStatus.missing.join(", ")}`)
     }
 
     // Check providers
@@ -697,21 +830,23 @@ export class AIService {
       .map(([model]) => model)
 
     if (missingProviders.length > 0) {
-      issues.push(`Providers not initialized for: ${missingProviders.join(', ')}`)
+      issues.push(
+        `Providers not initialized for: ${missingProviders.join(", ")}`
+      )
     }
 
     return {
       valid: issues.length === 0,
-      issues
+      issues,
     }
   }
 }
 
 // Type import for Enhancement
 interface Enhancement {
-  type: 'layout' | 'color' | 'typography' | 'graphic' | 'content'
+  type: "layout" | "color" | "typography" | "graphic" | "content"
   description: string
-  priority: 'low' | 'medium' | 'high'
+  priority: "low" | "medium" | "high"
   estimatedImpact: number
 }
 

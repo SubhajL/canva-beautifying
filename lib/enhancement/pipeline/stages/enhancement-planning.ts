@@ -1,5 +1,5 @@
-import { 
-  PipelineContext, 
+import {
+  PipelineContext,
   InitialAnalysisResult,
   EnhancementPlan,
   ColorAdjustment,
@@ -10,32 +10,39 @@ import {
   GraphicRequirement,
   WhitespaceAdjustment,
   DesignIssue,
-  LayoutSection
-} from '../types'
-import { AIService } from '@/lib/ai/ai-service'
-import chroma from 'chroma-js'
+  LayoutSection,
+} from "../types"
+import { AIService } from "@/lib/ai/ai-service"
+import chroma from "chroma-js"
 
 // Document type detection
-type DocumentType = 'educational' | 'presentation' | 'marketing' | 'business' | 'creative' | 'technical' | 'general'
+type DocumentType =
+  | "educational"
+  | "presentation"
+  | "marketing"
+  | "business"
+  | "creative"
+  | "technical"
+  | "general"
 
 // Style mapping based on document type and user preferences
 interface StyleProfile {
   colors: {
-    mood: 'vibrant' | 'professional' | 'playful' | 'elegant' | 'technical'
-    temperature: 'warm' | 'cool' | 'neutral'
-    saturation: 'high' | 'medium' | 'low'
+    mood: "vibrant" | "professional" | "playful" | "elegant" | "technical"
+    temperature: "warm" | "cool" | "neutral"
+    saturation: "high" | "medium" | "low"
   }
   typography: {
-    personality: 'modern' | 'classic' | 'friendly' | 'serious' | 'creative'
-    formality: 'formal' | 'semi-formal' | 'casual'
+    personality: "modern" | "classic" | "friendly" | "serious" | "creative"
+    formality: "formal" | "semi-formal" | "casual"
   }
   layout: {
-    density: 'spacious' | 'balanced' | 'compact'
-    structure: 'grid' | 'asymmetric' | 'organic'
+    density: "spacious" | "balanced" | "compact"
+    structure: "grid" | "asymmetric" | "organic"
   }
   visuals: {
-    style: 'minimalist' | 'decorative' | 'illustrative' | 'photographic'
-    quantity: 'minimal' | 'moderate' | 'rich'
+    style: "minimalist" | "decorative" | "illustrative" | "photographic"
+    quantity: "minimal" | "moderate" | "rich"
   }
 }
 
@@ -54,51 +61,63 @@ export class EnhancementPlanningStage {
 
   constructor() {
     this.aiService = new AIService()
-    
+
     // Initialize document type style profiles
     this.documentTypeProfiles = {
       educational: {
-        colors: { mood: 'playful', temperature: 'warm', saturation: 'medium' },
-        typography: { personality: 'friendly', formality: 'semi-formal' },
-        layout: { density: 'spacious', structure: 'grid' },
-        visuals: { style: 'illustrative', quantity: 'moderate' }
+        colors: { mood: "playful", temperature: "warm", saturation: "medium" },
+        typography: { personality: "friendly", formality: "semi-formal" },
+        layout: { density: "spacious", structure: "grid" },
+        visuals: { style: "illustrative", quantity: "moderate" },
       },
       presentation: {
-        colors: { mood: 'professional', temperature: 'neutral', saturation: 'medium' },
-        typography: { personality: 'modern', formality: 'formal' },
-        layout: { density: 'balanced', structure: 'grid' },
-        visuals: { style: 'minimalist', quantity: 'moderate' }
+        colors: {
+          mood: "professional",
+          temperature: "neutral",
+          saturation: "medium",
+        },
+        typography: { personality: "modern", formality: "formal" },
+        layout: { density: "balanced", structure: "grid" },
+        visuals: { style: "minimalist", quantity: "moderate" },
       },
       marketing: {
-        colors: { mood: 'vibrant', temperature: 'warm', saturation: 'high' },
-        typography: { personality: 'modern', formality: 'semi-formal' },
-        layout: { density: 'balanced', structure: 'asymmetric' },
-        visuals: { style: 'photographic', quantity: 'rich' }
+        colors: { mood: "vibrant", temperature: "warm", saturation: "high" },
+        typography: { personality: "modern", formality: "semi-formal" },
+        layout: { density: "balanced", structure: "asymmetric" },
+        visuals: { style: "photographic", quantity: "rich" },
       },
       business: {
-        colors: { mood: 'professional', temperature: 'cool', saturation: 'low' },
-        typography: { personality: 'classic', formality: 'formal' },
-        layout: { density: 'balanced', structure: 'grid' },
-        visuals: { style: 'minimalist', quantity: 'minimal' }
+        colors: {
+          mood: "professional",
+          temperature: "cool",
+          saturation: "low",
+        },
+        typography: { personality: "classic", formality: "formal" },
+        layout: { density: "balanced", structure: "grid" },
+        visuals: { style: "minimalist", quantity: "minimal" },
       },
       creative: {
-        colors: { mood: 'vibrant', temperature: 'warm', saturation: 'high' },
-        typography: { personality: 'creative', formality: 'casual' },
-        layout: { density: 'spacious', structure: 'organic' },
-        visuals: { style: 'illustrative', quantity: 'rich' }
+        colors: { mood: "vibrant", temperature: "warm", saturation: "high" },
+        typography: { personality: "creative", formality: "casual" },
+        layout: { density: "spacious", structure: "organic" },
+        visuals: { style: "illustrative", quantity: "rich" },
       },
       technical: {
-        colors: { mood: 'technical', temperature: 'cool', saturation: 'low' },
-        typography: { personality: 'modern', formality: 'formal' },
-        layout: { density: 'compact', structure: 'grid' },
-        visuals: { style: 'minimalist', quantity: 'minimal' }
+        colors: { mood: "technical", temperature: "cool", saturation: "low" },
+        typography: { personality: "modern", formality: "formal" },
+        layout: { density: "compact", structure: "grid" },
+        visuals: { style: "minimalist", quantity: "minimal" },
       },
       general: {
-        colors: { mood: 'professional', temperature: 'neutral', saturation: 'medium' },
-        typography: { personality: 'modern', formality: 'semi-formal' },
-        layout: { density: 'balanced', structure: 'grid' },
-        visuals: { style: 'minimalist', quantity: 'moderate' }
-      }
+        colors: {
+          mood: "professional",
+          temperature: "neutral",
+          saturation: "medium",
+        },
+        typography: { personality: "modern", formality: "semi-formal" },
+        layout: { density: "balanced", structure: "grid" },
+        visuals: { style: "minimalist", quantity: "moderate" },
+      },
     }
   }
 
@@ -110,11 +129,15 @@ export class EnhancementPlanningStage {
     try {
       // Detect document type and get style profile
       const documentType = this.detectDocumentType(analysisResult)
-      const styleProfile = this.generateStyleProfile(documentType, context, analysisResult)
-      
+      const styleProfile = this.generateStyleProfile(
+        documentType,
+        context,
+        analysisResult
+      )
+
       // Calculate enhancement potential scores
       const enhancementScores = this.calculateEnhancementScores(analysisResult)
-      
+
       // Generate AI-powered enhancement strategy
       const strategy = await this.generateEnhancementStrategy(
         context,
@@ -124,24 +147,24 @@ export class EnhancementPlanningStage {
         enhancementScores,
         signal
       )
-      
+
       // Plan enhancements in priority order
       const enhancementPromises = strategy.priority.map(async (priority) => {
         switch (priority) {
-          case 'color':
+          case "color":
             return {
-              type: 'color',
+              type: "color",
               result: await this.planColorEnhancements(
                 context,
                 analysisResult,
                 strategy,
                 styleProfile,
                 signal
-              )
+              ),
             }
-          case 'typography':
+          case "typography":
             return {
-              type: 'typography',
+              type: "typography",
               result: await this.planTypographyEnhancements(
                 context,
                 analysisResult,
@@ -149,22 +172,22 @@ export class EnhancementPlanningStage {
                 styleProfile,
                 documentType,
                 signal
-              )
+              ),
             }
-          case 'layout':
+          case "layout":
             return {
-              type: 'layout',
+              type: "layout",
               result: await this.planLayoutEnhancements(
                 context,
                 analysisResult,
                 strategy,
                 styleProfile,
                 signal
-              )
+              ),
             }
-          case 'visuals':
+          case "visuals":
             return {
-              type: 'visuals',
+              type: "visuals",
               result: await this.determineAssetRequirements(
                 context,
                 analysisResult,
@@ -172,39 +195,44 @@ export class EnhancementPlanningStage {
                 styleProfile,
                 documentType,
                 signal
-              )
+              ),
             }
           default:
             return null
         }
       })
-      
+
       const results = await Promise.all(enhancementPromises)
-      
+
       // Extract results
-      let colorEnhancements = {} as EnhancementPlan['colorEnhancements']
-      let typographyEnhancements = {} as EnhancementPlan['typographyEnhancements']
-      let layoutEnhancements = {} as EnhancementPlan['layoutEnhancements']
-      let assetRequirements = {} as EnhancementPlan['assetRequirements']
-      
-      results.forEach(result => {
+      let colorEnhancements = {} as EnhancementPlan["colorEnhancements"]
+      let typographyEnhancements =
+        {} as EnhancementPlan["typographyEnhancements"]
+      let layoutEnhancements = {} as EnhancementPlan["layoutEnhancements"]
+      let assetRequirements = {} as EnhancementPlan["assetRequirements"]
+
+      results.forEach((result) => {
         if (!result) return
         switch (result.type) {
-          case 'color':
-            colorEnhancements = result.result as EnhancementPlan['colorEnhancements']
+          case "color":
+            colorEnhancements =
+              result.result as EnhancementPlan["colorEnhancements"]
             break
-          case 'typography':
-            typographyEnhancements = result.result as EnhancementPlan['typographyEnhancements']
+          case "typography":
+            typographyEnhancements =
+              result.result as EnhancementPlan["typographyEnhancements"]
             break
-          case 'layout':
-            layoutEnhancements = result.result as EnhancementPlan['layoutEnhancements']
+          case "layout":
+            layoutEnhancements =
+              result.result as EnhancementPlan["layoutEnhancements"]
             break
-          case 'visuals':
-            assetRequirements = result.result as EnhancementPlan['assetRequirements']
+          case "visuals":
+            assetRequirements =
+              result.result as EnhancementPlan["assetRequirements"]
             break
         }
       })
-      
+
       return {
         strategy,
         colorEnhancements,
@@ -213,25 +241,84 @@ export class EnhancementPlanningStage {
         assetRequirements,
       }
     } catch (error) {
-      console.error('Enhancement planning failed:', error)
-      throw new Error(`Enhancement planning failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      console.error("Enhancement planning failed:", error)
+      throw new Error(
+        `Enhancement planning failed: ${error instanceof Error ? error.message : "Unknown error"}`
+      )
     }
   }
 
   private detectDocumentType(analysis: InitialAnalysisResult): DocumentType {
     const { extractedText, layoutAnalysis, metadata } = analysis
     const detailedAnalysis = (metadata as any).detailedAnalysis
-    
+
     // Keywords for different document types
     const keywords = {
-      educational: ['lesson', 'worksheet', 'exercise', 'quiz', 'test', 'homework', 'student', 'teacher', 'learn', 'practice', 'answer', 'question'],
-      presentation: ['slide', 'agenda', 'overview', 'summary', 'conclusion', 'objectives', 'goals'],
-      marketing: ['sale', 'offer', 'discount', 'buy', 'shop', 'deal', 'promotion', 'new', 'exclusive', 'limited'],
-      business: ['report', 'analysis', 'strategy', 'financial', 'quarterly', 'revenue', 'growth', 'metrics'],
-      creative: ['design', 'art', 'creative', 'inspiration', 'portfolio', 'showcase', 'gallery'],
-      technical: ['technical', 'specification', 'documentation', 'api', 'code', 'implementation', 'architecture']
+      educational: [
+        "lesson",
+        "worksheet",
+        "exercise",
+        "quiz",
+        "test",
+        "homework",
+        "student",
+        "teacher",
+        "learn",
+        "practice",
+        "answer",
+        "question",
+      ],
+      presentation: [
+        "slide",
+        "agenda",
+        "overview",
+        "summary",
+        "conclusion",
+        "objectives",
+        "goals",
+      ],
+      marketing: [
+        "sale",
+        "offer",
+        "discount",
+        "buy",
+        "shop",
+        "deal",
+        "promotion",
+        "new",
+        "exclusive",
+        "limited",
+      ],
+      business: [
+        "report",
+        "analysis",
+        "strategy",
+        "financial",
+        "quarterly",
+        "revenue",
+        "growth",
+        "metrics",
+      ],
+      creative: [
+        "design",
+        "art",
+        "creative",
+        "inspiration",
+        "portfolio",
+        "showcase",
+        "gallery",
+      ],
+      technical: [
+        "technical",
+        "specification",
+        "documentation",
+        "api",
+        "code",
+        "implementation",
+        "architecture",
+      ],
     }
-    
+
     // Count keyword matches
     const scores: Record<DocumentType, number> = {
       educational: 0,
@@ -240,38 +327,43 @@ export class EnhancementPlanningStage {
       business: 0,
       creative: 0,
       technical: 0,
-      general: 0
+      general: 0,
     }
-    
+
     // Analyze text content
     const allText = [
-      extractedText.title || '',
+      extractedText.title || "",
       ...extractedText.headings,
-      ...extractedText.bodyText
-    ].join(' ').toLowerCase()
-    
+      ...extractedText.bodyText,
+    ]
+      .join(" ")
+      .toLowerCase()
+
     Object.entries(keywords).forEach(([type, words]) => {
-      words.forEach(word => {
+      words.forEach((word) => {
         if (allText.includes(word)) {
           scores[type as DocumentType] += 1
         }
       })
     })
-    
+
     // Analyze structure
     if (metadata.pageCount && metadata.pageCount > 5) {
       scores.presentation += 3
     }
-    
-    if (layoutAnalysis.structure === 'grid' && extractedText.bodyText.length < 5) {
+
+    if (
+      layoutAnalysis.structure === "grid" &&
+      extractedText.bodyText.length < 5
+    ) {
       scores.educational += 2
     }
-    
+
     if (metadata.hasImages && metadata.imageCount > 3) {
       scores.marketing += 2
       scores.creative += 2
     }
-    
+
     // Analyze visual style if available
     if (detailedAnalysis?.engagement) {
       const engagement = detailedAnalysis.engagement
@@ -282,23 +374,23 @@ export class EnhancementPlanningStage {
         scores.creative += 3
       }
     }
-    
+
     // Find the highest scoring type
     let maxScore = 0
-    let detectedType: DocumentType = 'general'
-    
+    let detectedType: DocumentType = "general"
+
     Object.entries(scores).forEach(([type, score]) => {
       if (score > maxScore) {
         maxScore = score
         detectedType = type as DocumentType
       }
     })
-    
+
     // Default to general if no clear match
     if (maxScore < 2) {
-      detectedType = 'general'
+      detectedType = "general"
     }
-    
+
     return detectedType
   }
 
@@ -308,122 +400,140 @@ export class EnhancementPlanningStage {
     analysis: InitialAnalysisResult
   ): StyleProfile {
     // Start with document type defaults
-    const baseProfile = this.documentTypeProfiles[documentType] || this.documentTypeProfiles.general
-    
+    const baseProfile =
+      this.documentTypeProfiles[documentType] ||
+      this.documentTypeProfiles.general
+
     // Override with user preferences if provided
     const userStyle = context.settings?.targetStyle
     const userColorScheme = context.settings?.colorScheme
-    
+
     const profile: StyleProfile = {
       colors: { ...baseProfile.colors! },
       typography: { ...baseProfile.typography! },
       layout: { ...baseProfile.layout! },
-      visuals: { ...baseProfile.visuals! }
+      visuals: { ...baseProfile.visuals! },
     }
-    
+
     // Apply user style preferences
     if (userStyle) {
       switch (userStyle) {
-        case 'modern':
-          profile.colors.mood = 'vibrant'
-          profile.typography.personality = 'modern'
-          profile.layout.structure = 'asymmetric'
+        case "modern":
+          profile.colors.mood = "vibrant"
+          profile.typography.personality = "modern"
+          profile.layout.structure = "asymmetric"
           break
-        case 'classic':
-          profile.colors.mood = 'elegant'
-          profile.typography.personality = 'classic'
-          profile.layout.structure = 'grid'
+        case "classic":
+          profile.colors.mood = "elegant"
+          profile.typography.personality = "classic"
+          profile.layout.structure = "grid"
           break
-        case 'playful':
-          profile.colors.mood = 'playful'
-          profile.typography.personality = 'friendly'
-          profile.visuals.style = 'illustrative'
+        case "playful":
+          profile.colors.mood = "playful"
+          profile.typography.personality = "friendly"
+          profile.visuals.style = "illustrative"
           break
-        case 'professional':
-          profile.colors.mood = 'professional'
-          profile.typography.personality = 'serious'
-          profile.layout.density = 'balanced'
+        case "professional":
+          profile.colors.mood = "professional"
+          profile.typography.personality = "serious"
+          profile.layout.density = "balanced"
           break
       }
     }
-    
+
     // Apply user color scheme preferences
     if (userColorScheme) {
       switch (userColorScheme) {
-        case 'vibrant':
-          profile.colors.saturation = 'high'
+        case "vibrant":
+          profile.colors.saturation = "high"
           break
-        case 'pastel':
-          profile.colors.saturation = 'low'
-          profile.colors.mood = 'playful'
+        case "pastel":
+          profile.colors.saturation = "low"
+          profile.colors.mood = "playful"
           break
-        case 'monochrome':
-          profile.colors.saturation = 'low'
-          profile.colors.temperature = 'neutral'
+        case "monochrome":
+          profile.colors.saturation = "low"
+          profile.colors.temperature = "neutral"
           break
       }
     }
-    
+
     // Adjust based on current document state
     const detailedAnalysis = (analysis.metadata as any).detailedAnalysis
     if (detailedAnalysis?.enhancedLayout) {
       // If document already has good spacing, maintain it
       if (detailedAnalysis.enhancedLayout.whitespace > 30) {
-        profile.layout.density = 'spacious'
+        profile.layout.density = "spacious"
       }
     }
-    
+
     return profile
   }
 
-  private calculateEnhancementScores(analysis: InitialAnalysisResult): EnhancementScores {
+  private calculateEnhancementScores(
+    analysis: InitialAnalysisResult
+  ): EnhancementScores {
     const detailedAnalysis = (analysis.metadata as any).detailedAnalysis || {}
-    
+
     // Calculate improvement potential for each area
     const colorImpact = this.calculateColorImpact(analysis, detailedAnalysis)
-    const typographyImpact = this.calculateTypographyImpact(analysis, detailedAnalysis)
+    const typographyImpact = this.calculateTypographyImpact(
+      analysis,
+      detailedAnalysis
+    )
     const layoutImpact = this.calculateLayoutImpact(analysis, detailedAnalysis)
     const visualImpact = this.calculateVisualImpact(analysis, detailedAnalysis)
-    
+
     // Overall potential is weighted average
-    const overallPotential = (
+    const overallPotential =
       colorImpact * 0.25 +
       typographyImpact * 0.25 +
       layoutImpact * 0.3 +
       visualImpact * 0.2
-    )
-    
+
     return {
       colorImpact,
       typographyImpact,
       layoutImpact,
       visualImpact,
-      overallPotential
+      overallPotential,
     }
   }
 
-  private calculateColorImpact(analysis: InitialAnalysisResult, detailedAnalysis: any): number {
+  private calculateColorImpact(
+    analysis: InitialAnalysisResult,
+    detailedAnalysis: any
+  ): number {
     let impact = 100 - analysis.currentScore.color
-    
+
     // Boost impact if specific issues exist
     if (detailedAnalysis?.color) {
       const colorAnalysis = detailedAnalysis.color
-      if (colorAnalysis.harmony === 'chaotic') impact += 20
+      if (colorAnalysis.harmony === "chaotic") impact += 20
       if (colorAnalysis.contrast.issues.length > 0) impact += 15
-      if (colorAnalysis.saturationLevel === 'muted' && analysis.currentScore.visuals < 60) impact += 10
+      if (
+        colorAnalysis.saturationLevel === "muted" &&
+        analysis.currentScore.visuals < 60
+      )
+        impact += 10
     }
-    
+
     // Check for color-related design issues
-    const colorIssues = analysis.designIssues.filter(i => i.type === 'color' || i.type === 'contrast')
-    impact += colorIssues.filter(i => i.severity === 'high').length * 10
-    impact += colorIssues.filter(i => i.severity === 'medium').length * 5
-    
+    const colorIssues = analysis.designIssues.filter(
+      (i) => i.type === "color" || i.type === "contrast"
+    )
+    impact += colorIssues.filter((i) => i.severity === "high").length * 10
+    impact += colorIssues.filter((i) => i.severity === "medium").length * 5
+
     return Math.min(100, Math.max(0, impact))
   }
 
-  private calculateTypographyImpact(analysis: InitialAnalysisResult, detailedAnalysis: any): number {
+  private calculateTypographyImpact(
+    analysis: InitialAnalysisResult,
+    detailedAnalysis: any
+  ): number {
     let impact = 100 - analysis.currentScore.typography
-    
+
     if (detailedAnalysis?.typography) {
       const typography = detailedAnalysis.typography
       if (typography.fontCount > 3) impact += 15
@@ -431,59 +541,72 @@ export class EnhancementPlanningStage {
       if (typography.consistency < 70) impact += 15
       if (typography.hierarchy.clarity < 70) impact += 10
     }
-    
-    const typographyIssues = analysis.designIssues.filter(i => i.type === 'typography')
-    impact += typographyIssues.filter(i => i.severity === 'high').length * 10
-    impact += typographyIssues.filter(i => i.severity === 'medium').length * 5
-    
+
+    const typographyIssues = analysis.designIssues.filter(
+      (i) => i.type === "typography"
+    )
+    impact += typographyIssues.filter((i) => i.severity === "high").length * 10
+    impact += typographyIssues.filter((i) => i.severity === "medium").length * 5
+
     return Math.min(100, Math.max(0, impact))
   }
 
-  private calculateLayoutImpact(analysis: InitialAnalysisResult, detailedAnalysis: any): number {
+  private calculateLayoutImpact(
+    analysis: InitialAnalysisResult,
+    detailedAnalysis: any
+  ): number {
     let impact = 100 - analysis.currentScore.layout
-    
+
     if (detailedAnalysis?.enhancedLayout) {
       const layout = detailedAnalysis.enhancedLayout
       if (layout.alignmentScore < 70) impact += 15
       if (layout.balanceScore < 70) impact += 15
       if (layout.margins.consistency < 70) impact += 10
-      if (!layout.gridAnalysis.hasGrid && layout.structure !== 'freeform') impact += 10
+      if (!layout.gridAnalysis.hasGrid && layout.structure !== "freeform")
+        impact += 10
     }
-    
+
     // Whitespace issues
-    if (analysis.layoutAnalysis.whitespace < 15 || analysis.layoutAnalysis.whitespace > 50) {
+    if (
+      analysis.layoutAnalysis.whitespace < 15 ||
+      analysis.layoutAnalysis.whitespace > 50
+    ) {
       impact += 15
     }
-    
-    const layoutIssues = analysis.designIssues.filter(i => 
-      i.type === 'layout' || i.type === 'spacing' || i.type === 'alignment'
+
+    const layoutIssues = analysis.designIssues.filter(
+      (i) =>
+        i.type === "layout" || i.type === "spacing" || i.type === "alignment"
     )
-    impact += layoutIssues.filter(i => i.severity === 'high').length * 10
-    impact += layoutIssues.filter(i => i.severity === 'medium').length * 5
-    
+    impact += layoutIssues.filter((i) => i.severity === "high").length * 10
+    impact += layoutIssues.filter((i) => i.severity === "medium").length * 5
+
     return Math.min(100, Math.max(0, impact))
   }
 
-  private calculateVisualImpact(analysis: InitialAnalysisResult, detailedAnalysis: any): number {
+  private calculateVisualImpact(
+    analysis: InitialAnalysisResult,
+    detailedAnalysis: any
+  ): number {
     let impact = 100 - analysis.currentScore.visuals
-    
+
     // No images in document = high potential for visual enhancement
     if (!analysis.metadata.hasImages) {
       impact += 30
     }
-    
+
     if (detailedAnalysis?.engagement) {
       const engagement = detailedAnalysis.engagement
       if (engagement.visualAppeal < 70) impact += 20
       if (engagement.predictedEngagement < 70) impact += 15
     }
-    
+
     if (detailedAnalysis?.visualHierarchy) {
       const hierarchy = detailedAnalysis.visualHierarchy
       if (hierarchy.flowScore < 70) impact += 10
-      if (hierarchy.scanPath === 'chaotic') impact += 15
+      if (hierarchy.scanPath === "chaotic") impact += 15
     }
-    
+
     return Math.min(100, Math.max(0, impact))
   }
 
@@ -494,13 +617,19 @@ export class EnhancementPlanningStage {
     styleProfile: StyleProfile,
     enhancementScores: EnhancementScores,
     signal?: AbortSignal
-  ): Promise<EnhancementPlan['strategy']> {
+  ): Promise<EnhancementPlan["strategy"]> {
     // Determine approach based on scores and tier
-    const approach = this.determineApproach(enhancementScores, context.subscriptionTier)
-    
+    const approach = this.determineApproach(
+      enhancementScores,
+      context.subscriptionTier
+    )
+
     // Determine priority based on impact scores
-    const priority = this.determinePriority(enhancementScores, context.subscriptionTier)
-    
+    const priority = this.determinePriority(
+      enhancementScores,
+      context.subscriptionTier
+    )
+
     // Use AI to refine and validate strategy
     const prompt = `Refine this enhancement strategy for a ${documentType} document:
 
@@ -519,11 +648,14 @@ Style Profile:
 
 Initial Strategy:
 - Approach: ${approach}
-- Priority: ${priority.join(' → ')}
+- Priority: ${priority.join(" → ")}
 - User Tier: ${context.subscriptionTier}
 
 Main Issues to Address:
-${analysis.designIssues.slice(0, 5).map(i => `- ${i.type}: ${i.description} (${i.severity})`).join('\\n')}
+${analysis.designIssues
+  .slice(0, 5)
+  .map((i) => `- ${i.type}: ${i.description} (${i.severity})`)
+  .join("\\n")}
 
 Validate and refine this strategy. Consider:
 1. Is the approach appropriate for the document type and issues?
@@ -534,96 +666,107 @@ Return as JSON with approach, priority array, and estimatedImpact.`
 
     const response = await this.aiService.generate(
       prompt,
-      { 
-        model: context.subscriptionTier === 'premium' ? 'gpt-4o' : 'gpt-4o-mini',
+      {
+        model:
+          context.subscriptionTier === "premium" ? "gpt-4o" : "gpt-4o-mini",
         maxTokens: 400,
         temperature: 0.6,
-        subscriptionTier: context.subscriptionTier
+        subscriptionTier: context.subscriptionTier,
       },
       signal
     )
-    
+
     const refinedStrategy = this.parseJSONResponse(response.content)
-    
+
     return {
       approach: refinedStrategy.approach || approach,
-      priority: Array.isArray(refinedStrategy.priority) ? refinedStrategy.priority : priority,
-      estimatedImpact: Math.min(100, Math.max(0, refinedStrategy.estimatedImpact || enhancementScores.overallPotential))
+      priority: Array.isArray(refinedStrategy.priority)
+        ? refinedStrategy.priority
+        : priority,
+      estimatedImpact: Math.min(
+        100,
+        Math.max(
+          0,
+          refinedStrategy.estimatedImpact || enhancementScores.overallPotential
+        )
+      ),
     }
   }
 
   private determineApproach(
     scores: EnhancementScores,
     tier: string
-  ): 'subtle' | 'moderate' | 'dramatic' {
+  ): "subtle" | "moderate" | "dramatic" {
     // Free tier is always subtle
-    if (tier === 'free') return 'subtle'
-    
+    if (tier === "free") return "subtle"
+
     // Based on overall potential
-    if (scores.overallPotential > 70) return 'dramatic'
-    if (scores.overallPotential > 40) return 'moderate'
-    return 'subtle'
+    if (scores.overallPotential > 70) return "dramatic"
+    if (scores.overallPotential > 40) return "moderate"
+    return "subtle"
   }
 
   private determinePriority(
     scores: EnhancementScores,
     tier: string
-  ): ('color' | 'typography' | 'layout' | 'visuals')[] {
+  ): ("color" | "typography" | "layout" | "visuals")[] {
     // Create priority items with scores
     const priorities = [
-      { type: 'color' as const, score: scores.colorImpact },
-      { type: 'typography' as const, score: scores.typographyImpact },
-      { type: 'layout' as const, score: scores.layoutImpact },
-      { type: 'visuals' as const, score: scores.visualImpact }
+      { type: "color" as const, score: scores.colorImpact },
+      { type: "typography" as const, score: scores.typographyImpact },
+      { type: "layout" as const, score: scores.layoutImpact },
+      { type: "visuals" as const, score: scores.visualImpact },
     ]
-    
+
     // Sort by impact score
     priorities.sort((a, b) => b.score - a.score)
-    
+
     // Apply tier restrictions
-    if (tier === 'free') {
+    if (tier === "free") {
       // Free tier only gets color and typography
       return priorities
-        .filter(p => p.type === 'color' || p.type === 'typography')
-        .map(p => p.type)
+        .filter((p) => p.type === "color" || p.type === "typography")
+        .map((p) => p.type)
     }
-    
-    if (tier === 'basic') {
+
+    if (tier === "basic") {
       // Basic tier doesn't get complex visuals
       return priorities
-        .filter(p => p.type !== 'visuals' || p.score > 80)
-        .map(p => p.type)
+        .filter((p) => p.type !== "visuals" || p.score > 80)
+        .map((p) => p.type)
     }
-    
-    // Pro and Premium get all
-    return priorities.map(p => p.type)
-  }
 
+    // Pro and Premium get all
+    return priorities.map((p) => p.type)
+  }
 
   private async planColorEnhancements(
     context: PipelineContext,
     analysis: InitialAnalysisResult,
-    strategy: EnhancementPlan['strategy'],
+    strategy: EnhancementPlan["strategy"],
     styleProfile: StyleProfile,
     signal?: AbortSignal
-  ): Promise<EnhancementPlan['colorEnhancements']> {
+  ): Promise<EnhancementPlan["colorEnhancements"]> {
     const detailedAnalysis = (analysis.metadata as any).detailedAnalysis
     const colorAnalysis = detailedAnalysis?.color
-    
+
     // Generate base palette based on style profile
     const basePalette = this.generateColorPalette(styleProfile, colorAnalysis)
-    
+
     const prompt = `Create an enhanced color scheme for this document:
 
 Current Color Analysis:
-- Dominant Colors: ${colorAnalysis?.dominantColors?.slice(0, 3).join(', ') || 'Unknown'}
-- Color Harmony: ${colorAnalysis?.harmony || 'Unknown'}
-- Contrast Score: ${colorAnalysis?.contrast?.overall || 'Unknown'}/100
-- Temperature: ${colorAnalysis?.colorTemperature || 'neutral'}
-- Saturation: ${colorAnalysis?.saturationLevel || 'moderate'}
+- Dominant Colors: ${colorAnalysis?.dominantColors?.slice(0, 3).join(", ") || "Unknown"}
+- Color Harmony: ${colorAnalysis?.harmony || "Unknown"}
+- Contrast Score: ${colorAnalysis?.contrast?.overall || "Unknown"}/100
+- Temperature: ${colorAnalysis?.colorTemperature || "neutral"}
+- Saturation: ${colorAnalysis?.saturationLevel || "moderate"}
 
 Design Issues:
-${analysis.designIssues.filter(i => i.type === 'color' || i.type === 'contrast').map(i => `- ${i.description} (${i.severity})`).join('\n')}
+${analysis.designIssues
+  .filter((i) => i.type === "color" || i.type === "contrast")
+  .map((i) => `- ${i.description} (${i.severity})`)
+  .join("\n")}
 
 Style Requirements:
 - Mood: ${styleProfile.colors.mood}
@@ -651,20 +794,20 @@ Return as JSON with hex colors and adjustment array.`
 
     const response = await this.aiService.generate(
       prompt,
-      { 
-        model: 'gpt-4o-mini',
+      {
+        model: "gpt-4o-mini",
         maxTokens: 600,
         temperature: 0.7,
-        subscriptionTier: context.subscriptionTier
+        subscriptionTier: context.subscriptionTier,
       },
       signal
     )
-    
+
     const colors = this.parseJSONResponse(response.content)
-    
+
     // Validate and ensure contrast compliance
     const enhancedPalette = this.validateColorPalette(colors, basePalette)
-    
+
     // Generate comprehensive color adjustments
     const adjustments = this.generateColorAdjustments(
       colorAnalysis,
@@ -672,7 +815,7 @@ Return as JSON with hex colors and adjustment array.`
       analysis.designIssues,
       colors.adjustments
     )
-    
+
     return {
       primaryColor: enhancedPalette.primary,
       secondaryColor: enhancedPalette.secondary,
@@ -683,69 +826,164 @@ Return as JSON with hex colors and adjustment array.`
     }
   }
 
-  private generateColorPalette(styleProfile: StyleProfile, _currentColors: any) {
+  private generateColorPalette(
+    styleProfile: StyleProfile,
+    _currentColors: any
+  ) {
     const palettes = {
       vibrant: {
-        warm: { primary: '#FF6B6B', secondary: '#4ECDC4', accent: '#FFE66D', background: '#FFFFFF', text: '#2D3436' },
-        cool: { primary: '#4ECDC4', secondary: '#45B7D1', accent: '#96CEB4', background: '#FFFFFF', text: '#2C3E50' },
-        neutral: { primary: '#6C5CE7', secondary: '#A29BFE', accent: '#FDCB6E', background: '#FFFFFF', text: '#2D3436' }
+        warm: {
+          primary: "#FF6B6B",
+          secondary: "#4ECDC4",
+          accent: "#FFE66D",
+          background: "#FFFFFF",
+          text: "#2D3436",
+        },
+        cool: {
+          primary: "#4ECDC4",
+          secondary: "#45B7D1",
+          accent: "#96CEB4",
+          background: "#FFFFFF",
+          text: "#2C3E50",
+        },
+        neutral: {
+          primary: "#6C5CE7",
+          secondary: "#A29BFE",
+          accent: "#FDCB6E",
+          background: "#FFFFFF",
+          text: "#2D3436",
+        },
       },
       professional: {
-        warm: { primary: '#E17055', secondary: '#FAB1A0', accent: '#74B9FF', background: '#FAFAFA', text: '#2D3436' },
-        cool: { primary: '#0984E3', secondary: '#74B9FF', accent: '#A29BFE', background: '#F8F9FA', text: '#2C3E50' },
-        neutral: { primary: '#2D3436', secondary: '#636E72', accent: '#0984E3', background: '#FFFFFF', text: '#2D3436' }
+        warm: {
+          primary: "#E17055",
+          secondary: "#FAB1A0",
+          accent: "#74B9FF",
+          background: "#FAFAFA",
+          text: "#2D3436",
+        },
+        cool: {
+          primary: "#0984E3",
+          secondary: "#74B9FF",
+          accent: "#A29BFE",
+          background: "#F8F9FA",
+          text: "#2C3E50",
+        },
+        neutral: {
+          primary: "#2D3436",
+          secondary: "#636E72",
+          accent: "#0984E3",
+          background: "#FFFFFF",
+          text: "#2D3436",
+        },
       },
       playful: {
-        warm: { primary: '#FF7979', secondary: '#F9CA24', accent: '#6AB04C', background: '#FFF5F5', text: '#2C3E50' },
-        cool: { primary: '#686DE0', secondary: '#4834D4', accent: '#22A6B3', background: '#F0F3FF', text: '#130F40' },
-        neutral: { primary: '#BE2EDD', secondary: '#6C5CE7', accent: '#0984E3', background: '#FFEEFF', text: '#2D3436' }
+        warm: {
+          primary: "#FF7979",
+          secondary: "#F9CA24",
+          accent: "#6AB04C",
+          background: "#FFF5F5",
+          text: "#2C3E50",
+        },
+        cool: {
+          primary: "#686DE0",
+          secondary: "#4834D4",
+          accent: "#22A6B3",
+          background: "#F0F3FF",
+          text: "#130F40",
+        },
+        neutral: {
+          primary: "#BE2EDD",
+          secondary: "#6C5CE7",
+          accent: "#0984E3",
+          background: "#FFEEFF",
+          text: "#2D3436",
+        },
       },
       elegant: {
-        warm: { primary: '#B8926A', secondary: '#D4AF37', accent: '#8B7355', background: '#FAF8F6', text: '#2C2416' },
-        cool: { primary: '#4A5568', secondary: '#718096', accent: '#2D3748', background: '#F7FAFC', text: '#1A202C' },
-        neutral: { primary: '#2D3436', secondary: '#636E72', accent: '#B2BEC3', background: '#FAFAFA', text: '#2D3436' }
+        warm: {
+          primary: "#B8926A",
+          secondary: "#D4AF37",
+          accent: "#8B7355",
+          background: "#FAF8F6",
+          text: "#2C2416",
+        },
+        cool: {
+          primary: "#4A5568",
+          secondary: "#718096",
+          accent: "#2D3748",
+          background: "#F7FAFC",
+          text: "#1A202C",
+        },
+        neutral: {
+          primary: "#2D3436",
+          secondary: "#636E72",
+          accent: "#B2BEC3",
+          background: "#FAFAFA",
+          text: "#2D3436",
+        },
       },
       technical: {
-        warm: { primary: '#FF6B6B', secondary: '#4ECDC4', accent: '#FFE66D', background: '#1E1E1E', text: '#E0E0E0' },
-        cool: { primary: '#00D2D3', secondary: '#01A3A4', accent: '#00B894', background: '#0F0F0F', text: '#F0F0F0' },
-        neutral: { primary: '#4A90E2', secondary: '#50E3C2', accent: '#F5A623', background: '#FFFFFF', text: '#333333' }
-      }
+        warm: {
+          primary: "#FF6B6B",
+          secondary: "#4ECDC4",
+          accent: "#FFE66D",
+          background: "#1E1E1E",
+          text: "#E0E0E0",
+        },
+        cool: {
+          primary: "#00D2D3",
+          secondary: "#01A3A4",
+          accent: "#00B894",
+          background: "#0F0F0F",
+          text: "#F0F0F0",
+        },
+        neutral: {
+          primary: "#4A90E2",
+          secondary: "#50E3C2",
+          accent: "#F5A623",
+          background: "#FFFFFF",
+          text: "#333333",
+        },
+      },
     }
-    
+
     const mood = styleProfile.colors.mood
     const temp = styleProfile.colors.temperature
-    
+
     // Get appropriate palette
     const moodPalettes = palettes[mood] || palettes.professional
     const selectedPalette = moodPalettes[temp] || moodPalettes.neutral
-    
+
     // Adjust saturation
-    if (styleProfile.colors.saturation === 'low') {
+    if (styleProfile.colors.saturation === "low") {
       // Desaturate colors
       return {
         primary: this.adjustSaturation(selectedPalette.primary, 0.5),
         secondary: this.adjustSaturation(selectedPalette.secondary, 0.5),
         accent: this.adjustSaturation(selectedPalette.accent, 0.6),
         background: selectedPalette.background,
-        text: selectedPalette.text
+        text: selectedPalette.text,
       }
-    } else if (styleProfile.colors.saturation === 'high') {
+    } else if (styleProfile.colors.saturation === "high") {
       // Increase saturation
       return {
         primary: this.adjustSaturation(selectedPalette.primary, 1.3),
         secondary: this.adjustSaturation(selectedPalette.secondary, 1.2),
         accent: this.adjustSaturation(selectedPalette.accent, 1.4),
         background: selectedPalette.background,
-        text: selectedPalette.text
+        text: selectedPalette.text,
       }
     }
-    
+
     return selectedPalette
   }
 
   private adjustSaturation(color: string, factor: number): string {
     try {
-      return chroma(color).saturate(factor - 1).hex()
+      return chroma(color)
+        .saturate(factor - 1)
+        .hex()
     } catch {
       return color
     }
@@ -758,26 +996,29 @@ Return as JSON with hex colors and adjustment array.`
       }
       return color
     }
-    
+
     const palette = {
       primary: validateColor(aiColors.primaryColor, basePalette.primary),
       secondary: validateColor(aiColors.secondaryColor, basePalette.secondary),
       accent: validateColor(aiColors.accentColor, basePalette.accent),
-      background: validateColor(aiColors.backgroundColor, basePalette.background),
-      text: validateColor(aiColors.textColor, basePalette.text)
+      background: validateColor(
+        aiColors.backgroundColor,
+        basePalette.background
+      ),
+      text: validateColor(aiColors.textColor, basePalette.text),
     }
-    
+
     // Ensure contrast compliance
     const bgColor = chroma(palette.background)
     const textColor = chroma(palette.text)
     const contrast = chroma.contrast(bgColor, textColor)
-    
+
     // If contrast is too low, adjust text color
     if (contrast < 4.5) {
       const isLightBg = bgColor.luminance() > 0.5
-      palette.text = isLightBg ? '#1A202C' : '#F7FAFC'
+      palette.text = isLightBg ? "#1A202C" : "#F7FAFC"
     }
-    
+
     return palette
   }
 
@@ -788,75 +1029,80 @@ Return as JSON with hex colors and adjustment array.`
     aiAdjustments: any[]
   ): ColorAdjustment[] {
     const adjustments: ColorAdjustment[] = []
-    
+
     // Add contrast fixes
-    const contrastIssues = issues.filter(i => i.type === 'contrast')
+    const contrastIssues = issues.filter((i) => i.type === "contrast")
     if (contrastIssues.length > 0) {
       adjustments.push({
-        target: 'text',
-        from: currentColors?.palette?.text || '#000000',
+        target: "text",
+        from: currentColors?.palette?.text || "#000000",
         to: newPalette.text,
-        reason: 'Improve text contrast for better readability'
+        reason: "Improve text contrast for better readability",
       })
     }
-    
+
     // Add harmony fixes
-    if (currentColors?.harmony === 'chaotic') {
+    if (currentColors?.harmony === "chaotic") {
       adjustments.push({
-        target: 'accent',
-        from: currentColors?.palette?.accent || '#FF0000',
+        target: "accent",
+        from: currentColors?.palette?.accent || "#FF0000",
         to: newPalette.accent,
-        reason: 'Create harmonious color relationships'
+        reason: "Create harmonious color relationships",
       })
     }
-    
+
     // Add AI-suggested adjustments
     if (Array.isArray(aiAdjustments)) {
-      aiAdjustments.forEach(adj => {
+      aiAdjustments.forEach((adj) => {
         if (adj.target && adj.to) {
           adjustments.push({
             target: adj.target,
-            from: adj.from || '#000000',
+            from: adj.from || "#000000",
             to: adj.to,
-            reason: adj.reason || 'Enhance visual appeal'
+            reason: adj.reason || "Enhance visual appeal",
           })
         }
       })
     }
-    
+
     // Remove duplicates
-    const uniqueAdjustments = adjustments.filter((adj, index, self) =>
-      index === self.findIndex(a => a.target === adj.target && a.to === adj.to)
+    const uniqueAdjustments = adjustments.filter(
+      (adj, index, self) =>
+        index ===
+        self.findIndex((a) => a.target === adj.target && a.to === adj.to)
     )
-    
+
     return uniqueAdjustments
   }
 
   private async planTypographyEnhancements(
     context: PipelineContext,
     analysis: InitialAnalysisResult,
-    strategy: EnhancementPlan['strategy'],
+    strategy: EnhancementPlan["strategy"],
     styleProfile: StyleProfile,
     documentType: DocumentType,
     signal?: AbortSignal
-  ): Promise<EnhancementPlan['typographyEnhancements']> {
+  ): Promise<EnhancementPlan["typographyEnhancements"]> {
     const detailedAnalysis = (analysis.metadata as any).detailedAnalysis
     const typographyAnalysis = detailedAnalysis?.typography
-    
+
     // Get font recommendations based on style
-    const fontRecs = this.getTypographyRecommendations(styleProfile, documentType)
-    
+    const fontRecs = this.getTypographyRecommendations(
+      styleProfile,
+      documentType
+    )
+
     const prompt = `Create a typography system for this ${documentType} document:
 
 Current Typography Analysis:
-- Font Count: ${typographyAnalysis?.fontCount || 'Unknown'}
-- Size Variations: ${typographyAnalysis?.sizeVariations || 'Unknown'}
-- Readability Score: ${typographyAnalysis?.readabilityScore || 'Unknown'}/100
-- Consistency: ${typographyAnalysis?.consistency || 'Unknown'}/100
-- Hierarchy Clarity: ${typographyAnalysis?.hierarchy?.clarity || 'Unknown'}/100
+- Font Count: ${typographyAnalysis?.fontCount || "Unknown"}
+- Size Variations: ${typographyAnalysis?.sizeVariations || "Unknown"}
+- Readability Score: ${typographyAnalysis?.readabilityScore || "Unknown"}/100
+- Consistency: ${typographyAnalysis?.consistency || "Unknown"}/100
+- Hierarchy Clarity: ${typographyAnalysis?.hierarchy?.clarity || "Unknown"}/100
 
 Content Structure:
-- Title: ${analysis.extractedText.title ? 'Present' : 'Missing'}
+- Title: ${analysis.extractedText.title ? "Present" : "Missing"}
 - Headings: ${analysis.extractedText.headings.length} found
 - Body paragraphs: ${analysis.extractedText.bodyText.length}
 - Captions: ${analysis.extractedText.captions.length}
@@ -867,7 +1113,7 @@ Style Requirements:
 - Approach: ${strategy.approach}
 
 Recommended Font Pairings:
-${fontRecs.map(rec => `- ${rec.heading} + ${rec.body} (${rec.style})`).join('\n')}
+${fontRecs.map((rec) => `- ${rec.heading} + ${rec.body} (${rec.style})`).join("\n")}
 
 Design a complete typography system:
 1. Select fonts that match the personality and ensure excellent readability
@@ -880,40 +1126,48 @@ Return as JSON with headingFont, bodyFont, sizes, lineHeight, and letterSpacing.
 
     const response = await this.aiService.generate(
       prompt,
-      { 
-        model: 'gpt-4o-mini',
+      {
+        model: "gpt-4o-mini",
         maxTokens: 500,
         temperature: 0.6,
-        subscriptionTier: context.subscriptionTier
+        subscriptionTier: context.subscriptionTier,
       },
       signal
     )
-    
+
     const typography = this.parseJSONResponse(response.content)
-    
+
     // Apply modular scale for size hierarchy
     const sizes = this.generateModularScale(
       typography.sizes?.body || 16,
       strategy.approach
     )
-    
+
     const headingFont: FontSelection = {
       family: typography.headingFont?.family || fontRecs[0].heading,
       weight: typography.headingFont?.weight || 700,
-      style: 'normal',
-      fallback: typography.headingFont?.fallback || ['Helvetica Neue', 'Arial', 'sans-serif'],
+      style: "normal",
+      fallback: typography.headingFont?.fallback || [
+        "Helvetica Neue",
+        "Arial",
+        "sans-serif",
+      ],
     }
-    
+
     const bodyFont: FontSelection = {
       family: typography.bodyFont?.family || fontRecs[0].body,
       weight: typography.bodyFont?.weight || 400,
-      style: 'normal',
-      fallback: typography.bodyFont?.fallback || ['Helvetica', 'Arial', 'sans-serif'],
+      style: "normal",
+      fallback: typography.bodyFont?.fallback || [
+        "Helvetica",
+        "Arial",
+        "sans-serif",
+      ],
     }
-    
+
     // Calculate optimal line heights
     const lineHeight = this.calculateLineHeight(sizes.body, documentType)
-    
+
     return {
       headingFont,
       bodyFont,
@@ -925,39 +1179,56 @@ Return as JSON with headingFont, bodyFont, sizes, lineHeight, and letterSpacing.
         caption: typography.sizes?.caption || sizes.caption,
       },
       lineHeight: typography.lineHeight || lineHeight,
-      letterSpacing: typography.letterSpacing || (styleProfile.typography.personality === 'modern' ? 0.02 : 0),
+      letterSpacing:
+        typography.letterSpacing ||
+        (styleProfile.typography.personality === "modern" ? 0.02 : 0),
     }
   }
 
-  private getTypographyRecommendations(styleProfile: StyleProfile, _documentType: DocumentType) {
+  private getTypographyRecommendations(
+    styleProfile: StyleProfile,
+    _documentType: DocumentType
+  ) {
     const recommendations = {
       modern: [
-        { heading: 'Inter', body: 'Inter', style: 'clean and versatile' },
-        { heading: 'Montserrat', body: 'Open Sans', style: 'contemporary' },
-        { heading: 'Poppins', body: 'Roboto', style: 'geometric modern' }
+        { heading: "Inter", body: "Inter", style: "clean and versatile" },
+        { heading: "Montserrat", body: "Open Sans", style: "contemporary" },
+        { heading: "Poppins", body: "Roboto", style: "geometric modern" },
       ],
       classic: [
-        { heading: 'Playfair Display', body: 'Lora', style: 'elegant serif' },
-        { heading: 'Merriweather', body: 'Source Sans Pro', style: 'traditional' },
-        { heading: 'Georgia', body: 'Helvetica', style: 'timeless' }
+        { heading: "Playfair Display", body: "Lora", style: "elegant serif" },
+        {
+          heading: "Merriweather",
+          body: "Source Sans Pro",
+          style: "traditional",
+        },
+        { heading: "Georgia", body: "Helvetica", style: "timeless" },
       ],
       friendly: [
-        { heading: 'Fredoka', body: 'Nunito', style: 'approachable' },
-        { heading: 'Quicksand', body: 'Lato', style: 'soft and friendly' },
-        { heading: 'Comfortaa', body: 'Open Sans', style: 'rounded' }
+        { heading: "Fredoka", body: "Nunito", style: "approachable" },
+        { heading: "Quicksand", body: "Lato", style: "soft and friendly" },
+        { heading: "Comfortaa", body: "Open Sans", style: "rounded" },
       ],
       serious: [
-        { heading: 'Roboto Slab', body: 'Roboto', style: 'professional' },
-        { heading: 'IBM Plex Sans', body: 'IBM Plex Sans', style: 'corporate' },
-        { heading: 'Source Serif Pro', body: 'Source Sans Pro', style: 'authoritative' }
+        { heading: "Roboto Slab", body: "Roboto", style: "professional" },
+        { heading: "IBM Plex Sans", body: "IBM Plex Sans", style: "corporate" },
+        {
+          heading: "Source Serif Pro",
+          body: "Source Sans Pro",
+          style: "authoritative",
+        },
       ],
       creative: [
-        { heading: 'Bebas Neue', body: 'Montserrat', style: 'bold and impactful' },
-        { heading: 'Righteous', body: 'Karla', style: 'unique' },
-        { heading: 'Space Grotesk', body: 'Inter', style: 'futuristic' }
-      ]
+        {
+          heading: "Bebas Neue",
+          body: "Montserrat",
+          style: "bold and impactful",
+        },
+        { heading: "Righteous", body: "Karla", style: "unique" },
+        { heading: "Space Grotesk", body: "Inter", style: "futuristic" },
+      ],
     }
-    
+
     const personality = styleProfile.typography.personality
     return recommendations[personality] || recommendations.modern
   }
@@ -965,65 +1236,73 @@ Return as JSON with headingFont, bodyFont, sizes, lineHeight, and letterSpacing.
   private generateModularScale(baseSize: number, approach: string) {
     // Use different scales based on approach
     const scales = {
-      subtle: 1.125,    // Minor second
-      moderate: 1.25,   // Major third
-      dramatic: 1.333   // Perfect fourth
+      subtle: 1.125, // Minor second
+      moderate: 1.25, // Major third
+      dramatic: 1.333, // Perfect fourth
     }
-    
+
     const scale = scales[approach] || 1.25
-    
+
     return {
       h1: Math.round(baseSize * Math.pow(scale, 3)),
       h2: Math.round(baseSize * Math.pow(scale, 2)),
       h3: Math.round(baseSize * Math.pow(scale, 1)),
       body: baseSize,
-      caption: Math.round(baseSize / scale)
+      caption: Math.round(baseSize / scale),
     }
   }
 
-  private calculateLineHeight(bodySize: number, documentType: DocumentType): number {
+  private calculateLineHeight(
+    bodySize: number,
+    documentType: DocumentType
+  ): number {
     // Different document types need different line heights
     const baseLineHeight = {
-      educational: 1.7,    // More space for easier reading
-      presentation: 1.5,   // Balanced for slides
-      marketing: 1.6,      // Good for scanning
-      business: 1.5,       // Professional standard
-      creative: 1.4,       // Tighter for visual impact
-      technical: 1.6,      // Good for documentation
-      general: 1.5
+      educational: 1.7, // More space for easier reading
+      presentation: 1.5, // Balanced for slides
+      marketing: 1.6, // Good for scanning
+      business: 1.5, // Professional standard
+      creative: 1.4, // Tighter for visual impact
+      technical: 1.6, // Good for documentation
+      general: 1.5,
     }
-    
+
     // Adjust based on font size
     const sizeAdjustment = bodySize < 14 ? 0.1 : bodySize > 18 ? -0.1 : 0
-    
+
     return baseLineHeight[documentType] + sizeAdjustment
   }
 
   private async planLayoutEnhancements(
     context: PipelineContext,
     analysis: InitialAnalysisResult,
-    strategy: EnhancementPlan['strategy'],
+    strategy: EnhancementPlan["strategy"],
     styleProfile: StyleProfile,
     signal?: AbortSignal
-  ): Promise<EnhancementPlan['layoutEnhancements']> {
+  ): Promise<EnhancementPlan["layoutEnhancements"]> {
     const detailedAnalysis = (analysis.metadata as any).detailedAnalysis
     const enhancedLayout = detailedAnalysis?.enhancedLayout
-    
+
     // Calculate grid specifications based on style
     const gridSpecs = this.calculateGridSpecifications(styleProfile, analysis)
-    
+
     const prompt = `Design an enhanced layout system for this document:
 
 Current Layout Analysis:
 - Structure: ${analysis.layoutAnalysis.structure}
-- Sections: ${analysis.layoutAnalysis.sections.map(s => `${s.type}(${s.bounds.width}x${s.bounds.height})`).join(', ')}
+- Sections: ${analysis.layoutAnalysis.sections.map((s) => `${s.type}(${s.bounds.width}x${s.bounds.height})`).join(", ")}
 - Whitespace: ${analysis.layoutAnalysis.whitespace}%
-- Alignment Score: ${enhancedLayout?.alignmentScore || 'Unknown'}/100
-- Balance Score: ${enhancedLayout?.balanceScore || 'Unknown'}/100
-- Current Margins: T:${enhancedLayout?.margins?.top || '?'} R:${enhancedLayout?.margins?.right || '?'} B:${enhancedLayout?.margins?.bottom || '?'} L:${enhancedLayout?.margins?.left || '?'}
+- Alignment Score: ${enhancedLayout?.alignmentScore || "Unknown"}/100
+- Balance Score: ${enhancedLayout?.balanceScore || "Unknown"}/100
+- Current Margins: T:${enhancedLayout?.margins?.top || "?"} R:${enhancedLayout?.margins?.right || "?"} B:${enhancedLayout?.margins?.bottom || "?"} L:${enhancedLayout?.margins?.left || "?"}
 
 Layout Issues:
-${analysis.designIssues.filter(i => i.type === 'layout' || i.type === 'spacing' || i.type === 'alignment').map(i => `- ${i.description} (${i.severity})`).join('\n')}
+${analysis.designIssues
+  .filter(
+    (i) => i.type === "layout" || i.type === "spacing" || i.type === "alignment"
+  )
+  .map((i) => `- ${i.description} (${i.severity})`)
+  .join("\n")}
 
 Style Requirements:
 - Density: ${styleProfile.layout.density}
@@ -1045,17 +1324,17 @@ Return as JSON with grid specs, section modifications, and whitespace adjustment
 
     const response = await this.aiService.generate(
       prompt,
-      { 
-        model: 'gpt-4o-mini',
+      {
+        model: "gpt-4o-mini",
         maxTokens: 600,
         temperature: 0.6,
-        subscriptionTier: context.subscriptionTier
+        subscriptionTier: context.subscriptionTier,
       },
       signal
     )
-    
+
     const layout = this.parseJSONResponse(response.content)
-    
+
     // Process sections with intelligent modifications
     const sections = this.planSectionModifications(
       analysis.layoutAnalysis.sections,
@@ -1063,7 +1342,7 @@ Return as JSON with grid specs, section modifications, and whitespace adjustment
       styleProfile,
       gridSpecs
     )
-    
+
     // Generate whitespace adjustments
     const whitespaceAdjustments = this.generateWhitespaceAdjustments(
       analysis,
@@ -1071,7 +1350,7 @@ Return as JSON with grid specs, section modifications, and whitespace adjustment
       styleProfile,
       layout.whitespaceAdjustments
     )
-    
+
     return {
       grid: {
         columns: layout.grid?.columns || gridSpecs.columns,
@@ -1083,15 +1362,18 @@ Return as JSON with grid specs, section modifications, and whitespace adjustment
     }
   }
 
-  private calculateGridSpecifications(styleProfile: StyleProfile, analysis: InitialAnalysisResult) {
+  private calculateGridSpecifications(
+    styleProfile: StyleProfile,
+    analysis: InitialAnalysisResult
+  ) {
     const gridPresets = {
       spacious: { columns: 12, gutter: 32, margin: 64 },
       balanced: { columns: 12, gutter: 24, margin: 48 },
-      compact: { columns: 16, gutter: 16, margin: 32 }
+      compact: { columns: 16, gutter: 16, margin: 32 },
     }
-    
+
     const baseGrid = gridPresets[styleProfile.layout.density]
-    
+
     // Adjust for document dimensions
     const { width } = analysis.metadata.dimensions
     if (width < 768) {
@@ -1099,17 +1381,17 @@ Return as JSON with grid specs, section modifications, and whitespace adjustment
       return {
         columns: 4,
         gutter: Math.round(baseGrid.gutter * 0.75),
-        margin: Math.round(baseGrid.margin * 0.75)
+        margin: Math.round(baseGrid.margin * 0.75),
       }
     } else if (width < 1200) {
       // Tablet/medium documents
       return {
         columns: 8,
         gutter: baseGrid.gutter,
-        margin: Math.round(baseGrid.margin * 0.875)
+        margin: Math.round(baseGrid.margin * 0.875),
       }
     }
-    
+
     return baseGrid
   }
 
@@ -1120,21 +1402,23 @@ Return as JSON with grid specs, section modifications, and whitespace adjustment
     gridSpecs: any
   ): PlannedSection[] {
     const plannedSections: PlannedSection[] = []
-    
+
     currentSections.forEach((section, index) => {
-      const suggestion = aiSuggestions?.find(s => s.id === section.id) || aiSuggestions?.[index]
-      
+      const suggestion =
+        aiSuggestions?.find((s) => s.id === section.id) ||
+        aiSuggestions?.[index]
+
       const modifications: string[] = []
       let newBounds = { ...section.bounds }
-      
+
       // Apply grid alignment
-      if (styleProfile.layout.structure === 'grid') {
+      if (styleProfile.layout.structure === "grid") {
         const colWidth = 100 / gridSpecs.columns
         newBounds.x = Math.round(newBounds.x / colWidth) * colWidth
         newBounds.width = Math.round(newBounds.width / colWidth) * colWidth
-        modifications.push('Align to grid system')
+        modifications.push("Align to grid system")
       }
-      
+
       // Apply AI suggestions
       if (suggestion) {
         if (suggestion.newBounds) {
@@ -1144,22 +1428,25 @@ Return as JSON with grid specs, section modifications, and whitespace adjustment
           modifications.push(...suggestion.modifications)
         }
       }
-      
+
       // Add density-based modifications
-      if (styleProfile.layout.density === 'spacious' && section.type === 'content') {
-        modifications.push('Increase padding and margins')
-      } else if (styleProfile.layout.density === 'compact') {
-        modifications.push('Optimize space usage')
+      if (
+        styleProfile.layout.density === "spacious" &&
+        section.type === "content"
+      ) {
+        modifications.push("Increase padding and margins")
+      } else if (styleProfile.layout.density === "compact") {
+        modifications.push("Optimize space usage")
       }
-      
+
       plannedSections.push({
         id: section.id,
         type: section.type,
         newBounds,
-        modifications
+        modifications,
       })
     })
-    
+
     return plannedSections
   }
 
@@ -1170,88 +1457,97 @@ Return as JSON with grid specs, section modifications, and whitespace adjustment
     aiSuggestions: any[]
   ): WhitespaceAdjustment[] {
     const adjustments: WhitespaceAdjustment[] = []
-    
+
     // Base adjustments from style profile
     const densityMultipliers = {
       spacious: 1.5,
       balanced: 1.0,
-      compact: 0.75
+      compact: 0.75,
     }
-    
+
     const multiplier = densityMultipliers[styleProfile.layout.density]
-    
+
     // Margin adjustments
-    const _currentMargins = enhancedLayout?.margins || { top: 40, right: 40, bottom: 40, left: 40 }
+    const _currentMargins = enhancedLayout?.margins || {
+      top: 40,
+      right: 40,
+      bottom: 40,
+      left: 40,
+    }
     adjustments.push({
-      area: 'margins',
+      area: "margins",
       value: Math.round(48 * multiplier),
-      unit: 'px'
+      unit: "px",
     })
-    
+
     // Padding adjustments based on issues
     if (analysis.layoutAnalysis.whitespace < 20) {
       adjustments.push({
-        area: 'padding',
+        area: "padding",
         value: Math.round(24 * multiplier),
-        unit: 'px'
+        unit: "px",
       })
     }
-    
+
     // Spacing adjustments
     if (enhancedLayout?.spacing?.consistency < 70) {
       adjustments.push({
-        area: 'spacing',
+        area: "spacing",
         value: Math.round(16 * multiplier),
-        unit: 'px'
+        unit: "px",
       })
     }
-    
+
     // Add AI suggestions
     if (Array.isArray(aiSuggestions)) {
-      aiSuggestions.forEach(adj => {
+      aiSuggestions.forEach((adj) => {
         if (adj.area && adj.value) {
           adjustments.push({
             area: adj.area,
             value: adj.value,
-            unit: adj.unit || 'px'
+            unit: adj.unit || "px",
           })
         }
       })
     }
-    
+
     return adjustments
   }
 
   private async determineAssetRequirements(
     context: PipelineContext,
     analysis: InitialAnalysisResult,
-    strategy: EnhancementPlan['strategy'],
+    strategy: EnhancementPlan["strategy"],
     styleProfile: StyleProfile,
     documentType: DocumentType,
     signal?: AbortSignal
-  ): Promise<EnhancementPlan['assetRequirements']> {
+  ): Promise<EnhancementPlan["assetRequirements"]> {
     // Skip assets for free tier
-    if (context.subscriptionTier === 'free') {
+    if (context.subscriptionTier === "free") {
       return {
         backgrounds: [],
         decorativeElements: [],
         educationalGraphics: [],
       }
     }
-    
+
     const detailedAnalysis = (analysis.metadata as any).detailedAnalysis
     const visualScore = analysis.currentScore.visuals
-    
+
     // Calculate asset needs based on analysis
-    const assetNeeds = this.calculateAssetNeeds(analysis, detailedAnalysis, styleProfile)
-    
+    const assetNeeds = this.calculateAssetNeeds(
+      analysis,
+      detailedAnalysis,
+      styleProfile
+    )
+
     const prompt = `Design visual assets for this ${documentType} document:
 
 Current Visual State:
 - Visual Score: ${visualScore}/100
-- Existing Images: ${analysis.metadata.hasImages ? `${analysis.metadata.imageCount} images` : 'None'}
-- Visual Appeal: ${detailedAnalysis?.engagement?.visualAppeal || 'Unknown'}/100
-- Predicted Engagement: ${detailedAnalysis?.engagement?.predictedEngagement || 'Unknown'}/100
+- Existing Images: ${analysis.metadata.hasImages ? `${analysis.metadata.imageCount} images` : "None"}
+- Visual Appeal: ${detailedAnalysis?.engagement?.visualAppeal || "Unknown"}/100
+- Predicted Engagement: ${detailedAnalysis?.engagement?.predictedEngagement || "Unknown"}/100
 
 Style Requirements:
 - Visual Style: ${styleProfile.visuals.style}
@@ -1286,17 +1582,18 @@ Return as JSON with backgrounds, decorativeElements, and educationalGraphics arr
 
     const response = await this.aiService.generate(
       prompt,
-      { 
-        model: context.subscriptionTier === 'premium' ? 'gpt-4o' : 'gpt-4o-mini',
+      {
+        model:
+          context.subscriptionTier === "premium" ? "gpt-4o" : "gpt-4o-mini",
         maxTokens: 600,
         temperature: 0.8,
-        subscriptionTier: context.subscriptionTier
+        subscriptionTier: context.subscriptionTier,
       },
       signal
     )
-    
+
     const assets = this.parseJSONResponse(response.content)
-    
+
     // Process and validate asset requirements
     const processedAssets = this.processAssetRequirements(
       assets,
@@ -1304,15 +1601,19 @@ Return as JSON with backgrounds, decorativeElements, and educationalGraphics arr
       styleProfile,
       assetNeeds
     )
-    
+
     return processedAssets
   }
 
-  private calculateAssetNeeds(analysis: InitialAnalysisResult, detailedAnalysis: any, styleProfile: StyleProfile) {
+  private calculateAssetNeeds(
+    analysis: InitialAnalysisResult,
+    detailedAnalysis: any,
+    styleProfile: StyleProfile
+  ) {
     let backgroundNeed = 0
     let decorativeNeed = 0
     let graphicsNeed = 0
-    
+
     // Calculate background need
     if (!analysis.metadata.hasImages) {
       backgroundNeed += 40
@@ -1320,18 +1621,18 @@ Return as JSON with backgrounds, decorativeElements, and educationalGraphics arr
     if (analysis.currentScore.visuals < 60) {
       backgroundNeed += 30
     }
-    if (styleProfile.visuals.style !== 'minimalist') {
+    if (styleProfile.visuals.style !== "minimalist") {
       backgroundNeed += 20
     }
     if (detailedAnalysis?.engagement?.visualAppeal < 70) {
       backgroundNeed += 10
     }
-    
+
     // Calculate decorative need
     if (analysis.layoutAnalysis.whitespace > 40) {
       decorativeNeed += 30 // Too much empty space
     }
-    if (styleProfile.visuals.quantity !== 'minimal') {
+    if (styleProfile.visuals.quantity !== "minimal") {
       decorativeNeed += 30
     }
     if (detailedAnalysis?.visualHierarchy?.emphasisBalance < 70) {
@@ -1340,28 +1641,32 @@ Return as JSON with backgrounds, decorativeElements, and educationalGraphics arr
     if (analysis.currentScore.visuals < 50) {
       decorativeNeed += 20
     }
-    
+
     // Calculate graphics need
-    const isEducational = analysis.extractedText.bodyText.some(text => 
-      text.toLowerCase().includes('learn') || 
-      text.toLowerCase().includes('understand') ||
-      text.toLowerCase().includes('example')
+    const isEducational = analysis.extractedText.bodyText.some(
+      (text) =>
+        text.toLowerCase().includes("learn") ||
+        text.toLowerCase().includes("understand") ||
+        text.toLowerCase().includes("example")
     )
-    
+
     if (isEducational) {
       graphicsNeed += 40
     }
-    if (styleProfile.visuals.style === 'illustrative') {
+    if (styleProfile.visuals.style === "illustrative") {
       graphicsNeed += 30
     }
-    if (analysis.extractedText.bodyText.length > 10 && !analysis.metadata.hasImages) {
+    if (
+      analysis.extractedText.bodyText.length > 10 &&
+      !analysis.metadata.hasImages
+    ) {
       graphicsNeed += 30 // Long text without visuals
     }
-    
+
     return {
       backgroundNeed: Math.min(100, backgroundNeed),
       decorativeNeed: Math.min(100, decorativeNeed),
-      graphicsNeed: Math.min(100, graphicsNeed)
+      graphicsNeed: Math.min(100, graphicsNeed),
     }
   }
 
@@ -1370,44 +1675,48 @@ Return as JSON with backgrounds, decorativeElements, and educationalGraphics arr
     tier: string,
     styleProfile: StyleProfile,
     assetNeeds: any
-  ): EnhancementPlan['assetRequirements'] {
+  ): EnhancementPlan["assetRequirements"] {
     // Define tier limits
     const tierLimits = {
       basic: { backgrounds: 1, decorative: 3, graphics: 0 },
       pro: { backgrounds: 2, decorative: 8, graphics: 2 },
       premium: { backgrounds: 5, decorative: 20, graphics: 5 },
     }
-    
-    const limits = tierLimits[tier as keyof typeof tierLimits] || tierLimits.basic
-    
+
+    const limits =
+      tierLimits[tier as keyof typeof tierLimits] || tierLimits.basic
+
     // Process backgrounds
-    const backgrounds: BackgroundRequirement[] = this.generateBackgroundRequirements(
-      assets.backgrounds || [],
-      limits.backgrounds,
-      styleProfile,
-      assetNeeds.backgroundNeed
-    )
-    
+    const backgrounds: BackgroundRequirement[] =
+      this.generateBackgroundRequirements(
+        assets.backgrounds || [],
+        limits.backgrounds,
+        styleProfile,
+        assetNeeds.backgroundNeed
+      )
+
     // Process decorative elements
-    const decorativeElements: DecorativeRequirement[] = this.generateDecorativeRequirements(
-      assets.decorativeElements || [],
-      limits.decorative,
-      styleProfile,
-      assetNeeds.decorativeNeed
-    )
-    
+    const decorativeElements: DecorativeRequirement[] =
+      this.generateDecorativeRequirements(
+        assets.decorativeElements || [],
+        limits.decorative,
+        styleProfile,
+        assetNeeds.decorativeNeed
+      )
+
     // Process educational graphics
-    const educationalGraphics: GraphicRequirement[] = this.generateGraphicRequirements(
-      assets.educationalGraphics || [],
-      limits.graphics,
-      styleProfile,
-      assetNeeds.graphicsNeed
-    )
-    
+    const educationalGraphics: GraphicRequirement[] =
+      this.generateGraphicRequirements(
+        assets.educationalGraphics || [],
+        limits.graphics,
+        styleProfile,
+        assetNeeds.graphicsNeed
+      )
+
     return {
       backgrounds,
       decorativeElements,
-      educationalGraphics
+      educationalGraphics,
     }
   }
 
@@ -1418,23 +1727,25 @@ Return as JSON with backgrounds, decorativeElements, and educationalGraphics arr
     need: number
   ): BackgroundRequirement[] {
     const backgrounds: BackgroundRequirement[] = []
-    
+
     // Always add at least one background if need is high
     if (need > 50 || suggestions.length > 0) {
       const defaultBackground = this.getDefaultBackground(styleProfile)
       backgrounds.push(defaultBackground)
     }
-    
+
     // Add AI suggestions
-    suggestions.slice(0, limit - 1).forEach(bg => {
+    suggestions.slice(0, limit - 1).forEach((bg) => {
       backgrounds.push({
-        style: bg.style || 'gradient',
+        style: bg.style || "gradient",
         theme: bg.theme || styleProfile.colors.mood,
         colors: bg.colors || this.getBackgroundColors(styleProfile),
-        opacity: bg.opacity || (styleProfile.visuals.style === 'minimalist' ? 0.05 : 0.15)
+        opacity:
+          bg.opacity ||
+          (styleProfile.visuals.style === "minimalist" ? 0.05 : 0.15),
       })
     })
-    
+
     return backgrounds.slice(0, limit)
   }
 
@@ -1445,23 +1756,26 @@ Return as JSON with backgrounds, decorativeElements, and educationalGraphics arr
     need: number
   ): DecorativeRequirement[] {
     const elements: DecorativeRequirement[] = []
-    
+
     // Add style-appropriate defaults if needed
     if (need > 30) {
       const defaults = this.getDefaultDecorativeElements(styleProfile)
       elements.push(...defaults)
     }
-    
+
     // Add AI suggestions
-    suggestions.forEach(el => {
+    suggestions.forEach((el) => {
       elements.push({
-        type: el.type || 'shape',
+        type: el.type || "shape",
         style: el.style || styleProfile.visuals.style,
-        quantity: Math.min(el.quantity || 1, styleProfile.visuals.quantity === 'rich' ? 5 : 3),
-        placement: el.placement || 'strategic'
+        quantity: Math.min(
+          el.quantity || 1,
+          styleProfile.visuals.quantity === "rich" ? 5 : 3
+        ),
+        placement: el.placement || "strategic",
       })
     })
-    
+
     return elements.slice(0, limit)
   }
 
@@ -1472,102 +1786,142 @@ Return as JSON with backgrounds, decorativeElements, and educationalGraphics arr
     _need: number
   ): GraphicRequirement[] {
     if (limit === 0) return []
-    
+
     const graphics: GraphicRequirement[] = []
-    
-    suggestions.slice(0, limit).forEach(gr => {
+
+    suggestions.slice(0, limit).forEach((gr) => {
       graphics.push({
-        type: gr.type || 'illustration',
+        type: gr.type || "illustration",
         style: gr.style || styleProfile.visuals.style,
         dimensions: gr.dimensions || { width: 400, height: 300 },
-        data: gr.data
+        data: gr.data,
       })
     })
-    
+
     return graphics
   }
 
-  private getDefaultBackground(styleProfile: StyleProfile): BackgroundRequirement {
+  private getDefaultBackground(
+    styleProfile: StyleProfile
+  ): BackgroundRequirement {
     const styleBackgrounds = {
-      minimalist: { style: 'gradient' as const, theme: 'subtle', colors: ['#FAFAFA', '#F5F5F5'], opacity: 0.05 },
-      decorative: { style: 'pattern' as const, theme: 'geometric', colors: ['#E0E0E0', '#F0F0F0'], opacity: 0.1 },
-      illustrative: { style: 'gradient' as const, theme: 'colorful', colors: ['#FFE5E5', '#E5F3FF'], opacity: 0.15 },
-      photographic: { style: 'image' as const, theme: 'abstract', colors: ['#000000', '#FFFFFF'], opacity: 0.1 }
+      minimalist: {
+        style: "gradient" as const,
+        theme: "subtle",
+        colors: ["#FAFAFA", "#F5F5F5"],
+        opacity: 0.05,
+      },
+      decorative: {
+        style: "pattern" as const,
+        theme: "geometric",
+        colors: ["#E0E0E0", "#F0F0F0"],
+        opacity: 0.1,
+      },
+      illustrative: {
+        style: "gradient" as const,
+        theme: "colorful",
+        colors: ["#FFE5E5", "#E5F3FF"],
+        opacity: 0.15,
+      },
+      photographic: {
+        style: "image" as const,
+        theme: "abstract",
+        colors: ["#000000", "#FFFFFF"],
+        opacity: 0.1,
+      },
     }
-    
-    return styleBackgrounds[styleProfile.visuals.style] || styleBackgrounds.minimalist
+
+    return (
+      styleBackgrounds[styleProfile.visuals.style] ||
+      styleBackgrounds.minimalist
+    )
   }
 
   private getBackgroundColors(styleProfile: StyleProfile): string[] {
     const tempColors = {
-      warm: ['#FFF5E6', '#FFE0CC'],
-      cool: ['#E6F3FF', '#CCE7FF'],
-      neutral: ['#F5F5F5', '#EBEBEB']
+      warm: ["#FFF5E6", "#FFE0CC"],
+      cool: ["#E6F3FF", "#CCE7FF"],
+      neutral: ["#F5F5F5", "#EBEBEB"],
     }
-    
+
     return tempColors[styleProfile.colors.temperature] || tempColors.neutral
   }
 
-  private getDefaultDecorativeElements(styleProfile: StyleProfile): DecorativeRequirement[] {
+  private getDefaultDecorativeElements(
+    styleProfile: StyleProfile
+  ): DecorativeRequirement[] {
     const elements: DecorativeRequirement[] = []
-    
-    if (styleProfile.visuals.style === 'minimalist') {
+
+    if (styleProfile.visuals.style === "minimalist") {
       elements.push({
-        type: 'shape',
-        style: 'geometric',
+        type: "shape",
+        style: "geometric",
         quantity: 2,
-        placement: 'corners'
+        placement: "corners",
       })
-    } else if (styleProfile.visuals.style === 'decorative') {
+    } else if (styleProfile.visuals.style === "decorative") {
       elements.push(
         {
-          type: 'border',
-          style: 'ornamental',
+          type: "border",
+          style: "ornamental",
           quantity: 1,
-          placement: 'edges'
+          placement: "edges",
         },
         {
-          type: 'shape',
-          style: 'organic',
+          type: "shape",
+          style: "organic",
           quantity: 3,
-          placement: 'random'
+          placement: "random",
         }
       )
-    } else if (styleProfile.visuals.style === 'illustrative') {
+    } else if (styleProfile.visuals.style === "illustrative") {
       elements.push({
-        type: 'icon',
-        style: 'flat',
+        type: "icon",
+        style: "flat",
         quantity: 4,
-        placement: 'grid'
+        placement: "grid",
       })
     }
-    
+
     return elements
   }
 
   private inferDocumentType(analysis: InitialAnalysisResult): string {
     const { extractedText, layoutAnalysis, metadata } = analysis
-    
+
     // Check for educational content
-    const educationalKeywords = ['lesson', 'worksheet', 'exercise', 'quiz', 'test', 'homework']
-    const hasEducationalContent = extractedText.bodyText.some(text => 
-      educationalKeywords.some(keyword => text.toLowerCase().includes(keyword))
+    const educationalKeywords = [
+      "lesson",
+      "worksheet",
+      "exercise",
+      "quiz",
+      "test",
+      "homework",
+    ]
+    const hasEducationalContent = extractedText.bodyText.some((text) =>
+      educationalKeywords.some((keyword) =>
+        text.toLowerCase().includes(keyword)
+      )
     )
-    
-    if (hasEducationalContent) return 'educational'
-    
+
+    if (hasEducationalContent) return "educational"
+
     // Check for presentation
-    if (metadata.pageCount && metadata.pageCount > 5 && layoutAnalysis.structure === 'single-column') {
-      return 'presentation'
+    if (
+      metadata.pageCount &&
+      metadata.pageCount > 5 &&
+      layoutAnalysis.structure === "single-column"
+    ) {
+      return "presentation"
     }
-    
+
     // Check for marketing
     if (extractedText.headings.length > 3 && metadata.hasImages) {
-      return 'marketing'
+      return "marketing"
     }
-    
+
     // Default to document
-    return 'document'
+    return "document"
   }
 
   private parseJSONResponse(response: string): any {
@@ -1577,11 +1931,11 @@ Return as JSON with backgrounds, decorativeElements, and educationalGraphics arr
       if (jsonMatch) {
         return JSON.parse(jsonMatch[1])
       }
-      
+
       // Try direct parse
       return JSON.parse(response)
     } catch (error) {
-      console.error('Failed to parse JSON response:', error)
+      console.error("Failed to parse JSON response:", error)
       return {}
     }
   }

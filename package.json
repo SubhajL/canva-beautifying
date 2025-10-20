@@ -9,6 +9,7 @@
     "start": "next start -p 5000",
     "start:ui": "next start -p 5002",
     "lint": "next lint",
+    "typecheck": "tsc -p tsconfig.typecheck.json --noEmit",
     "validate:env": "tsx scripts/validate-env.ts",
     "validate:env:prod": "NODE_ENV=production tsx scripts/validate-env.ts",
     "generate:secrets": "tsx scripts/generate-secrets.ts",

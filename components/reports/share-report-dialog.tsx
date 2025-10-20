@@ -1,7 +1,7 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { useReports } from '@/hooks/use-reports'
+import { useState } from "react"
+import { useReports } from "@/hooks/use-reports"
 import {
   Dialog,
   DialogContent,
@@ -9,15 +9,21 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Copy, Check, Lock } from 'lucide-react'
-import { ShareableReportLink } from '@/lib/reports/types'
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Copy, Check, Lock } from "lucide-react"
+import { ShareableReportLink } from "@/lib/reports/types"
 
 interface ShareReportDialogProps {
   reportId: string
@@ -25,12 +31,17 @@ interface ShareReportDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
-export function ShareReportDialog({ reportId, open, onOpenChange }: ShareReportDialogProps) {
+export function ShareReportDialog({
+  reportId,
+  open,
+  onOpenChange,
+}: ShareReportDialogProps) {
   const { createShareableLink, loading } = useReports()
-  const [shareableLink, setShareableLink] = useState<ShareableReportLink | null>(null)
-  const [password, setPassword] = useState('')
+  const [shareableLink, setShareableLink] =
+    useState<ShareableReportLink | null>(null)
+  const [password, setPassword] = useState("")
   const [usePassword, setUsePassword] = useState(false)
-  const [expiresInDays, setExpiresInDays] = useState('7')
+  const [expiresInDays, setExpiresInDays] = useState("7")
   const [copied, setCopied] = useState(false)
 
   const handleCreateLink = async () => {
@@ -57,9 +68,9 @@ export function ShareReportDialog({ reportId, open, onOpenChange }: ShareReportD
     // Reset state after dialog closes
     setTimeout(() => {
       setShareableLink(null)
-      setPassword('')
+      setPassword("")
       setUsePassword(false)
-      setExpiresInDays('7')
+      setExpiresInDays("7")
       setCopied(false)
     }, 200)
   }
@@ -70,7 +81,8 @@ export function ShareReportDialog({ reportId, open, onOpenChange }: ShareReportD
         <DialogHeader>
           <DialogTitle>Share Report</DialogTitle>
           <DialogDescription>
-            Create a shareable link to this report. Anyone with the link can view it.
+            Create a shareable link to this report. Anyone with the link can
+            view it.
           </DialogDescription>
         </DialogHeader>
 
@@ -122,8 +134,11 @@ export function ShareReportDialog({ reportId, open, onOpenChange }: ShareReportD
           <div className="space-y-4">
             <Alert>
               <AlertDescription>
-                Your shareable link has been created! It will expire on{' '}
-                {shareableLink.expiresAt ? new Date(shareableLink.expiresAt).toLocaleDateString() : 'never'}.
+                Your shareable link has been created! It will expire on{" "}
+                {shareableLink.expiresAt
+                  ? new Date(shareableLink.expiresAt).toLocaleDateString()
+                  : "never"}
+                .
               </AlertDescription>
             </Alert>
 
@@ -154,7 +169,8 @@ export function ShareReportDialog({ reportId, open, onOpenChange }: ShareReportD
               <Alert>
                 <Lock className="h-4 w-4" />
                 <AlertDescription>
-                  This link is password protected. Share the password separately: <strong>{password}</strong>
+                  This link is password protected. Share the password
+                  separately: <strong>{password}</strong>
                 </AlertDescription>
               </Alert>
             )}
@@ -167,8 +183,8 @@ export function ShareReportDialog({ reportId, open, onOpenChange }: ShareReportD
               <Button variant="outline" onClick={handleClose}>
                 Cancel
               </Button>
-              <Button 
-                onClick={handleCreateLink} 
+              <Button
+                onClick={handleCreateLink}
                 disabled={loading || (usePassword && !password)}
               >
                 Create Link

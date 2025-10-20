@@ -1,29 +1,29 @@
-'use client';
+"use client"
 
-import { AppHeader } from '@/components/layout/app-header'
-import { UsageNotification } from '@/components/usage/usage-notification'
-import { UpsellPrompt } from '@/components/usage/upsell-prompt'
-import { SkipNavigation, Landmark } from '@/components/a11y/skip-navigation'
-import { LiveRegionProvider } from '@/components/a11y/live-region'
-import { MobileBottomNav } from '@/components/layout/mobile-bottom-nav'
-import { BetaFeedbackWidget } from '@/components/beta/beta-feedback-widget'
-import { useAuth } from '@/contexts/auth'
-import { useFeatureFlag } from '@/lib/features/feature-flags'
-import { useBetaTracking } from '@/lib/tracking/beta-usage-tracker'
-import { DensityProvider } from '@/contexts/density'
-import { CommandProvider } from '@/contexts/command-palette'
-import CommandPalette from '@/components/command/CommandPalette'
+import { AppHeader } from "@/components/layout/app-header"
+import { UsageNotification } from "@/components/usage/usage-notification"
+import { UpsellPrompt } from "@/components/usage/upsell-prompt"
+import { SkipNavigation, Landmark } from "@/components/a11y/skip-navigation"
+import { LiveRegionProvider } from "@/components/a11y/live-region"
+import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav"
+import { BetaFeedbackWidget } from "@/components/beta/beta-feedback-widget"
+import { useAuth } from "@/contexts/auth"
+import { useFeatureFlag } from "@/lib/features/feature-flags"
+import { useBetaTracking } from "@/lib/tracking/beta-usage-tracker"
+import { DensityProvider } from "@/contexts/density"
+import { CommandProvider } from "@/contexts/command-palette"
+import CommandPalette from "@/components/command/CommandPalette"
+import { CommandSourcesRegistrar } from "@/components/command/CommandSourcesRegistrar"
 
-export default function AppLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  const { user } = useAuth();
-  const { enabled: showFeedbackWidget } = useFeatureFlag('beta_feedback_widget', user?.id);
-  
+export default function AppLayout({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth()
+  const { enabled: showFeedbackWidget } = useFeatureFlag(
+    "beta_feedback_widget",
+    user?.id
+  )
+
   // Enable beta usage tracking for beta users
-  useBetaTracking();
+  useBetaTracking()
 
   return (
     <CommandProvider>
@@ -57,14 +57,14 @@ export default function AppLayout({
 
             {/* Beta Feedback Widget */}
             {user && showFeedbackWidget && (
-              <BetaFeedbackWidget
-                userId={user.id}
-                position="bottom-right"
-              />
+              <BetaFeedbackWidget userId={user.id} position="bottom-right" />
             )}
 
             {/* Command Palette */}
             <CommandPalette />
+
+            {/* Command Palette Sources */}
+            <CommandSourcesRegistrar />
           </div>
         </LiveRegionProvider>
       </DensityProvider>

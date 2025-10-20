@@ -1,8 +1,8 @@
-import { NextRequest } from 'next/server'
-import { validateSecureDownloadToken } from './secure-url'
-import { apiErrors } from '../response'
-import { createClient } from '@/lib/supabase/server'
-import crypto from 'crypto'
+import { NextRequest } from "next/server"
+import { validateSecureDownloadToken } from "./secure-url"
+import { apiErrors } from "../response"
+import { createClient } from "@/lib/supabase/server"
+import crypto from "crypto"
 
 export interface DownloadPermission {
   documentId: string
@@ -20,49 +20,53 @@ export async function validateDownloadToken(
 ): Promise<DownloadPermission> {
   // Extract token and signature from query parameters
   const url = new URL(request.url)
-  const token = url.searchParams.get('token')
-  const signature = url.searchParams.get('sig')
+  const token = url.searchParams.get("token")
+  const signature = url.searchParams.get("sig")
 
   if (!token || !signature) {
-    throw apiErrors.unauthorized('Invalid or missing download token')
+    throw apiErrors.unauthorized("Invalid or missing download token")
   }
-  
+
   // Validate token
-  const tokenData = validateSecureDownloadToken(token, signature, expectedDocumentId)
-  
+  const tokenData = validateSecureDownloadToken(
+    token,
+    signature,
+    expectedDocumentId
+  )
+
   // Verify user has access to the document
   const supabase = await createClient()
-  
+
   const { data: document, error } = await supabase
-    .from('documents')
-    .select('id, user_id, status')
-    .eq('id', tokenData.documentId)
-    .eq('user_id', tokenData.userId)
+    .from("documents")
+    .select("id, user_id, status")
+    .eq("id", tokenData.documentId)
+    .eq("user_id", tokenData.userId)
     .single()
-  
+
   if (error || !document) {
     return {
       documentId: tokenData.documentId,
       userId: tokenData.userId,
       canDownload: false,
-      reason: 'Document not found or access denied'
+      reason: "Document not found or access denied",
     }
   }
-  
+
   // Check if document is ready for download
-  if (document.status !== 'completed' && document.status !== 'enhanced') {
+  if (document.status !== "completed" && document.status !== "enhanced") {
     return {
       documentId: tokenData.documentId,
       userId: tokenData.userId,
       canDownload: false,
-      reason: 'Document is not ready for download'
+      reason: "Document is not ready for download",
     }
   }
-  
+
   return {
     documentId: tokenData.documentId,
     userId: tokenData.userId,
-    canDownload: true
+    canDownload: true,
   }
 }
 
@@ -75,10 +79,10 @@ export function validateWebhookSignature(
   secret: string
 ): boolean {
   const expectedSignature = crypto
-    .createHmac('sha256', secret)
+    .createHmac("sha256", secret)
     .update(payload)
-    .digest('hex')
-  
+    .digest("hex")
+
   return crypto.timingSafeEqual(
     Buffer.from(signature),
     Buffer.from(expectedSignature)
@@ -95,24 +99,24 @@ export async function logDownloadAccess(
   metadata?: Record<string, unknown>
 ): Promise<void> {
   const supabase = await createClient()
-  
+
   try {
     await supabase
-      .from('audit_logs')
+      .from("audit_logs")
       .insert({
         user_id: userId,
-        action: 'document_download',
-        resource_type: 'document',
+        action: "document_download",
+        resource_type: "document",
         resource_id: documentId,
         success,
         metadata: {
           ...metadata,
-          timestamp: new Date().toISOString()
-        }
+          timestamp: new Date().toISOString(),
+        },
       })
       .select()
       .single()
   } catch (error: unknown) {
-    console.error('Failed to log download access:', error)
+    console.error("Failed to log download access:", error)
   }
 }

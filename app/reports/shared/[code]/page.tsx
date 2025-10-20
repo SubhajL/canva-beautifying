@@ -1,21 +1,28 @@
-'use client'
+"use client"
 
-import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
-import Image from 'next/image'
-import { useSharedReport } from '@/hooks/use-reports'
-import { ReportViewer } from '@/components/reports/report-viewer'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Lock, AlertCircle } from 'lucide-react'
+import { useEffect, useState } from "react"
+import { useParams } from "next/navigation"
+import Image from "next/image"
+import { useSharedReport } from "@/hooks/use-reports"
+import { ReportViewer } from "@/components/reports/report-viewer"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Lock, AlertCircle } from "lucide-react"
 
 export default function SharedReportPage() {
   const params = useParams()
   const shortCode = params.code as string
-  const { report, loading, error, requiresPassword, loadReport } = useSharedReport(shortCode)
-  const [password, setPassword] = useState('')
+  const { report, loading, error, requiresPassword, loadReport } =
+    useSharedReport(shortCode)
+  const [password, setPassword] = useState("")
 
   useEffect(() => {
     loadReport()
@@ -28,9 +35,9 @@ export default function SharedReportPage() {
 
   if (loading) {
     return (
-      <div className="container max-w-7xl mx-auto py-8 px-4">
-        <Skeleton className="h-12 w-64 mb-4" />
-        <Skeleton className="h-6 w-48 mb-8" />
+      <div className="container mx-auto max-w-7xl px-4 py-8">
+        <Skeleton className="mb-4 h-12 w-64" />
+        <Skeleton className="mb-8 h-6 w-48" />
         <div className="space-y-4">
           <Skeleton className="h-32 w-full" />
           <Skeleton className="h-64 w-full" />
@@ -42,13 +49,14 @@ export default function SharedReportPage() {
 
   if (requiresPassword) {
     return (
-      <div className="container max-w-md mx-auto py-16 px-4">
+      <div className="container mx-auto max-w-md px-4 py-16">
         <Card>
           <CardHeader className="text-center">
-            <Lock className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+            <Lock className="mx-auto mb-4 h-12 w-12 text-gray-400" />
             <CardTitle>Password Required</CardTitle>
             <CardDescription>
-              This report is password protected. Please enter the password to view it.
+              This report is password protected. Please enter the password to
+              view it.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -60,11 +68,7 @@ export default function SharedReportPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
-              {error && (
-                <p className="text-sm text-red-500">
-                  {error}
-                </p>
-              )}
+              {error && <p className="text-sm text-red-500">{error}</p>}
               <Button type="submit" className="w-full">
                 View Report
               </Button>
@@ -77,14 +81,12 @@ export default function SharedReportPage() {
 
   if (error && !requiresPassword) {
     return (
-      <div className="container max-w-md mx-auto py-16 px-4">
+      <div className="container mx-auto max-w-md px-4 py-16">
         <Card>
           <CardHeader className="text-center">
-            <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
+            <AlertCircle className="mx-auto mb-4 h-12 w-12 text-red-500" />
             <CardTitle>Report Not Found</CardTitle>
-            <CardDescription>
-              {error}
-            </CardDescription>
+            <CardDescription>{error}</CardDescription>
           </CardHeader>
           <CardContent className="text-center">
             <p className="text-sm text-gray-500">
@@ -102,29 +104,36 @@ export default function SharedReportPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b">
-        <div className="container max-w-7xl mx-auto py-4 px-4">
+      <div className="border-b bg-white">
+        <div className="container mx-auto max-w-7xl px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Image src="/logo.svg" alt="BeautifyAI" width={32} height={32} className="h-8 w-auto" />
+              <Image
+                src="/logo.svg"
+                alt="BeautifyAI"
+                width={32}
+                height={32}
+                className="h-8 w-auto"
+              />
               <span className="text-sm text-gray-500">Shared Report</span>
             </div>
-            <p className="text-sm text-gray-500">
-              Generated by BeautifyAI
-            </p>
+            <p className="text-sm text-gray-500">Generated by BeautifyAI</p>
           </div>
         </div>
       </div>
 
-      <div className="container max-w-7xl mx-auto py-8 px-4">
+      <div className="container mx-auto max-w-7xl px-4 py-8">
         <ReportViewer report={report} />
       </div>
 
-      <footer className="bg-white border-t mt-12">
-        <div className="container max-w-7xl mx-auto py-6 px-4 text-center">
+      <footer className="mt-12 border-t bg-white">
+        <div className="container mx-auto max-w-7xl px-4 py-6 text-center">
           <p className="text-sm text-gray-500">
-            Want to enhance your own documents?{' '}
-            <a href="https://beautifyai.com" className="text-primary hover:underline">
+            Want to enhance your own documents?{" "}
+            <a
+              href="https://beautifyai.com"
+              className="text-primary hover:underline"
+            >
               Try BeautifyAI for free
             </a>
           </p>

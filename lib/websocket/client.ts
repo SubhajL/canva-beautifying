@@ -1,9 +1,6 @@
-import { io, Socket } from 'socket.io-client'
-import { createClient } from '@/lib/supabase/client'
-import type {
-  ServerToClientEvents,
-  ClientToServerEvents,
-} from './types'
+import { io, Socket } from "socket.io-client"
+import { createClient } from "@/lib/supabase/client"
+import type { ServerToClientEvents, ClientToServerEvents } from "./types"
 
 export type WebSocketClient = Socket<ServerToClientEvents, ClientToServerEvents>
 
@@ -23,22 +20,27 @@ class SocketManager {
 
     // Get auth token
     const supabase = createClient()
-    const { data: { session } } = await supabase.auth.getSession()
-    
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+
     if (!session?.access_token) {
-      throw new Error('No authentication session')
+      throw new Error("No authentication session")
     }
 
     // Create socket connection
-    this.socket = io(process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'ws://localhost:5001', {
-      auth: {
-        token: session.access_token,
-      },
-      transports: ['websocket', 'polling'],
-      reconnection: true,
-      reconnectionAttempts: this.maxReconnectAttempts,
-      reconnectionDelay: this.reconnectDelay,
-    })
+    this.socket = io(
+      process.env.NEXT_PUBLIC_WEBSOCKET_URL || "ws://localhost:5001",
+      {
+        auth: {
+          token: session.access_token,
+        },
+        transports: ["websocket", "polling"],
+        reconnection: true,
+        reconnectionAttempts: this.maxReconnectAttempts,
+        reconnectionDelay: this.reconnectDelay,
+      }
+    )
 
     this.setupEventHandlers()
   }
@@ -47,91 +49,91 @@ class SocketManager {
     if (!this.socket) return
 
     // Connection events
-    this.socket.on('connect', () => {
-      console.log('WebSocket connected')
+    this.socket.on("connect", () => {
+      console.log("WebSocket connected")
       this.reconnectAttempts = 0
-      
+
       // Re-subscribe to documents and batches
-      this.subscribedDocuments.forEach(docId => {
-        this.socket?.emit('subscribe:document', docId)
+      this.subscribedDocuments.forEach((docId) => {
+        this.socket?.emit("subscribe:document", docId)
       })
-      this.subscribedBatches.forEach(batchId => {
-        this.socket?.emit('subscribe:batch', batchId)
+      this.subscribedBatches.forEach((batchId) => {
+        this.socket?.emit("subscribe:batch", batchId)
       })
-      
-      this.emit('connected', null)
+
+      this.emit("connected", null)
     })
 
-    this.socket.on('disconnect', (reason) => {
-      console.log('WebSocket disconnected:', reason)
-      this.emit('disconnected', reason)
+    this.socket.on("disconnect", (reason) => {
+      console.log("WebSocket disconnected:", reason)
+      this.emit("disconnected", reason)
     })
 
-    this.socket.on('connect_error', (error) => {
-      console.error('WebSocket connection error:', error)
+    this.socket.on("connect_error", (error) => {
+      console.error("WebSocket connection error:", error)
       this.reconnectAttempts++
-      
+
       if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-        this.emit('connection_failed', error.message)
+        this.emit("connection_failed", error.message)
       }
     })
 
     // Ready signal
-    this.socket.on('connection:ready', () => {
-      this.emit('ready', null)
+    this.socket.on("connection:ready", () => {
+      this.emit("ready", null)
     })
 
-    this.socket.on('connection:error', (error) => {
-      this.emit('error', error)
+    this.socket.on("connection:error", (error) => {
+      this.emit("error", error)
     })
 
     // Progress events
-    this.socket.on('enhancement:progress', (data) => {
+    this.socket.on("enhancement:progress", (data) => {
       this.emit(`enhancement:progress:${data.documentId}`, data)
-      this.emit('enhancement:progress', data)
+      this.emit("enhancement:progress", data)
     })
 
-    this.socket.on('analysis:progress', (data) => {
+    this.socket.on("analysis:progress", (data) => {
       this.emit(`analysis:progress:${data.documentId}`, data)
-      this.emit('analysis:progress', data)
+      this.emit("analysis:progress", data)
     })
 
-    this.socket.on('export:progress', (data) => {
+    this.socket.on("export:progress", (data) => {
       this.emit(`export:progress:${data.documentId}`, data)
-      this.emit('export:progress', data)
+      this.emit("export:progress", data)
     })
 
     // Job events
-    this.socket.on('job:started', (data) => {
+    this.socket.on("job:started", (data) => {
       this.emit(`job:started:${data.documentId}`, data)
-      this.emit('job:started', data)
+      this.emit("job:started", data)
     })
 
-    this.socket.on('job:completed', (data) => {
+    this.socket.on("job:completed", (data) => {
       this.emit(`job:completed:${data.documentId}`, data)
-      this.emit('job:completed', data)
+      this.emit("job:completed", data)
     })
 
-    this.socket.on('job:failed', (data) => {
+    this.socket.on("job:failed", (data) => {
       this.emit(`job:failed:${data.documentId}`, data)
-      this.emit('job:failed', data)
+      this.emit("job:failed", data)
     })
 
     // Queue events
-    this.socket.on('queue:position', (data) => {
+    this.socket.on("queue:position", (data) => {
       this.emit(`queue:position:${data.documentId}`, data)
-      this.emit('queue:position', data)
+      this.emit("queue:position", data)
     })
 
     // Batch events
-    this.socket.on('batch:update', (data) => {
+    this.socket.on("batch:update", (data) => {
       this.emit(`batch:update:${data.batchId}`, data)
-      this.emit('batch:update', data)
+      this.emit("batch:update", data)
     })
 
     // Notifications
-    this.socket.on('notification', (data) => {
-      this.emit('notification', data)
+    this.socket.on("notification", (data) => {
+      this.emit("notification", data)
       if (data.documentId) {
         this.emit(`notification:${data.documentId}`, data)
       }
@@ -141,53 +143,53 @@ class SocketManager {
   // Subscribe to document updates
   subscribeToDocument(documentId: string) {
     if (!this.socket?.connected) {
-      console.warn('Socket not connected')
+      console.warn("Socket not connected")
       return
     }
 
-    this.socket.emit('subscribe:document', documentId)
+    this.socket.emit("subscribe:document", documentId)
     this.subscribedDocuments.add(documentId)
   }
 
   unsubscribeFromDocument(documentId: string) {
     if (!this.socket?.connected) return
 
-    this.socket.emit('unsubscribe:document', documentId)
+    this.socket.emit("unsubscribe:document", documentId)
     this.subscribedDocuments.delete(documentId)
   }
 
   // Subscribe to batch updates
   subscribeToBatch(batchId: string) {
     if (!this.socket?.connected) {
-      console.warn('Socket not connected')
+      console.warn("Socket not connected")
       return
     }
 
-    this.socket.emit('subscribe:batch', batchId)
+    this.socket.emit("subscribe:batch", batchId)
     this.subscribedBatches.add(batchId)
   }
 
   unsubscribeFromBatch(batchId: string) {
     if (!this.socket?.connected) return
 
-    this.socket.emit('unsubscribe:batch', batchId)
+    this.socket.emit("unsubscribe:batch", batchId)
     this.subscribedBatches.delete(batchId)
   }
 
   // Subscribe to user updates
   subscribeToUser(userId: string) {
     if (!this.socket?.connected) {
-      console.warn('Socket not connected')
+      console.warn("Socket not connected")
       return
     }
 
-    this.socket.emit('subscribe:user', userId)
+    this.socket.emit("subscribe:user", userId)
   }
 
   unsubscribeFromUser(userId: string) {
     if (!this.socket?.connected) return
 
-    this.socket.emit('unsubscribe:user', userId)
+    this.socket.emit("unsubscribe:user", userId)
   }
 
   // Event emitter methods
@@ -208,13 +210,13 @@ class SocketManager {
   private emit(event: string, data: any) {
     const callbacks = this.listeners.get(event)
     if (callbacks) {
-      callbacks.forEach(callback => callback(data))
+      callbacks.forEach((callback) => callback(data))
     }
   }
 
   // Send ping
   ping() {
-    this.socket?.emit('ping')
+    this.socket?.emit("ping")
   }
 
   // Disconnect
@@ -249,17 +251,21 @@ export function getSocketManager(): SocketManager {
 // React hook for using WebSocket
 export function useWebSocket() {
   const manager = getSocketManager()
-  
+
   return {
     connect: () => manager.connect(),
     disconnect: () => manager.disconnect(),
     isConnected: () => manager.isConnected(),
     subscribeToDocument: (docId: string) => manager.subscribeToDocument(docId),
-    unsubscribeFromDocument: (docId: string) => manager.unsubscribeFromDocument(docId),
+    unsubscribeFromDocument: (docId: string) =>
+      manager.unsubscribeFromDocument(docId),
     subscribeToBatch: (batchId: string) => manager.subscribeToBatch(batchId),
-    unsubscribeFromBatch: (batchId: string) => manager.unsubscribeFromBatch(batchId),
-    on: (event: string, callback: (...args: unknown[]) => void) => manager.on(event, callback),
-    off: (event: string, callback: (...args: unknown[]) => void) => manager.off(event, callback),
+    unsubscribeFromBatch: (batchId: string) =>
+      manager.unsubscribeFromBatch(batchId),
+    on: (event: string, callback: (...args: unknown[]) => void) =>
+      manager.on(event, callback),
+    off: (event: string, callback: (...args: unknown[]) => void) =>
+      manager.off(event, callback),
     ping: () => manager.ping(),
   }
 }

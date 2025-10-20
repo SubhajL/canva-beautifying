@@ -1,151 +1,170 @@
-'use client';
+"use client"
 
-import { useState, useEffect, useRef } from 'react';
-import { MessageSquare, X, Bug, Lightbulb, Zap, MessageCircle, Upload, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
-import { usePathname } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { useState, useEffect, useRef } from "react"
+import {
+  MessageSquare,
+  X,
+  Bug,
+  Lightbulb,
+  Zap,
+  MessageCircle,
+  Upload,
+  Loader2,
+} from "lucide-react"
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { useToast } from "@/hooks/use-toast"
+import { cn } from "@/lib/utils"
+import { usePathname } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
 
-type FeedbackType = 'bug' | 'feature' | 'improvement' | 'general';
-type Position = 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+type FeedbackType = "bug" | "feature" | "improvement" | "general"
+type Position = "bottom-right" | "bottom-left" | "top-right" | "top-left"
 
 interface BetaFeedbackWidgetProps {
-  position?: Position;
-  userId?: string;
+  position?: Position
+  userId?: string
 }
 
 const feedbackTypes = [
-  { value: 'bug', label: 'Bug Report', icon: Bug },
-  { value: 'feature', label: 'Feature Request', icon: Lightbulb },
-  { value: 'improvement', label: 'Improvement', icon: Zap },
-  { value: 'general', label: 'General Feedback', icon: MessageCircle },
-] as const;
+  { value: "bug", label: "Bug Report", icon: Bug },
+  { value: "feature", label: "Feature Request", icon: Lightbulb },
+  { value: "improvement", label: "Improvement", icon: Zap },
+  { value: "general", label: "General Feedback", icon: MessageCircle },
+] as const
 
 const positionClasses: Record<Position, string> = {
-  'bottom-right': 'bottom-4 right-4',
-  'bottom-left': 'bottom-4 left-4',
-  'top-right': 'top-4 right-4',
-  'top-left': 'top-4 left-4',
-};
+  "bottom-right": "bottom-4 right-4",
+  "bottom-left": "bottom-4 left-4",
+  "top-right": "top-4 right-4",
+  "top-left": "top-4 left-4",
+}
 
-export function BetaFeedbackWidget({ position = 'bottom-right', userId }: BetaFeedbackWidgetProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
-  const [isBetaUser, setIsBetaUser] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [feedbackType, setFeedbackType] = useState<FeedbackType>('general');
-  const [rating, setRating] = useState(0);
-  const [message, setMessage] = useState('');
-  const [screenshot, setScreenshot] = useState<File | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const pathname = usePathname();
-  const { toast } = useToast();
+export function BetaFeedbackWidget({
+  position = "bottom-right",
+  userId,
+}: BetaFeedbackWidgetProps) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [isMinimized, setIsMinimized] = useState(false)
+  const [isBetaUser, setIsBetaUser] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [feedbackType, setFeedbackType] = useState<FeedbackType>("general")
+  const [rating, setRating] = useState(0)
+  const [message, setMessage] = useState("")
+  const [screenshot, setScreenshot] = useState<File | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const pathname = usePathname()
+  const { toast } = useToast()
 
   // Check if user is a beta user
   useEffect(() => {
     const checkBetaStatus = async () => {
-      if (!userId) return;
-      
+      if (!userId) return
+
       try {
-        const supabase = createClient();
+        const supabase = createClient()
         const { data, error } = await supabase
-          .from('user_profiles')
-          .select('is_beta_user')
-          .eq('id', userId)
-          .single();
-        
+          .from("user_profiles")
+          .select("is_beta_user")
+          .eq("id", userId)
+          .single()
+
         if (!error && data) {
-          setIsBetaUser(data.is_beta_user || false);
+          setIsBetaUser(data.is_beta_user || false)
         }
       } catch (error) {
-        console.error('Error checking beta status:', error);
+        console.error("Error checking beta status:", error)
       }
-    };
+    }
 
-    checkBetaStatus();
-  }, [userId]);
+    checkBetaStatus()
+  }, [userId])
 
   // Don't render if not a beta user
-  if (!isBetaUser) return null;
+  if (!isBetaUser) return null
 
   const getBrowserInfo = () => {
-    const userAgent = navigator.userAgent;
+    const userAgent = navigator.userAgent
     const browserInfo = {
       userAgent,
       platform: navigator.platform,
       language: navigator.language,
       screenResolution: `${window.screen.width}x${window.screen.height}`,
       viewport: `${window.innerWidth}x${window.innerHeight}`,
-    };
-    return browserInfo;
-  };
+    }
+    return browserInfo
+  }
 
   const handleScreenshotCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && file.type.startsWith('image/')) {
-      setScreenshot(file);
+    const file = e.target.files?.[0]
+    if (file && file.type.startsWith("image/")) {
+      setScreenshot(file)
     } else {
       toast({
-        title: 'Invalid file',
-        description: 'Please upload an image file',
-        variant: 'destructive',
-      });
+        title: "Invalid file",
+        description: "Please upload an image file",
+        variant: "destructive",
+      })
     }
-  };
+  }
 
   const handleSubmit = async () => {
     if (!message.trim()) {
       toast({
-        title: 'Message required',
-        description: 'Please enter your feedback message',
-        variant: 'destructive',
-      });
-      return;
+        title: "Message required",
+        description: "Please enter your feedback message",
+        variant: "destructive",
+      })
+      return
     }
 
     // Title is required for API
-    const title = message.slice(0, 50) + (message.length > 50 ? '...' : '');
+    const title = message.slice(0, 50) + (message.length > 50 ? "..." : "")
 
-    setIsSubmitting(true);
-    
+    setIsSubmitting(true)
+
     try {
-      const browserInfo = getBrowserInfo();
-      
+      const browserInfo = getBrowserInfo()
+
       // Upload screenshot if provided
-      let attachments: Array<{ url: string; type: string; size: number }> = [];
+      let attachments: Array<{ url: string; type: string; size: number }> = []
       if (screenshot) {
-        const fileExt = screenshot.name.split('.').pop();
-        const fileName = `${userId}/${Date.now()}.${fileExt}`;
-        
-        const supabase = createClient();
+        const fileExt = screenshot.name.split(".").pop()
+        const fileName = `${userId}/${Date.now()}.${fileExt}`
+
+        const supabase = createClient()
         const { data: _uploadData, error: uploadError } = await supabase.storage
-          .from('feedback-screenshots')
-          .upload(fileName, screenshot);
-        
-        if (uploadError) throw uploadError;
-        
-        const { data: { publicUrl } } = supabase.storage
-          .from('feedback-screenshots')
-          .getPublicUrl(fileName);
-        
-        attachments = [{
-          url: publicUrl,
-          type: screenshot.type,
-          size: screenshot.size,
-        }];
+          .from("feedback-screenshots")
+          .upload(fileName, screenshot)
+
+        if (uploadError) throw uploadError
+
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("feedback-screenshots").getPublicUrl(fileName)
+
+        attachments = [
+          {
+            url: publicUrl,
+            type: screenshot.type,
+            size: screenshot.size,
+          },
+        ]
       }
-      
+
       // Submit feedback via API
-      const response = await fetch('/api/v1/beta/feedback', {
-        method: 'POST',
+      const response = await fetch("/api/v1/beta/feedback", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           type: feedbackType,
@@ -156,36 +175,37 @@ export function BetaFeedbackWidget({ position = 'bottom-right', userId }: BetaFe
           browser_info: browserInfo,
           attachments: attachments.length > 0 ? attachments : undefined,
         }),
-      });
+      })
 
-      const data = await response.json();
+      const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error?.message || 'Failed to submit feedback');
+        throw new Error(data.error?.message || "Failed to submit feedback")
       }
-      
+
       toast({
-        title: 'Feedback submitted!',
-        description: 'Thank you for helping us improve BeautifyAI',
-      });
-      
+        title: "Feedback submitted!",
+        description: "Thank you for helping us improve BeautifyAI",
+      })
+
       // Reset form
-      setMessage('');
-      setRating(0);
-      setScreenshot(null);
-      setFeedbackType('general');
-      setIsOpen(false);
+      setMessage("")
+      setRating(0)
+      setScreenshot(null)
+      setFeedbackType("general")
+      setIsOpen(false)
     } catch (error) {
-      console.error('Error submitting feedback:', error);
+      console.error("Error submitting feedback:", error)
       toast({
-        title: 'Submission failed',
-        description: error instanceof Error ? error.message : 'Please try again later',
-        variant: 'destructive',
-      });
+        title: "Submission failed",
+        description:
+          error instanceof Error ? error.message : "Please try again later",
+        variant: "destructive",
+      })
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   const StarRating = () => {
     return (
@@ -196,37 +216,39 @@ export function BetaFeedbackWidget({ position = 'bottom-right', userId }: BetaFe
             type="button"
             onClick={() => setRating(star)}
             className={cn(
-              'text-2xl transition-colors',
-              star <= rating ? 'text-yellow-500' : 'text-gray-300 hover:text-yellow-300'
+              "text-2xl transition-colors",
+              star <= rating
+                ? "text-yellow-500"
+                : "text-gray-300 hover:text-yellow-300"
             )}
           >
             ★
           </button>
         ))}
       </div>
-    );
-  };
+    )
+  }
 
   return (
     <>
       {/* Floating Button */}
       <div
         className={cn(
-          'fixed z-50 transition-all duration-300',
+          "fixed z-50 transition-all duration-300",
           positionClasses[position],
-          isMinimized && 'opacity-50 hover:opacity-100'
+          isMinimized && "opacity-50 hover:opacity-100"
         )}
       >
         <div className="flex items-center gap-2">
           {!isMinimized && (
-            <span className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full">
+            <span className="rounded-full bg-primary px-2 py-1 text-xs text-primary-foreground">
               Beta
             </span>
           )}
           <Button
             onClick={() => setIsOpen(true)}
             size="icon"
-            className="rounded-full shadow-lg hover:shadow-xl transition-shadow"
+            className="rounded-full shadow-lg transition-shadow hover:shadow-xl"
             title="Send feedback"
           >
             <MessageSquare className="h-5 w-5" />
@@ -235,8 +257,8 @@ export function BetaFeedbackWidget({ position = 'bottom-right', userId }: BetaFe
             onClick={() => setIsMinimized(!isMinimized)}
             size="icon"
             variant="ghost"
-            className="rounded-full h-6 w-6"
-            title={isMinimized ? 'Show beta label' : 'Hide beta label'}
+            className="h-6 w-6 rounded-full"
+            title={isMinimized ? "Show beta label" : "Hide beta label"}
           >
             <X className="h-4 w-4" />
           </Button>
@@ -249,12 +271,17 @@ export function BetaFeedbackWidget({ position = 'bottom-right', userId }: BetaFe
           <DialogHeader>
             <DialogTitle>Beta Feedback</DialogTitle>
           </DialogHeader>
-          
+
           <div className="space-y-4 py-4">
             {/* Feedback Type */}
             <div className="space-y-2">
               <Label>Feedback Type</Label>
-              <RadioGroup value={feedbackType} onValueChange={(value) => setFeedbackType(value as FeedbackType)}>
+              <RadioGroup
+                value={feedbackType}
+                onValueChange={(value) =>
+                  setFeedbackType(value as FeedbackType)
+                }
+              >
                 <div className="grid grid-cols-2 gap-3">
                   {feedbackTypes.map(({ value, label, icon: Icon }) => (
                     <div key={value}>
@@ -266,9 +293,9 @@ export function BetaFeedbackWidget({ position = 'bottom-right', userId }: BetaFe
                       <Label
                         htmlFor={value}
                         className={cn(
-                          'flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors',
-                          'hover:bg-accent',
-                          'peer-checked:border-primary peer-checked:bg-primary/10'
+                          "flex cursor-pointer items-center gap-2 rounded-lg border p-3 transition-colors",
+                          "hover:bg-accent",
+                          "peer-checked:border-primary peer-checked:bg-primary/10"
                         )}
                       >
                         <Icon className="h-4 w-4" />
@@ -309,8 +336,8 @@ export function BetaFeedbackWidget({ position = 'bottom-right', userId }: BetaFe
                   size="sm"
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  <Upload className="h-4 w-4 mr-2" />
-                  {screenshot ? 'Change Screenshot' : 'Upload Screenshot'}
+                  <Upload className="mr-2 h-4 w-4" />
+                  {screenshot ? "Change Screenshot" : "Upload Screenshot"}
                 </Button>
                 {screenshot && (
                   <span className="text-sm text-muted-foreground">
@@ -328,9 +355,11 @@ export function BetaFeedbackWidget({ position = 'bottom-right', userId }: BetaFe
             </div>
 
             {/* Page Info */}
-            <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t">
+            <div className="space-y-1 border-t pt-2 text-xs text-muted-foreground">
               <p>Page: {pathname}</p>
-              <p>Browser: {navigator.userAgent.split(' ').slice(-2).join(' ')}</p>
+              <p>
+                Browser: {navigator.userAgent.split(" ").slice(-2).join(" ")}
+              </p>
             </div>
           </div>
 
@@ -342,16 +371,15 @@ export function BetaFeedbackWidget({ position = 'bottom-right', userId }: BetaFe
             >
               Cancel
             </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-            >
-              {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            <Button onClick={handleSubmit} disabled={isSubmitting}>
+              {isSubmitting && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               Submit Feedback
             </Button>
           </div>
         </DialogContent>
       </Dialog>
     </>
-  );
+  )
 }

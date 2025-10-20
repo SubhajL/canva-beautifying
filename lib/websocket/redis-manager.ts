@@ -1,5 +1,5 @@
-import Redis from 'ioredis'
-import { EventEmitter } from 'events'
+import Redis from "ioredis"
+import { EventEmitter } from "events"
 
 interface RedisManagerOptions {
   url?: string
@@ -21,23 +21,23 @@ export class RedisManager extends EventEmitter {
   private connectionStatus: ConnectionStatus = {
     connected: false,
     connectionAttempts: 0,
-    fallbackMode: false
+    fallbackMode: false,
   }
   private reconnectTimer: NodeJS.Timeout | null = null
 
   constructor(options: RedisManagerOptions = {}) {
     super()
     this.options = {
-      url: options.url || process.env.REDIS_URL || 'redis://localhost:6379',
+      url: options.url || process.env.REDIS_URL || "redis://localhost:6379",
       maxRetries: options.maxRetries || 5,
       retryDelay: options.retryDelay || 1000,
-      enableFallback: options.enableFallback ?? true
+      enableFallback: options.enableFallback ?? true,
     }
   }
 
   async ensureRedisConnection(retries?: number): Promise<Redis | null> {
     const maxAttempts = retries ?? this.options.maxRetries
-    
+
     if (this.redis && this.connectionStatus.connected) {
       return this.redis
     }
@@ -45,32 +45,31 @@ export class RedisManager extends EventEmitter {
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
         this.connectionStatus.connectionAttempts = attempt
-        
+
         this.redis = new Redis(this.options.url, {
           retryStrategy: (times) => {
             if (times > 3) return null
             return Math.min(times * 50, 2000)
           },
           enableOfflineQueue: false,
-          lazyConnect: true
+          lazyConnect: true,
         })
 
         await this.redis.connect()
-        
+
         this.connectionStatus.connected = true
         this.connectionStatus.fallbackMode = false
-        this.emit('connected', { attempt, fallbackMode: false })
-        
+        this.emit("connected", { attempt, fallbackMode: false })
+
         this.setupEventHandlers()
         return this.redis
-        
       } catch (error) {
         this.connectionStatus.lastError = error as Error
-        this.emit('connectionError', { attempt, error, maxAttempts })
-        
+        this.emit("connectionError", { attempt, error, maxAttempts })
+
         if (attempt < maxAttempts) {
           const delay = this.options.retryDelay * Math.pow(1.5, attempt - 1)
-          await new Promise(resolve => setTimeout(resolve, delay))
+          await new Promise((resolve) => setTimeout(resolve, delay))
         }
       }
     }
@@ -78,32 +77,34 @@ export class RedisManager extends EventEmitter {
     // All retries exhausted
     if (this.options.enableFallback) {
       this.connectionStatus.fallbackMode = true
-      this.emit('fallbackMode', { reason: 'Connection failed after retries' })
+      this.emit("fallbackMode", { reason: "Connection failed after retries" })
       return null // Caller should handle in-memory fallback
     }
 
-    throw new Error(`Redis connection failed after ${maxAttempts} attempts: ${this.connectionStatus.lastError?.message}`)
+    throw new Error(
+      `Redis connection failed after ${maxAttempts} attempts: ${this.connectionStatus.lastError?.message}`
+    )
   }
 
   private setupEventHandlers(): void {
     if (!this.redis) return
 
-    this.redis.on('error', (error) => {
-      console.error('[RedisManager] Connection error:', error)
+    this.redis.on("error", (error) => {
+      console.error("[RedisManager] Connection error:", error)
       this.connectionStatus.connected = false
       this.connectionStatus.lastError = error
-      this.emit('error', error)
+      this.emit("error", error)
       this.scheduleReconnect()
     })
 
-    this.redis.on('close', () => {
+    this.redis.on("close", () => {
       this.connectionStatus.connected = false
-      this.emit('disconnected')
+      this.emit("disconnected")
       this.scheduleReconnect()
     })
 
-    this.redis.on('reconnecting', () => {
-      this.emit('reconnecting')
+    this.redis.on("reconnecting", () => {
+      this.emit("reconnecting")
     })
   }
 
@@ -115,7 +116,7 @@ export class RedisManager extends EventEmitter {
       try {
         await this.ensureRedisConnection()
       } catch (error) {
-        console.error('[RedisManager] Reconnection failed:', error)
+        console.error("[RedisManager] Reconnection failed:", error)
       }
     }, this.options.retryDelay)
   }
@@ -132,7 +133,7 @@ export class RedisManager extends EventEmitter {
     }
 
     this.connectionStatus.connected = false
-    this.emit('disconnected')
+    this.emit("disconnected")
   }
 
   getStatus(): ConnectionStatus {
@@ -144,7 +145,9 @@ export class RedisManager extends EventEmitter {
   }
 
   isConnected(): boolean {
-    return this.connectionStatus.connected && !this.connectionStatus.fallbackMode
+    return (
+      this.connectionStatus.connected && !this.connectionStatus.fallbackMode
+    )
   }
 
   isInFallbackMode(): boolean {

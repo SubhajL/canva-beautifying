@@ -43,7 +43,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
     info: Info,
     success: CheckCircle,
   }
-  
+
   const iconColors = {
     default: "",
     destructive: "text-destructive",
@@ -51,7 +51,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
     info: "text-info",
     success: "text-success",
   }
-  
+
   const buttonVariants = {
     default: "default" as const,
     destructive: "destructive" as const,
@@ -59,9 +59,9 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
     info: "default" as const,
     success: "success" as const,
   }
-  
+
   const Icon = icons[variant]
-  
+
   const handleCancel = () => {
     if (onCancel) {
       onCancel()
@@ -69,24 +69,28 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
       onOpenChange(false)
     }
   }
-  
+
   const handleConfirm = () => {
     onConfirm()
     if (!loading) {
       onOpenChange(false)
     }
   }
-  
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <div className="flex items-start gap-3">
             {Icon && (
-              <div className={cn(
-                "rounded-lg p-2",
-                variant === "default" ? "bg-primary/10" : "bg-gray-100 dark:bg-gray-800"
-              )}>
+              <div
+                className={cn(
+                  "rounded-lg p-2",
+                  variant === "default"
+                    ? "bg-primary/10"
+                    : "bg-gray-100 dark:bg-gray-800"
+                )}
+              >
                 <Icon className={cn("h-5 w-5", iconColors[variant])} />
               </div>
             )}
@@ -98,13 +102,9 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
             </div>
           </div>
         </DialogHeader>
-        
+
         <DialogFooter className="gap-2 sm:gap-0">
-          <Button
-            variant="outline"
-            onClick={handleCancel}
-            disabled={loading}
-          >
+          <Button variant="outline" onClick={handleCancel} disabled={loading}>
             {cancelText}
           </Button>
           <Button

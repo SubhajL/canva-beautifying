@@ -1,8 +1,8 @@
-import { Job } from 'bullmq'
-import { ExportService } from './export-service'
-import { WebSocketService } from '@/lib/websocket/client'
-import { createClient } from '@/lib/supabase/server'
-import { ExportFormat } from './types'
+import { Job } from "bullmq"
+import { ExportService } from "./export-service"
+import { WebSocketService } from "@/lib/websocket/client"
+import { createClient } from "@/lib/supabase/server"
+import { ExportFormat } from "./types"
 
 interface ExportJobData {
   documentId: string
@@ -29,16 +29,17 @@ export class ExportProcessor {
   }
 
   async process(job: Job<ExportJobData>): Promise<void> {
-    const { documentId, userId, format, options, notifyWebSocket, webhookUrl } = job.data
+    const { documentId, userId, format, options, notifyWebSocket, webhookUrl } =
+      job.data
 
     try {
       // Update job progress
       await job.updateProgress(10)
-      
+
       // Get document details from database
       const documentData = await this.getDocumentData(documentId, userId)
       if (!documentData) {
-        throw new Error('Document not found')
+        throw new Error("Document not found")
       }
 
       await job.updateProgress(20)
@@ -53,19 +54,19 @@ export class ExportProcessor {
           scale: options?.scale,
           preserveVectors: options?.preserveVectors,
           includeMetadata: options?.includeMetadata,
-          backgroundColor: options?.backgroundColor
+          backgroundColor: options?.backgroundColor,
         },
         enhancedUrl: documentData.enhancedUrl,
         originalUrl: documentData.originalUrl,
-        metadata: documentData.metadata
+        metadata: documentData.metadata,
       }
 
       // Notify via WebSocket if requested
       if (notifyWebSocket) {
-        await this.wsService.emitToUser(userId, 'export:started', {
+        await this.wsService.emitToUser(userId, "export:started", {
           documentId,
           format,
-          jobId: job.id
+          jobId: job.id,
         })
       }
 
@@ -77,7 +78,7 @@ export class ExportProcessor {
       await job.updateProgress(90)
 
       if (!result.success) {
-        throw new Error(result.error || 'Export failed')
+        throw new Error(result.error || "Export failed")
       }
 
       // Update database with export result
@@ -88,30 +89,30 @@ export class ExportProcessor {
       // Send webhook notification if configured
       if (webhookUrl && result.exportUrl) {
         await this.sendWebhook(webhookUrl, {
-          event: 'export.completed',
+          event: "export.completed",
           documentId,
           format,
           exportUrl: result.exportUrl,
           fileSize: result.fileSize,
           dimensions: result.dimensions,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         })
       }
 
       // Notify via WebSocket
       if (notifyWebSocket) {
-        await this.wsService.emitToUser(userId, 'export:completed', {
+        await this.wsService.emitToUser(userId, "export:completed", {
           documentId,
           format,
           exportUrl: result.exportUrl,
           fileSize: result.fileSize,
           dimensions: result.dimensions,
-          jobId: job.id
+          jobId: job.id,
         })
       }
 
       await job.updateProgress(100)
-      
+
       // Return the result
       await job.updateData({
         ...job.data,
@@ -119,32 +120,32 @@ export class ExportProcessor {
           exportUrl: result.exportUrl,
           fileSize: result.fileSize,
           dimensions: result.dimensions,
-          processingTime: result.processingTime
-        }
+          processingTime: result.processingTime,
+        },
       })
-
     } catch (error) {
       // Handle errors
-      const errorMessage = error instanceof Error ? error.message : 'Export failed'
-      
+      const errorMessage =
+        error instanceof Error ? error.message : "Export failed"
+
       // Notify via WebSocket
       if (notifyWebSocket) {
-        await this.wsService.emitToUser(userId, 'export:failed', {
+        await this.wsService.emitToUser(userId, "export:failed", {
           documentId,
           format,
           error: errorMessage,
-          jobId: job.id
+          jobId: job.id,
         })
       }
 
       // Send webhook notification
       if (webhookUrl) {
         await this.sendWebhook(webhookUrl, {
-          event: 'export.failed',
+          event: "export.failed",
           documentId,
           format,
           error: errorMessage,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         })
       }
 
@@ -154,12 +155,12 @@ export class ExportProcessor {
 
   private async getDocumentData(documentId: string, userId: string) {
     const supabase = await createClient()
-    
+
     const { data: document } = await supabase
-      .from('documents')
-      .select('*')
-      .eq('id', documentId)
-      .eq('user_id', userId)
+      .from("documents")
+      .select("*")
+      .eq("id", documentId)
+      .eq("user_id", userId)
       .single()
 
     if (!document) return null
@@ -167,13 +168,13 @@ export class ExportProcessor {
     return {
       enhancedUrl: document.enhanced_url,
       originalUrl: document.original_url,
-      metadata: document.metadata || {}
+      metadata: document.metadata || {},
     }
   }
 
   private async updateExportRecord(
-    documentId: string, 
-    userId: string, 
+    documentId: string,
+    userId: string,
     result: {
       format?: string
       exportUrl?: string
@@ -188,52 +189,57 @@ export class ExportProcessor {
 
     // Update document with latest export info
     await supabase
-      .from('documents')
+      .from("documents")
       .update({
         last_exported_at: new Date().toISOString(),
-        export_count: supabase.rpc('increment', { column: 'export_count' }),
+        export_count: supabase.rpc("increment", { column: "export_count" }),
         metadata: {
           lastExport: {
             format: result.format,
             url: result.exportUrl,
             fileSize: result.fileSize,
             dimensions: result.dimensions,
-            exportedAt: new Date().toISOString()
-          }
-        }
+            exportedAt: new Date().toISOString(),
+          },
+        },
       })
-      .eq('id', documentId)
-      .eq('user_id', userId)
+      .eq("id", documentId)
+      .eq("user_id", userId)
   }
 
-  private async sendWebhook(url: string, data: {
-    event: string
-    documentId: string
-    format: string
-    exportUrl?: string
-    fileSize?: number
-    dimensions?: {
-      width: number
-      height: number
+  private async sendWebhook(
+    url: string,
+    data: {
+      event: string
+      documentId: string
+      format: string
+      exportUrl?: string
+      fileSize?: number
+      dimensions?: {
+        width: number
+        height: number
+      }
+      error?: string
+      timestamp: string
     }
-    error?: string
-    timestamp: string
-  }) {
+  ) {
     try {
       const response = await fetch(url, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'X-BeautifyAI-Event': data.event
+          "Content-Type": "application/json",
+          "X-BeautifyAI-Event": data.event,
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       })
 
       if (!response.ok) {
-        console.error(`Webhook failed: ${response.status} ${response.statusText}`)
+        console.error(
+          `Webhook failed: ${response.status} ${response.statusText}`
+        )
       }
     } catch (error) {
-      console.error('Failed to send webhook:', error)
+      console.error("Failed to send webhook:", error)
     }
   }
 }

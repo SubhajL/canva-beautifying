@@ -1,7 +1,7 @@
-'use client'
+"use client"
 
-import { useState, useCallback } from 'react'
-import type { ApiEndpoint } from '@/lib/api-docs/api-spec'
+import { useState, useCallback } from "react"
+import type { ApiEndpoint } from "@/lib/api-docs/api-spec"
 
 export interface ApiRequest {
   url: string
@@ -19,7 +19,7 @@ export interface ApiResponse {
   duration: number | null
 }
 
-export function useApiExplorer(baseUrl = '') {
+export function useApiExplorer(baseUrl = "") {
   const [loading, setLoading] = useState(false)
   const [response, setResponse] = useState<ApiResponse>({
     status: null,
@@ -27,32 +27,37 @@ export function useApiExplorer(baseUrl = '') {
     headers: null,
     data: null,
     error: null,
-    duration: null
+    duration: null,
   })
 
-  const buildUrl = useCallback((
-    endpoint: ApiEndpoint,
-    pathParams: Record<string, string>,
-    queryParams: Record<string, string>
-  ) => {
-    let url = endpoint.path
+  const buildUrl = useCallback(
+    (
+      endpoint: ApiEndpoint,
+      pathParams: Record<string, string>,
+      queryParams: Record<string, string>
+    ) => {
+      let url = endpoint.path
 
-    // Replace path parameters
-    Object.entries(pathParams).forEach(([key, value]) => {
-      url = url.replace(`{${key}}`, encodeURIComponent(value))
-    })
+      // Replace path parameters
+      Object.entries(pathParams).forEach(([key, value]) => {
+        url = url.replace(`{${key}}`, encodeURIComponent(value))
+      })
 
-    // Add query parameters
-    const filteredQuery = Object.entries(queryParams).filter(([_, value]) => value)
-    if (filteredQuery.length > 0) {
-      const queryString = new URLSearchParams(
-        Object.fromEntries(filteredQuery)
-      ).toString()
-      url = `${url}?${queryString}`
-    }
+      // Add query parameters
+      const filteredQuery = Object.entries(queryParams).filter(
+        ([_, value]) => value
+      )
+      if (filteredQuery.length > 0) {
+        const queryString = new URLSearchParams(
+          Object.fromEntries(filteredQuery)
+        ).toString()
+        url = `${url}?${queryString}`
+      }
 
-    return `${baseUrl}${url}`
-  }, [baseUrl])
+      return `${baseUrl}${url}`
+    },
+    [baseUrl]
+  )
 
   const executeRequest = useCallback(async (request: ApiRequest) => {
     setLoading(true)
@@ -62,7 +67,7 @@ export function useApiExplorer(baseUrl = '') {
       headers: null,
       data: null,
       error: null,
-      duration: null
+      duration: null,
     })
 
     const startTime = Date.now()
@@ -70,10 +75,10 @@ export function useApiExplorer(baseUrl = '') {
     try {
       const options: RequestInit = {
         method: request.method,
-        headers: request.headers
+        headers: request.headers,
       }
 
-      if (request.body && ['POST', 'PUT', 'PATCH'].includes(request.method)) {
+      if (request.body && ["POST", "PUT", "PATCH"].includes(request.method)) {
         options.body = request.body
       }
 
@@ -86,9 +91,9 @@ export function useApiExplorer(baseUrl = '') {
       })
 
       let data = null
-      const contentType = res.headers.get('content-type')
-      
-      if (contentType?.includes('application/json')) {
+      const contentType = res.headers.get("content-type")
+
+      if (contentType?.includes("application/json")) {
         try {
           data = await res.json()
         } catch (e) {
@@ -104,7 +109,7 @@ export function useApiExplorer(baseUrl = '') {
         headers: responseHeaders,
         data,
         error: null,
-        duration
+        duration,
       })
     } catch (error) {
       const duration = Date.now() - startTime
@@ -113,8 +118,9 @@ export function useApiExplorer(baseUrl = '') {
         statusText: null,
         headers: null,
         data: null,
-        error: error instanceof Error ? error.message : 'Unknown error occurred',
-        duration
+        error:
+          error instanceof Error ? error.message : "Unknown error occurred",
+        duration,
       })
     } finally {
       setLoading(false)
@@ -128,7 +134,7 @@ export function useApiExplorer(baseUrl = '') {
       headers: null,
       data: null,
       error: null,
-      duration: null
+      duration: null,
     })
   }, [])
 
@@ -137,6 +143,6 @@ export function useApiExplorer(baseUrl = '') {
     response,
     buildUrl,
     executeRequest,
-    resetResponse
+    resetResponse,
   }
 }

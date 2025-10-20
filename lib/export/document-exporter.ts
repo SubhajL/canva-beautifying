@@ -1,8 +1,8 @@
-import sharp from 'sharp'
-import { PDFDocument } from 'pdf-lib'
+import sharp from "sharp"
+import { PDFDocument } from "pdf-lib"
 
 export interface DocumentExporterConfig {
-  subscriptionTier: 'free' | 'basic' | 'pro' | 'premium'
+  subscriptionTier: "free" | "basic" | "pro" | "premium"
   watermark: boolean
 }
 
@@ -15,7 +15,7 @@ export class DocumentExporter {
 
   async exportToPDF(
     documentBuffer: Buffer,
-    _quality: 'standard' | 'high' | 'print'
+    _quality: "standard" | "high" | "print"
   ): Promise<Buffer> {
     // If already PDF, return as is
     if (this.isPDF(documentBuffer)) {
@@ -26,7 +26,7 @@ export class DocumentExporter {
     const pdfDoc = await PDFDocument.create()
     const image = await pdfDoc.embedPng(documentBuffer)
     const page = pdfDoc.addPage([image.width, image.height])
-    
+
     page.drawImage(image, {
       x: 0,
       y: 0,
@@ -36,8 +36,8 @@ export class DocumentExporter {
 
     if (this.config.watermark) {
       // Add watermark for free tier
-      const helveticaFont = await pdfDoc.embedFont('Helvetica')
-      page.drawText('Enhanced with Canva Beautifying - Free Plan', {
+      const helveticaFont = await pdfDoc.embedFont("Helvetica")
+      page.drawText("Enhanced with Canva Beautifying - Free Plan", {
         x: 50,
         y: 30,
         size: 12,
@@ -51,7 +51,7 @@ export class DocumentExporter {
 
   async exportToPNG(
     documentBuffer: Buffer,
-    quality: 'standard' | 'high' | 'print'
+    quality: "standard" | "high" | "print"
   ): Promise<Buffer> {
     const qualitySettings = {
       standard: { quality: 85, dpi: 72 },
@@ -62,7 +62,7 @@ export class DocumentExporter {
     const settings = qualitySettings[quality]
 
     let imageBuffer = documentBuffer
-    
+
     // Convert PDF to image if needed
     if (this.isPDF(documentBuffer)) {
       // In production, you'd use a proper PDF renderer
@@ -71,22 +71,23 @@ export class DocumentExporter {
     }
 
     // Process image
-    let pipeline = sharp(imageBuffer)
-      .png({ quality: settings.quality })
+    let pipeline = sharp(imageBuffer).png({ quality: settings.quality })
 
     // Add DPI metadata
     pipeline = pipeline.withMetadata({
-      density: settings.dpi
+      density: settings.dpi,
     })
 
     // Add watermark for free tier
     if (this.config.watermark) {
       const watermark = await this.createWatermark()
-      pipeline = pipeline.composite([{
-        input: watermark,
-        gravity: 'southeast',
-        blend: 'over'
-      }])
+      pipeline = pipeline.composite([
+        {
+          input: watermark,
+          gravity: "southeast",
+          blend: "over",
+        },
+      ])
     }
 
     return await pipeline.toBuffer()
@@ -116,47 +117,48 @@ export class DocumentExporter {
   ): Promise<Buffer> {
     // Create Canva-compatible JSON format
     const canvaDesign = {
-      version: '1.0',
-      type: 'canva_design',
+      version: "1.0",
+      type: "canva_design",
       dimensions: {
         width: 1920,
         height: 1080,
-        unit: 'px'
+        unit: "px",
       },
-      pages: [{
-        elements: [],
-        background: enhancementStrategy?.colorEnhancements?.backgroundColor || '#FFFFFF'
-      }],
+      pages: [
+        {
+          elements: [],
+          background:
+            enhancementStrategy?.colorEnhancements?.backgroundColor ||
+            "#FFFFFF",
+        },
+      ],
       fonts: enhancementStrategy?.typographyEnhancements || {},
       colors: enhancementStrategy?.colorEnhancements || {},
       metadata: {
         created: new Date().toISOString(),
-        generator: 'Canva Beautifying',
-        tier: this.config.subscriptionTier
-      }
+        generator: "Canva Beautifying",
+        tier: this.config.subscriptionTier,
+      },
     }
 
     return Buffer.from(JSON.stringify(canvaDesign, null, 2))
   }
 
-  async exportToPPTX(
-    documentBuffer: Buffer,
-    title: string
-  ): Promise<Buffer> {
+  async exportToPPTX(documentBuffer: Buffer, title: string): Promise<Buffer> {
     // In production, you'd use a library like pptxgenjs
     // For now, return a placeholder
     const placeholder = {
-      type: 'powerpoint',
+      type: "powerpoint",
       title,
       slides: 1,
-      exportedAt: new Date().toISOString()
+      exportedAt: new Date().toISOString(),
     }
 
     return Buffer.from(JSON.stringify(placeholder))
   }
 
   private isPDF(buffer: Buffer): boolean {
-    return buffer.slice(0, 4).toString() === '%PDF'
+    return buffer.slice(0, 4).toString() === "%PDF"
   }
 
   private async createPlaceholderImage(): Promise<Buffer> {
@@ -165,11 +167,11 @@ export class DocumentExporter {
         width: 1920,
         height: 1080,
         channels: 3,
-        background: { r: 240, g: 240, b: 245 }
-      }
+        background: { r: 240, g: 240, b: 245 },
+      },
     })
-    .png()
-    .toBuffer()
+      .png()
+      .toBuffer()
   }
 
   private async createWatermark(): Promise<Buffer> {
@@ -181,8 +183,6 @@ export class DocumentExporter {
       </svg>
     `
 
-    return await sharp(Buffer.from(watermarkSvg))
-      .png()
-      .toBuffer()
+    return await sharp(Buffer.from(watermarkSvg)).png().toBuffer()
   }
 }

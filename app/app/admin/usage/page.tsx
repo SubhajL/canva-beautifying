@@ -1,160 +1,180 @@
-'use client';
+"use client"
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Download, Search, RefreshCw } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
-import { Database } from '@/lib/supabase/database.types';
-import { Loading } from '@/components/ui/loading';
+import { useEffect, useState } from "react"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
+import { Download, Search, RefreshCw } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
+import { Database } from "@/lib/supabase/database.types"
+import { Loading } from "@/components/ui/loading"
 
 type UserUsage = {
-  id: string;
-  email: string;
-  name: string | null;
-  subscription_tier: Database['public']['Enums']['subscription_tier'];
-  usage_count: number;
-  monthlyLimit: number;
-  percentageUsed: number;
-};
+  id: string
+  email: string
+  name: string | null
+  subscription_tier: Database["public"]["Enums"]["subscription_tier"]
+  usage_count: number
+  monthlyLimit: number
+  percentageUsed: number
+}
 
-type UsageRecord = Database['public']['Tables']['usage_tracking']['Row'] & {
+type UsageRecord = Database["public"]["Tables"]["usage_tracking"]["Row"] & {
   user: {
-    email: string;
-    name: string | null;
-  };
-};
+    email: string
+    name: string | null
+  }
+}
 
 export default function AdminUsagePage() {
-  const [userUsage, setUserUsage] = useState<UserUsage[]>([]);
-  const [recentUsage, setRecentUsage] = useState<UsageRecord[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [userUsage, setUserUsage] = useState<UserUsage[]>([])
+  const [recentUsage, setRecentUsage] = useState<UsageRecord[]>([])
+  const [searchTerm, setSearchTerm] = useState("")
+  const [loading, setLoading] = useState(true)
+  const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
-    checkAdminAccess();
+    checkAdminAccess()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [])
 
   const checkAdminAccess = async () => {
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    
+    const supabase = createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
     // Check if user is admin (you should implement proper admin check)
     // For now, we'll check if email is in admin list
-    const adminEmails = process.env.NEXT_PUBLIC_ADMIN_EMAILS?.split(',') || [];
-    setIsAdmin(user?.email ? adminEmails.includes(user.email) : false);
-    
+    const adminEmails = process.env.NEXT_PUBLIC_ADMIN_EMAILS?.split(",") || []
+    setIsAdmin(user?.email ? adminEmails.includes(user.email) : false)
+
     if (user?.email && adminEmails.includes(user.email)) {
-      await loadUsageData();
+      await loadUsageData()
     }
-    
-    setLoading(false);
-  };
+
+    setLoading(false)
+  }
 
   const loadUsageData = async () => {
-    const supabase = createClient();
-    
+    const supabase = createClient()
+
     // Load user usage summary
     const { data: users, error: usersError } = await supabase
-      .from('users')
-      .select('id, email, name, subscription_tier, usage_count');
-      
+      .from("users")
+      .select("id, email, name, subscription_tier, usage_count")
+
     if (usersError) {
-      console.error('Failed to load users:', usersError);
-      return;
+      console.error("Failed to load users:", usersError)
+      return
     }
 
     // Load subscription limits
     const { data: limits, error: limitsError } = await supabase
-      .from('subscription_limits')
-      .select('tier, monthly_credits');
-      
+      .from("subscription_limits")
+      .select("tier, monthly_credits")
+
     if (limitsError) {
-      console.error('Failed to load limits:', limitsError);
-      return;
+      console.error("Failed to load limits:", limitsError)
+      return
     }
 
     // Create a map of tier limits
-    const limitMap = new Map(limits?.map(l => [l.tier, l.monthly_credits]) || []);
+    const limitMap = new Map(
+      limits?.map((l) => [l.tier, l.monthly_credits]) || []
+    )
 
     // Calculate usage percentages
-    const usageData: UserUsage[] = (users || []).map(user => {
-      const monthlyLimit = limitMap.get(user.subscription_tier) || 10;
-      const percentageUsed = (user.usage_count / monthlyLimit) * 100;
-      
+    const usageData: UserUsage[] = (users || []).map((user) => {
+      const monthlyLimit = limitMap.get(user.subscription_tier) || 10
+      const percentageUsed = (user.usage_count / monthlyLimit) * 100
+
       return {
         ...user,
         monthlyLimit,
         percentageUsed,
-      };
-    });
+      }
+    })
 
-    setUserUsage(usageData);
+    setUserUsage(usageData)
 
     // Load recent usage records
     const { data: recentData, error: recentError } = await supabase
-      .from('usage_tracking')
-      .select(`
+      .from("usage_tracking")
+      .select(
+        `
         *,
         user:users!user_id (
           email,
           name
         )
-      `)
-      .order('created_at', { ascending: false })
-      .limit(50);
+      `
+      )
+      .order("created_at", { ascending: false })
+      .limit(50)
 
     if (recentError) {
-      console.error('Failed to load recent usage:', recentError);
-      return;
+      console.error("Failed to load recent usage:", recentError)
+      return
     }
 
-    setRecentUsage(recentData as unknown as UsageRecord[]);
-  };
+    setRecentUsage(recentData as unknown as UsageRecord[])
+  }
 
   const exportUsageReport = () => {
     const csv = [
-      ['Email', 'Name', 'Tier', 'Usage', 'Limit', 'Percentage'].join(','),
-      ...userUsage.map(user => 
+      ["Email", "Name", "Tier", "Usage", "Limit", "Percentage"].join(","),
+      ...userUsage.map((user) =>
         [
           user.email,
-          user.name || '',
+          user.name || "",
           user.subscription_tier,
           user.usage_count,
           user.monthlyLimit,
-          `${user.percentageUsed.toFixed(1)}%`
-        ].join(',')
-      )
-    ].join('\n');
+          `${user.percentageUsed.toFixed(1)}%`,
+        ].join(",")
+      ),
+    ].join("\n")
 
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `usage-report-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-  };
+    const blob = new Blob([csv], { type: "text/csv" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `usage-report-${new Date().toISOString().split("T")[0]}.csv`
+    a.click()
+  }
 
-  const filteredUsers = userUsage.filter(user =>
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = userUsage.filter(
+    (user) =>
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <Loading size="xl" text="Loading usage data..." />
           <p className="mt-4 text-muted-foreground">Loading...</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (!isAdmin) {
@@ -169,25 +189,25 @@ export default function AdminUsagePage() {
           </CardHeader>
         </Card>
       </div>
-    );
+    )
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
+    <div className="container mx-auto space-y-8 py-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Usage Reports</h1>
-          <p className="text-muted-foreground mt-2">
+          <p className="mt-2 text-muted-foreground">
             Monitor user usage and subscription metrics
           </p>
         </div>
         <div className="flex gap-2">
           <Button onClick={() => loadUsageData()} variant="outline">
-            <RefreshCw className="h-4 w-4 mr-2" />
+            <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
           </Button>
           <Button onClick={exportUsageReport}>
-            <Download className="h-4 w-4 mr-2" />
+            <Download className="mr-2 h-4 w-4" />
             Export CSV
           </Button>
         </div>
@@ -210,18 +230,24 @@ export default function AdminUsagePage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {userUsage.filter(u => u.percentageUsed >= 100).length}
+              {userUsage.filter((u) => u.percentageUsed >= 100).length}
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Near Limit (80%+)</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Near Limit (80%+)
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {userUsage.filter(u => u.percentageUsed >= 80 && u.percentageUsed < 100).length}
+              {
+                userUsage.filter(
+                  (u) => u.percentageUsed >= 80 && u.percentageUsed < 100
+                ).length
+              }
             </div>
           </CardContent>
         </Card>
@@ -273,22 +299,30 @@ export default function AdminUsagePage() {
                       <div>
                         <div className="font-medium">{user.email}</div>
                         {user.name && (
-                          <div className="text-sm text-muted-foreground">{user.name}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {user.name}
+                          </div>
                         )}
                       </div>
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">{user.subscription_tier}</Badge>
                     </TableCell>
-                    <TableCell className="text-right">{user.usage_count}</TableCell>
-                    <TableCell className="text-right">{user.monthlyLimit}</TableCell>
+                    <TableCell className="text-right">
+                      {user.usage_count}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {user.monthlyLimit}
+                    </TableCell>
                     <TableCell>
                       {user.percentageUsed >= 100 ? (
                         <Badge variant="destructive">Limit Reached</Badge>
                       ) : user.percentageUsed >= 80 ? (
                         <Badge variant="secondary">Near Limit</Badge>
                       ) : (
-                        <Badge variant="outline">{user.percentageUsed.toFixed(0)}% Used</Badge>
+                        <Badge variant="outline">
+                          {user.percentageUsed.toFixed(0)}% Used
+                        </Badge>
                       )}
                     </TableCell>
                   </TableRow>
@@ -319,12 +353,16 @@ export default function AdminUsagePage() {
                       <div className="text-sm">
                         <div>{record.user.email}</div>
                         {record.user.name && (
-                          <div className="text-muted-foreground">{record.user.name}</div>
+                          <div className="text-muted-foreground">
+                            {record.user.name}
+                          </div>
                         )}
                       </div>
                     </TableCell>
                     <TableCell>{record.action}</TableCell>
-                    <TableCell className="text-right">{record.credits_used}</TableCell>
+                    <TableCell className="text-right">
+                      {record.credits_used}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -333,5 +371,5 @@ export default function AdminUsagePage() {
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }

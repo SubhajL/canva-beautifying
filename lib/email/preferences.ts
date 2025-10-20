@@ -1,21 +1,23 @@
-import { createClient } from '@/lib/supabase/client'
-import { EmailPreferences } from './types'
+import { createClient } from "@/lib/supabase/client"
+import { EmailPreferences } from "./types"
 
 export class EmailPreferencesManager {
-  static async getPreferences(userId: string): Promise<EmailPreferences | null> {
+  static async getPreferences(
+    userId: string
+  ): Promise<EmailPreferences | null> {
     const supabase = createClient()
     const { data, error } = await supabase
-      .from('email_preferences')
-      .select('*')
-      .eq('user_id', userId)
+      .from("email_preferences")
+      .select("*")
+      .eq("user_id", userId)
       .single()
 
     if (error) {
       // If no preferences exist, create default ones
-      if (error.code === 'PGRST116') {
+      if (error.code === "PGRST116") {
         return this.createDefaultPreferences(userId)
       }
-      console.error('Error fetching email preferences:', error)
+      console.error("Error fetching email preferences:", error)
       return null
     }
 
@@ -31,7 +33,7 @@ export class EmailPreferencesManager {
 
   static async updatePreferences(
     userId: string,
-    preferences: Partial<Omit<EmailPreferences, 'userId' | 'updatedAt'>>
+    preferences: Partial<Omit<EmailPreferences, "userId" | "updatedAt">>
   ): Promise<EmailPreferences | null> {
     const updateData: any = {
       updated_at: new Date().toISOString(),
@@ -52,18 +54,18 @@ export class EmailPreferencesManager {
 
     const supabase = createClient()
     const { data, error } = await supabase
-      .from('email_preferences')
+      .from("email_preferences")
       .update(updateData)
-      .eq('user_id', userId)
+      .eq("user_id", userId)
       .select()
       .single()
 
     if (error) {
       // If preferences don't exist, create them
-      if (error.code === 'PGRST116') {
+      if (error.code === "PGRST116") {
         return this.createDefaultPreferences(userId, preferences)
       }
-      console.error('Error updating email preferences:', error)
+      console.error("Error updating email preferences:", error)
       return null
     }
 
@@ -80,7 +82,7 @@ export class EmailPreferencesManager {
   static async unsubscribeAll(userId: string): Promise<boolean> {
     const supabase = createClient()
     const { error } = await supabase
-      .from('email_preferences')
+      .from("email_preferences")
       .update({
         enhancement_completed: false,
         marketing_emails: false,
@@ -88,10 +90,10 @@ export class EmailPreferencesManager {
         system_notifications: false,
         updated_at: new Date().toISOString(),
       })
-      .eq('user_id', userId)
+      .eq("user_id", userId)
 
     if (error) {
-      console.error('Error unsubscribing from all emails:', error)
+      console.error("Error unsubscribing from all emails:", error)
       return false
     }
 
@@ -106,7 +108,7 @@ export class EmailPreferencesManager {
 
       const { userId, emailType } = decoded
 
-      if (emailType === 'all') {
+      if (emailType === "all") {
         return this.unsubscribeAll(userId)
       }
 
@@ -115,23 +117,23 @@ export class EmailPreferencesManager {
 
       const supabase = createClient()
       const { error } = await supabase
-        .from('email_preferences')
+        .from("email_preferences")
         .update({
           [preferenceField]: false,
           updated_at: new Date().toISOString(),
         })
-        .eq('user_id', userId)
+        .eq("user_id", userId)
 
       return !error
     } catch (error) {
-      console.error('Error processing unsubscribe token:', error)
+      console.error("Error processing unsubscribe token:", error)
       return false
     }
   }
 
   private static async createDefaultPreferences(
     userId: string,
-    overrides?: Partial<Omit<EmailPreferences, 'userId' | 'updatedAt'>>
+    overrides?: Partial<Omit<EmailPreferences, "userId" | "updatedAt">>
   ): Promise<EmailPreferences> {
     const defaultPreferences = {
       user_id: userId,
@@ -145,13 +147,13 @@ export class EmailPreferencesManager {
 
     const supabase = createClient()
     const { data, error } = await supabase
-      .from('email_preferences')
+      .from("email_preferences")
       .insert(defaultPreferences)
       .select()
       .single()
 
     if (error) {
-      console.error('Error creating default email preferences:', error)
+      console.error("Error creating default email preferences:", error)
       // Return in-memory defaults if creation fails
       return {
         userId,
@@ -176,13 +178,15 @@ export class EmailPreferencesManager {
   static generateUnsubscribeToken(userId: string, emailType: string): string {
     // In production, use a proper JWT or encrypted token
     const data = `${userId}:${emailType}:${Date.now()}`
-    return Buffer.from(data).toString('base64url')
+    return Buffer.from(data).toString("base64url")
   }
 
-  private static decodeUnsubscribeToken(token: string): { userId: string; emailType: string } | null {
+  private static decodeUnsubscribeToken(
+    token: string
+  ): { userId: string; emailType: string } | null {
     try {
-      const decoded = Buffer.from(token, 'base64url').toString()
-      const [userId, emailType] = decoded.split(':')
+      const decoded = Buffer.from(token, "base64url").toString()
+      const [userId, emailType] = decoded.split(":")
       return { userId, emailType }
     } catch {
       return null
@@ -191,10 +195,10 @@ export class EmailPreferencesManager {
 
   private static getPreferenceField(emailType: string): string | null {
     const fieldMap: Record<string, string> = {
-      'enhancement-completed': 'enhancement_completed',
-      'marketing': 'marketing_emails',
-      'weekly-digest': 'weekly_digest',
-      'system': 'system_notifications',
+      "enhancement-completed": "enhancement_completed",
+      marketing: "marketing_emails",
+      "weekly-digest": "weekly_digest",
+      system: "system_notifications",
     }
     return fieldMap[emailType] || null
   }
@@ -202,22 +206,22 @@ export class EmailPreferencesManager {
   static async getUnsubscribeStats(days = 30): Promise<{
     totalUnsubscribes: number
     byType: Record<string, number>
-    trend: 'increasing' | 'decreasing' | 'stable'
+    trend: "increasing" | "decreasing" | "stable"
   }> {
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - days)
 
     const supabase = createClient()
     const { data, error } = await supabase
-      .from('email_preferences')
-      .select('*')
-      .gte('updated_at', startDate.toISOString())
+      .from("email_preferences")
+      .select("*")
+      .gte("updated_at", startDate.toISOString())
 
     if (error || !data) {
       return {
         totalUnsubscribes: 0,
         byType: {},
-        trend: 'stable',
+        trend: "stable",
       }
     }
 
@@ -229,18 +233,25 @@ export class EmailPreferencesManager {
       system_notifications: 0,
     }
 
-    data.forEach(pref => {
+    data.forEach((pref) => {
       if (!pref.enhancement_completed) byType.enhancement_completed++
       if (!pref.marketing_emails) byType.marketing_emails++
       if (!pref.weekly_digest) byType.weekly_digest++
       if (!pref.system_notifications) byType.system_notifications++
     })
 
-    totalUnsubscribes = Object.values(byType).reduce((sum, count) => sum + count, 0)
+    totalUnsubscribes = Object.values(byType).reduce(
+      (sum, count) => sum + count,
+      0
+    )
 
     // Simple trend analysis (in production, this would be more sophisticated)
-    const trend = totalUnsubscribes > data.length * 2 ? 'increasing' : 
-                  totalUnsubscribes < data.length * 0.5 ? 'decreasing' : 'stable'
+    const trend =
+      totalUnsubscribes > data.length * 2
+        ? "increasing"
+        : totalUnsubscribes < data.length * 0.5
+          ? "decreasing"
+          : "stable"
 
     return {
       totalUnsubscribes,

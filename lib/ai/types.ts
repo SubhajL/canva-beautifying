@@ -1,10 +1,10 @@
-export type AIModel = 
-  | 'gemini-2.0-flash'
-  | 'gpt-4o-mini'
-  | 'claude-3.5-sonnet'
-  | 'claude-4-sonnet'
+export type AIModel =
+  | "gemini-2.0-flash"
+  | "gpt-4o-mini"
+  | "claude-3.5-sonnet"
+  | "claude-4-sonnet"
 
-export type UserTier = 'free' | 'basic' | 'pro' | 'premium'
+export type UserTier = "free" | "basic" | "pro" | "premium"
 
 export interface AIModelConfig {
   model: AIModel
@@ -40,17 +40,17 @@ export interface DocumentAnalysis {
     suggestions: string[]
   }
   overallScore: number
-  priority: 'low' | 'medium' | 'high'
+  priority: "low" | "medium" | "high"
 }
 
 export interface EnhancementRequest {
   documentUrl: string
-  documentType: 'worksheet' | 'presentation' | 'marketing'
+  documentType: "worksheet" | "presentation" | "marketing"
   userTier: UserTier
   preferences?: {
-    style?: 'modern' | 'classic' | 'playful' | 'professional'
-    colorScheme?: 'vibrant' | 'muted' | 'monochrome'
-    targetAudience?: 'children' | 'teens' | 'adults' | 'business'
+    style?: "modern" | "classic" | "playful" | "professional"
+    colorScheme?: "vibrant" | "muted" | "monochrome"
+    targetAudience?: "children" | "teens" | "adults" | "business"
   }
 }
 
@@ -62,9 +62,9 @@ export interface EnhancementResult {
 }
 
 export interface Enhancement {
-  type: 'layout' | 'color' | 'typography' | 'graphic' | 'content'
+  type: "layout" | "color" | "typography" | "graphic" | "content"
   description: string
-  priority: 'low' | 'medium' | 'high'
+  priority: "low" | "medium" | "high"
   estimatedImpact: number // 0-100
 }
 
@@ -96,7 +96,7 @@ export interface CostTracking {
 }
 
 // Health Monitoring Types
-export type HealthStatus = 'healthy' | 'degraded' | 'unhealthy'
+export type HealthStatus = "healthy" | "degraded" | "unhealthy"
 
 export interface HealthMetric {
   timestamp: number

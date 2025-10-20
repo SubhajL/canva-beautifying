@@ -1,22 +1,22 @@
-import { Queue, QueueEvents, Job, JobsOptions } from 'bullmq'
-import redis from './redis'
+import { Queue, QueueEvents, Job, JobsOptions } from "bullmq"
+import redis from "./redis"
 
 // Queue names
 export const QUEUE_NAMES = {
-  ENHANCEMENT: 'enhancement',
-  EXPORT: 'export',
-  EMAIL: 'email',
-  ANALYTICS: 'analytics',
-  BATCH_PROCESSING: 'batch-processing',
+  ENHANCEMENT: "enhancement",
+  EXPORT: "export",
+  EMAIL: "email",
+  ANALYTICS: "analytics",
+  BATCH_PROCESSING: "batch-processing",
 } as const
 
-export type QueueName = typeof QUEUE_NAMES[keyof typeof QUEUE_NAMES]
+export type QueueName = (typeof QUEUE_NAMES)[keyof typeof QUEUE_NAMES]
 
 // Default job options
 const defaultJobOptions: JobsOptions = {
   attempts: 3,
   backoff: {
-    type: 'exponential',
+    type: "exponential",
     delay: 2000,
   },
   removeOnComplete: {
@@ -100,7 +100,7 @@ export interface EnhancementJobResult {
 export interface ExportJobData {
   documentId: string
   userId: string
-  format: 'pdf' | 'png' | 'jpeg' | 'zip'
+  format: "pdf" | "png" | "jpeg" | "zip"
   options?: {
     quality?: number
     includeOriginal?: boolean
@@ -185,11 +185,11 @@ export async function cleanQueue(
   queueName: QueueName,
   grace: number = 0,
   limit: number = 100,
-  status: 'completed' | 'failed' = 'completed'
+  status: "completed" | "failed" = "completed"
 ) {
   const queue = getQueue(queueName)
   return await queue.clean(grace, limit, status)
 }
 
 // Export queue utilities
-export { Queue, Worker, Job, QueueEvents } from 'bullmq'
+export { Queue, Worker, Job, QueueEvents } from "bullmq"

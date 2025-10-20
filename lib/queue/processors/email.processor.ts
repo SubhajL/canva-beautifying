@@ -1,7 +1,7 @@
-import { Worker, Job } from 'bullmq'
-import { getQueueConnection, QUEUE_NAMES } from '../config'
-import type { EmailJobData, JobResult } from '../types'
-import { Resend } from 'resend'
+import { Worker, Job } from "bullmq"
+import { getQueueConnection, QUEUE_NAMES } from "../config"
+import type { EmailJobData, JobResult } from "../types"
+import { Resend } from "resend"
 
 // Initialize Resend client (you'll need to add RESEND_API_KEY to env)
 const resend = new Resend(process.env.RESEND_API_KEY)
@@ -19,8 +19,8 @@ interface EmailTemplateData {
 }
 
 const emailTemplates = {
-  'enhancement-complete': (data: EmailTemplateData) => ({
-    subject: 'Your document enhancement is complete!',
+  "enhancement-complete": (data: EmailTemplateData) => ({
+    subject: "Your document enhancement is complete!",
     html: `
       <h2>Hi ${data.userName},</h2>
       <p>Great news! Your document "${data.documentTitle}" has been enhanced and is ready for download.</p>
@@ -36,8 +36,8 @@ const emailTemplates = {
       <p>Best regards,<br>The Canva Beautifying Team</p>
     `,
   }),
-  
-  'export-ready': (data: EmailTemplateData) => ({
+
+  "export-ready": (data: EmailTemplateData) => ({
     subject: `Your ${data.exportFormat} export is ready!`,
     html: `
       <h2>Hi ${data.userName},</h2>
@@ -47,9 +47,9 @@ const emailTemplates = {
       <p>Best regards,<br>The Canva Beautifying Team</p>
     `,
   }),
-  
-  'error-notification': (data: EmailTemplateData) => ({
-    subject: 'Issue with your document processing',
+
+  "error-notification": (data: EmailTemplateData) => ({
+    subject: "Issue with your document processing",
     html: `
       <h2>Hi ${data.userName},</h2>
       <p>We encountered an issue while processing your document "${data.documentTitle}".</p>
@@ -59,9 +59,9 @@ const emailTemplates = {
       <p>Best regards,<br>The Canva Beautifying Team</p>
     `,
   }),
-  
-  'welcome': (data: EmailTemplateData) => ({
-    subject: 'Welcome to Canva Beautifying!',
+
+  welcome: (data: EmailTemplateData) => ({
+    subject: "Welcome to Canva Beautifying!",
     html: `
       <h2>Welcome ${data.userName}!</h2>
       <p>Thank you for joining Canva Beautifying. We're excited to help you transform your documents with AI-powered enhancements.</p>
@@ -96,7 +96,7 @@ export const createEmailWorker = () => {
 
         // Send email using Resend
         const { data: emailData, error } = await resend.emails.send({
-          from: 'Canva Beautifying <noreply@canvabeautifying.com>',
+          from: "Canva Beautifying <noreply@canvabeautifying.com>",
           to,
           subject: customSubject || subject,
           html,
@@ -115,13 +115,14 @@ export const createEmailWorker = () => {
           },
         }
       } catch (error) {
-        console.error('Email sending error:', error)
-        
+        console.error("Email sending error:", error)
+
         return {
           success: false,
           error: {
-            message: error instanceof Error ? error.message : 'Failed to send email',
-            code: 'EMAIL_ERROR',
+            message:
+              error instanceof Error ? error.message : "Failed to send email",
+            code: "EMAIL_ERROR",
             details: error,
           },
         }
@@ -138,11 +139,11 @@ export const createEmailWorker = () => {
   )
 
   // Error handling
-  worker.on('failed', (job, err) => {
+  worker.on("failed", (job, err) => {
     console.error(`Email job ${job?.id} failed:`, err)
   })
 
-  worker.on('completed', (job) => {
+  worker.on("completed", (job) => {
     console.log(`Email job ${job.id} completed`)
   })
 

@@ -1,7 +1,7 @@
-'use client'
+"use client"
 
-import { useEffect, useState, useCallback } from 'react'
-import { useWebSocket } from '@/lib/websocket/client'
+import { useEffect, useState, useCallback } from "react"
+import { useWebSocket } from "@/lib/websocket/client"
 import type {
   EnhancementProgress,
   AnalysisProgress,
@@ -10,30 +10,36 @@ import type {
   JobFailed,
   QueuePosition,
   Notification,
-} from '@/lib/websocket/types'
+} from "@/lib/websocket/types"
 
 export interface DocumentProgressState {
   // Connection state
   isConnected: boolean
   connectionError?: string
-  
+
   // Queue state
   queuePosition?: number
   estimatedWaitTime?: number
-  
+
   // Progress state
-  currentStage?: 'queued' | 'analysis' | 'enhancement' | 'export' | 'completed' | 'failed'
+  currentStage?:
+    | "queued"
+    | "analysis"
+    | "enhancement"
+    | "export"
+    | "completed"
+    | "failed"
   overallProgress: number
   stageProgress: number
   message?: string
-  
+
   // Analysis state
   analysisFindings?: {
     colorIssues?: number
     layoutIssues?: number
     typographyIssues?: number
   }
-  
+
   // Completion state
   isCompleted: boolean
   completedData?: {
@@ -45,20 +51,22 @@ export interface DocumentProgressState {
     }
     processingTime?: number
   }
-  
+
   // Error state
   error?: {
     message: string
     code?: string
     retryable: boolean
   }
-  
+
   // Notifications
   notifications: Notification[]
 }
 
 // Helper to create typed event handlers
-function createHandler<T>(handler: (data: T) => void): (...args: unknown[]) => void {
+function createHandler<T>(
+  handler: (data: T) => void
+): (...args: unknown[]) => void {
   return (...args: unknown[]) => {
     const data = args[0] as T
     handler(data)
@@ -78,29 +86,37 @@ export function useDocumentProgress(documentId: string | null) {
   // Handle connection status
   useEffect(() => {
     const handleConnected = () => {
-      setState(prev => ({ ...prev, isConnected: true, connectionError: undefined }))
+      setState((prev) => ({
+        ...prev,
+        isConnected: true,
+        connectionError: undefined,
+      }))
     }
 
     const handleDisconnected = () => {
-      setState(prev => ({ ...prev, isConnected: false }))
+      setState((prev) => ({ ...prev, isConnected: false }))
     }
 
     const handleConnectionError = (...args: unknown[]) => {
       const error = args[0] as string
-      setState(prev => ({ ...prev, connectionError: error, isConnected: false }))
+      setState((prev) => ({
+        ...prev,
+        connectionError: error,
+        isConnected: false,
+      }))
     }
 
-    ws.on('connected', handleConnected)
-    ws.on('disconnected', handleDisconnected)
-    ws.on('connection_failed', handleConnectionError)
+    ws.on("connected", handleConnected)
+    ws.on("disconnected", handleDisconnected)
+    ws.on("connection_failed", handleConnectionError)
 
     // Connect if not already connected
     ws.connect().catch(console.error)
 
     return () => {
-      ws.off('connected', handleConnected)
-      ws.off('disconnected', handleDisconnected)
-      ws.off('connection_failed', handleConnectionError)
+      ws.off("connected", handleConnected)
+      ws.off("disconnected", handleDisconnected)
+      ws.off("connection_failed", handleConnectionError)
     }
   }, [ws])
 
@@ -113,9 +129,9 @@ export function useDocumentProgress(documentId: string | null) {
 
     // Handle queue position
     const handleQueuePosition = createHandler<QueuePosition>((data) => {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        currentStage: 'queued',
+        currentStage: "queued",
         queuePosition: data.position,
         estimatedWaitTime: data.estimatedWaitTime,
       }))
@@ -123,9 +139,9 @@ export function useDocumentProgress(documentId: string | null) {
 
     // Handle job started
     const handleJobStarted = () => {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        currentStage: 'analysis',
+        currentStage: "analysis",
         queuePosition: undefined,
         estimatedWaitTime: undefined,
       }))
@@ -133,9 +149,9 @@ export function useDocumentProgress(documentId: string | null) {
 
     // Handle analysis progress
     const handleAnalysisProgress = createHandler<AnalysisProgress>((data) => {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        currentStage: 'analysis',
+        currentStage: "analysis",
         stageProgress: data.progress,
         overallProgress: Math.round(data.progress * 0.2), // Analysis is 20% of total
         message: data.stage,
@@ -144,35 +160,38 @@ export function useDocumentProgress(documentId: string | null) {
     })
 
     // Handle enhancement progress
-    const handleEnhancementProgress = createHandler<EnhancementProgress>((data) => {
-      const stageWeights = {
-        analysis: 0.2,
-        planning: 0.3,
-        generation: 0.3,
-        composition: 0.2,
-      }
-      
-      const baseProgress = Object.entries(stageWeights)
-        .slice(0, Object.keys(stageWeights).indexOf(data.stage))
-        .reduce((sum, [, weight]) => sum + weight * 100, 0)
-      
-      const currentStageWeight = stageWeights[data.stage] || 0
-      const overallProgress = baseProgress + (data.progress * currentStageWeight)
+    const handleEnhancementProgress = createHandler<EnhancementProgress>(
+      (data) => {
+        const stageWeights = {
+          analysis: 0.2,
+          planning: 0.3,
+          generation: 0.3,
+          composition: 0.2,
+        }
 
-      setState(prev => ({
-        ...prev,
-        currentStage: 'enhancement',
-        stageProgress: data.progress,
-        overallProgress: Math.round(overallProgress),
-        message: data.message,
-      }))
-    })
+        const baseProgress = Object.entries(stageWeights)
+          .slice(0, Object.keys(stageWeights).indexOf(data.stage))
+          .reduce((sum, [, weight]) => sum + weight * 100, 0)
+
+        const currentStageWeight = stageWeights[data.stage] || 0
+        const overallProgress =
+          baseProgress + data.progress * currentStageWeight
+
+        setState((prev) => ({
+          ...prev,
+          currentStage: "enhancement",
+          stageProgress: data.progress,
+          overallProgress: Math.round(overallProgress),
+          message: data.message,
+        }))
+      }
+    )
 
     // Handle export progress
     const handleExportProgress = createHandler<ExportProgress>((data) => {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        currentStage: 'export',
+        currentStage: "export",
         stageProgress: data.progress,
         overallProgress: 90 + Math.round(data.progress * 0.1), // Export is last 10%
         message: `Exporting as ${data.format.toUpperCase()}`,
@@ -181,9 +200,9 @@ export function useDocumentProgress(documentId: string | null) {
 
     // Handle job completed
     const handleJobCompleted = createHandler<JobCompleted>((data) => {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        currentStage: 'completed',
+        currentStage: "completed",
         isCompleted: true,
         overallProgress: 100,
         stageProgress: 100,
@@ -193,15 +212,15 @@ export function useDocumentProgress(documentId: string | null) {
           improvements: data.result.improvements,
           processingTime: data.processingTime,
         },
-        message: 'Enhancement completed!',
+        message: "Enhancement completed!",
       }))
     })
 
     // Handle job failed
     const handleJobFailed = createHandler<JobFailed>((data) => {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        currentStage: 'failed',
+        currentStage: "failed",
         error: data.error,
         message: data.error.message,
       }))
@@ -209,7 +228,7 @@ export function useDocumentProgress(documentId: string | null) {
 
     // Handle notifications
     const handleNotification = createHandler<Notification>((notification) => {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         notifications: [...prev.notifications, notification],
       }))
@@ -228,7 +247,7 @@ export function useDocumentProgress(documentId: string | null) {
     return () => {
       // Unsubscribe from document
       ws.unsubscribeFromDocument(documentId)
-      
+
       // Remove event listeners
       ws.off(`queue:position:${documentId}`, handleQueuePosition)
       ws.off(`job:started:${documentId}`, handleJobStarted)
@@ -243,9 +262,9 @@ export function useDocumentProgress(documentId: string | null) {
 
   // Clear notification
   const clearNotification = useCallback((notificationId: string) => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
-      notifications: prev.notifications.filter(n => n.id !== notificationId),
+      notifications: prev.notifications.filter((n) => n.id !== notificationId),
     }))
   }, [])
 
@@ -253,10 +272,10 @@ export function useDocumentProgress(documentId: string | null) {
   const retry = useCallback(() => {
     if (state.error?.retryable) {
       // In a real implementation, this would trigger a retry
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         error: undefined,
-        currentStage: 'queued',
+        currentStage: "queued",
         overallProgress: 0,
         stageProgress: 0,
       }))

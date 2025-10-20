@@ -14,8 +14,8 @@ export interface Database {
           id: string
           email: string
           name: string | null
-          subscription_tier: 'free' | 'basic' | 'pro' | 'premium'
-          subscription_status: 'active' | 'cancelled' | 'past_due' | 'trialing'
+          subscription_tier: "free" | "basic" | "pro" | "premium"
+          subscription_status: "active" | "cancelled" | "past_due" | "trialing"
           usage_count: number
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
@@ -26,8 +26,8 @@ export interface Database {
           id: string
           email: string
           name?: string | null
-          subscription_tier?: 'free' | 'basic' | 'pro' | 'premium'
-          subscription_status?: 'active' | 'cancelled' | 'past_due' | 'trialing'
+          subscription_tier?: "free" | "basic" | "pro" | "premium"
+          subscription_status?: "active" | "cancelled" | "past_due" | "trialing"
           usage_count?: number
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -38,8 +38,8 @@ export interface Database {
           id?: string
           email?: string
           name?: string | null
-          subscription_tier?: 'free' | 'basic' | 'pro' | 'premium'
-          subscription_status?: 'active' | 'cancelled' | 'past_due' | 'trialing'
+          subscription_tier?: "free" | "basic" | "pro" | "premium"
+          subscription_status?: "active" | "cancelled" | "past_due" | "trialing"
           usage_count?: number
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -55,7 +55,7 @@ export interface Database {
           original_key: string
           enhanced_url: string | null
           enhanced_key: string | null
-          status: 'pending' | 'processing' | 'completed' | 'failed'
+          status: "pending" | "processing" | "completed" | "failed"
           analysis_data: Json | null
           enhancement_data: Json | null
           model_used: string | null
@@ -71,7 +71,7 @@ export interface Database {
           original_key: string
           enhanced_url?: string | null
           enhanced_key?: string | null
-          status?: 'pending' | 'processing' | 'completed' | 'failed'
+          status?: "pending" | "processing" | "completed" | "failed"
           analysis_data?: Json | null
           enhancement_data?: Json | null
           model_used?: string | null
@@ -87,7 +87,7 @@ export interface Database {
           original_key?: string
           enhanced_url?: string | null
           enhanced_key?: string | null
-          status?: 'pending' | 'processing' | 'completed' | 'failed'
+          status?: "pending" | "processing" | "completed" | "failed"
           analysis_data?: Json | null
           enhancement_data?: Json | null
           model_used?: string | null
@@ -154,21 +154,21 @@ export interface Database {
       }
       subscription_limits: {
         Row: {
-          tier: 'free' | 'basic' | 'pro' | 'premium'
+          tier: "free" | "basic" | "pro" | "premium"
           monthly_credits: number
           max_file_size_mb: number
           batch_size: number
           features: Json
         }
         Insert: {
-          tier: 'free' | 'basic' | 'pro' | 'premium'
+          tier: "free" | "basic" | "pro" | "premium"
           monthly_credits: number
           max_file_size_mb: number
           batch_size: number
           features: Json
         }
         Update: {
-          tier?: 'free' | 'basic' | 'pro' | 'premium'
+          tier?: "free" | "basic" | "pro" | "premium"
           monthly_credits?: number
           max_file_size_mb?: number
           batch_size?: number
@@ -197,9 +197,9 @@ export interface Database {
       }
     }
     Enums: {
-      subscription_tier: 'free' | 'basic' | 'pro' | 'premium'
-      subscription_status: 'active' | 'cancelled' | 'past_due' | 'trialing'
-      enhancement_status: 'pending' | 'processing' | 'completed' | 'failed'
+      subscription_tier: "free" | "basic" | "pro" | "premium"
+      subscription_status: "active" | "cancelled" | "past_due" | "trialing"
+      enhancement_status: "pending" | "processing" | "completed" | "failed"
     }
   }
 }

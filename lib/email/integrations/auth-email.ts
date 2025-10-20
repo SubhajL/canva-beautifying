@@ -1,5 +1,5 @@
-import { EmailService } from '../email-service'
-import { createClient } from '@/lib/supabase/client'
+import { EmailService } from "../email-service"
+import { createClient } from "@/lib/supabase/client"
 
 const tierCredits: Record<string, number> = {
   free: 10,
@@ -13,25 +13,29 @@ export async function sendWelcomeEmailToNewUser(userId: string): Promise<void> {
     // Fetch user details
     const supabase = createClient()
     const { data: user, error: userError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
+      .from("users")
+      .select("*")
+      .eq("id", userId)
       .single()
 
     if (userError || !user) {
-      console.error('Failed to fetch user:', userError)
+      console.error("Failed to fetch user:", userError)
       return
     }
 
     // Send welcome email
     await EmailService.sendWelcomeEmail(userId, {
-      userName: user.name || 'there',
+      userName: user.name || "there",
       userEmail: user.email,
-      userTier: (user.subscription_tier || 'free') as 'free' | 'basic' | 'pro' | 'premium',
-      monthlyCredits: tierCredits[user.subscription_tier || 'free'],
+      userTier: (user.subscription_tier || "free") as
+        | "free"
+        | "basic"
+        | "pro"
+        | "premium",
+      monthlyCredits: tierCredits[user.subscription_tier || "free"],
     })
   } catch (error) {
-    console.error('Error sending welcome email:', error)
+    console.error("Error sending welcome email:", error)
   }
 }
 
@@ -47,27 +51,27 @@ export async function sendPasswordResetRequestEmail(
     // Fetch user by email
     const supabase = createClient()
     const { data: user, error: userError } = await supabase
-      .from('users')
-      .select('name')
-      .eq('email', email)
+      .from("users")
+      .select("name")
+      .eq("email", email)
       .single()
 
     if (userError) {
       // Don't reveal if user exists or not
-      console.error('User lookup error:', userError)
+      console.error("User lookup error:", userError)
       return
     }
 
     const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${resetToken}`
 
     await EmailService.sendPasswordResetEmail({
-      userName: user?.name || email.split('@')[0],
+      userName: user?.name || email.split("@")[0],
       userEmail: email,
       resetUrl,
       ipAddress: requestInfo?.ipAddress,
       userAgent: requestInfo?.userAgent,
     })
   } catch (error) {
-    console.error('Error sending password reset email:', error)
+    console.error("Error sending password reset email:", error)
   }
 }

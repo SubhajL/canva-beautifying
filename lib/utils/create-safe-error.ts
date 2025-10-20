@@ -3,9 +3,9 @@
  * Creates standardized safe errors with proper sanitization
  */
 
-import { AppError, ErrorCode, ErrorFactory } from './error-types'
-import { ErrorSanitizer } from './error-sanitizer'
-import SecureLogger from './error-logger'
+import { AppError, ErrorCode, ErrorFactory } from "./error-types"
+import { ErrorSanitizer } from "./error-sanitizer"
+import SecureLogger from "./error-logger"
 
 export interface SafeErrorOptions {
   code?: ErrorCode
@@ -48,7 +48,7 @@ export function createSafeError(
       requestId,
       ...(details && { errorDetails: details }),
     })
-    
+
     // Add correlation ID to error details
     if (!appError.details) {
       appError.details = {}
@@ -71,9 +71,10 @@ export function createErrorResponse(
   headers?: Record<string, string>
 } {
   // Convert to AppError
-  const appError = error instanceof AppError
-    ? error
-    : ErrorFactory.internal('An unexpected error occurred')
+  const appError =
+    error instanceof AppError
+      ? error
+      : ErrorFactory.internal("An unexpected error occurred")
 
   // Log if not already logged
   if (!appError.details?.correlationId) {
@@ -89,8 +90,11 @@ export function createErrorResponse(
 
   // Add retry-after header for rate limit errors
   const headers: Record<string, string> = {}
-  if (appError.code === ErrorCode.RATE_LIMIT_EXCEEDED && appError.details?.retryAfter) {
-    headers['Retry-After'] = String(appError.details.retryAfter)
+  if (
+    appError.code === ErrorCode.RATE_LIMIT_EXCEEDED &&
+    appError.details?.retryAfter
+  ) {
+    headers["Retry-After"] = String(appError.details.retryAfter)
   }
 
   return {
@@ -111,8 +115,10 @@ export function withErrorHandling<T extends (...args: any[]) => Promise<any>>(
       return await handler(...args)
     } catch (error) {
       // Extract request from args if available
-      const request = args.find(arg => arg instanceof Request) as Request | undefined
-      const requestId = request?.headers.get('x-request-id') || undefined
+      const request = args.find((arg) => arg instanceof Request) as
+        | Request
+        | undefined
+      const requestId = request?.headers.get("x-request-id") || undefined
 
       // Create error response
       const { status, body, headers } = createErrorResponse(error, requestId)
@@ -121,7 +127,7 @@ export function withErrorHandling<T extends (...args: any[]) => Promise<any>>(
       return new Response(JSON.stringify(body), {
         status,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           ...headers,
         },
       })
@@ -138,13 +144,13 @@ export function errorMiddleware(
   res: Response,
   next: Function
 ): Response {
-  const requestId = req.headers.get('x-request-id') || undefined
+  const requestId = req.headers.get("x-request-id") || undefined
   const { status, body, headers } = createErrorResponse(error, requestId)
 
   return new Response(JSON.stringify(body), {
     status,
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...headers,
     },
   })
@@ -160,7 +166,7 @@ export function createValidationError(
 ): AppError {
   return createSafeError(
     `Validation failed for field: ${field}`,
-    'Please check your input and try again',
+    "Please check your input and try again",
     undefined,
     {
       code: ErrorCode.VALIDATION_ERROR,
@@ -176,14 +182,11 @@ export function createValidationError(
 /**
  * Create safe authentication error
  */
-export function createAuthError(
-  reason: string,
-  requiresAuth = true
-): AppError {
+export function createAuthError(reason: string, requiresAuth = true): AppError {
   const code = requiresAuth ? ErrorCode.AUTH_REQUIRED : ErrorCode.AUTH_FORBIDDEN
   const userMessage = requiresAuth
-    ? 'Please sign in to continue'
-    : 'You do not have permission to access this resource'
+    ? "Please sign in to continue"
+    : "You do not have permission to access this resource"
 
   return createSafeError(
     `Authentication failed: ${reason}`,
@@ -199,7 +202,7 @@ export function createAuthError(
 export function createApiError(
   service: string,
   originalError: Error,
-  userMessage = 'External service error. Please try again'
+  userMessage = "External service error. Please try again"
 ): AppError {
   return createSafeError(
     `${service} API error: ${originalError.message}`,
@@ -225,18 +228,18 @@ export function createFileError(
   }
 ): AppError {
   let code = ErrorCode.FILE_PROCESSING_FAILED
-  let userMessage = 'File processing failed'
+  let userMessage = "File processing failed"
 
   // Determine specific error type
-  if (reason.includes('size') || reason.includes('large')) {
+  if (reason.includes("size") || reason.includes("large")) {
     code = ErrorCode.FILE_TOO_LARGE
-    userMessage = 'File too large'
-  } else if (reason.includes('type') || reason.includes('format')) {
+    userMessage = "File too large"
+  } else if (reason.includes("type") || reason.includes("format")) {
     code = ErrorCode.INVALID_FILE_TYPE
-    userMessage = 'Invalid file type'
-  } else if (reason.includes('not found')) {
+    userMessage = "Invalid file type"
+  } else if (reason.includes("not found")) {
     code = ErrorCode.FILE_NOT_FOUND
-    userMessage = 'File not found'
+    userMessage = "File not found"
   }
 
   return createSafeError(
@@ -253,6 +256,6 @@ export function createFileError(
 /**
  * Export all error utilities
  */
-export * from './error-types'
-export { ErrorSanitizer } from './error-sanitizer'
-export { SecureLogger } from './error-logger'
+export * from "./error-types"
+export { ErrorSanitizer } from "./error-sanitizer"
+export { SecureLogger } from "./error-logger"

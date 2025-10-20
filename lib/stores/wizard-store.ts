@@ -1,99 +1,103 @@
-import { create } from 'zustand';
-import { devtools, persist } from 'zustand/middleware';
+import { create } from "zustand"
+import { devtools, persist } from "zustand/middleware"
 
-export type WizardStep = 
-  | 'upload' 
-  | 'model'
-  | 'audience' 
-  | 'style' 
-  | 'review' 
-  | 'processing' 
-  | 'results';
+export type WizardStep =
+  | "upload"
+  | "model"
+  | "audience"
+  | "style"
+  | "review"
+  | "processing"
+  | "results"
 
 export interface UploadedFile {
-  id: string;
-  file: File;
-  fileUrl: string;
-  fileName: string;
-  fileType: string;
-  fileSize: number;
-  status: 'pending' | 'uploading' | 'uploaded' | 'error';
-  error?: string;
-  documentId?: string;
-  progress?: number;
+  id: string
+  file: File
+  fileUrl: string
+  fileName: string
+  fileType: string
+  fileSize: number
+  status: "pending" | "uploading" | "uploaded" | "error"
+  error?: string
+  documentId?: string
+  progress?: number
 }
 
 export interface WizardData {
   // Upload step
-  files: UploadedFile[];
-  
+  files: UploadedFile[]
+
   // Model step
-  selectedModel: string | null;
-  
+  selectedModel: string | null
+
   // Audience step
-  targetAudience: string | null;
-  gradeLevel: string | null;
-  subject: string | null;
-  purpose: string | null;
-  
+  targetAudience: string | null
+  gradeLevel: string | null
+  subject: string | null
+  purpose: string | null
+
   // Style step
-  enhancementStyle: string | null;
-  colorScheme: string | null;
-  visualComplexity: 'simple' | 'moderate' | 'detailed' | null;
-  includeGraphics: boolean;
-  includeCharts: boolean;
-  
+  enhancementStyle: string | null
+  colorScheme: string | null
+  visualComplexity: "simple" | "moderate" | "detailed" | null
+  includeGraphics: boolean
+  includeCharts: boolean
+
   // Processing
-  batchId: string | null;
+  batchId: string | null
   enhancementResults: Array<{
-    documentId: string;
-    enhancementId: string;
-    jobId: string;
-    status: 'pending' | 'processing' | 'completed' | 'error';
-    enhancedUrl?: string;
-    thumbnailUrl?: string;
-    improvements?: string[];
-    processingTime?: number;
-    error?: string;
-  }>;
+    documentId: string
+    enhancementId: string
+    jobId: string
+    status: "pending" | "processing" | "completed" | "error"
+    enhancedUrl?: string
+    thumbnailUrl?: string
+    improvements?: string[]
+    processingTime?: number
+    error?: string
+  }>
 }
 
 interface WizardState {
-  currentStep: WizardStep;
-  completedSteps: WizardStep[];
-  data: WizardData;
-  errors: Partial<Record<WizardStep, string>>;
-  isProcessing: boolean;
-  
+  currentStep: WizardStep
+  completedSteps: WizardStep[]
+  data: WizardData
+  errors: Partial<Record<WizardStep, string>>
+  isProcessing: boolean
+
   // Actions
-  setStep: (step: WizardStep) => void;
-  nextStep: () => void;
-  previousStep: () => void;
-  updateData: (data: Partial<WizardData>) => void;
-  setError: (step: WizardStep, error: string | null) => void;
-  clearError: (step: WizardStep) => void;
-  setProcessing: (processing: boolean) => void;
-  reset: () => void;
-  canNavigateToStep: (step: WizardStep) => boolean;
-  isStepCompleted: (step: WizardStep) => boolean;
-  validateCurrentStep: () => boolean;
-  
+  setStep: (step: WizardStep) => void
+  nextStep: () => void
+  previousStep: () => void
+  updateData: (data: Partial<WizardData>) => void
+  setError: (step: WizardStep, error: string | null) => void
+  clearError: (step: WizardStep) => void
+  setProcessing: (processing: boolean) => void
+  reset: () => void
+  canNavigateToStep: (step: WizardStep) => boolean
+  isStepCompleted: (step: WizardStep) => boolean
+  validateCurrentStep: () => boolean
+
   // File management actions
-  addFiles: (files: UploadedFile[]) => void;
-  removeFile: (fileId: string) => void;
-  updateFileStatus: (fileId: string, status: UploadedFile['status'], updates?: Partial<UploadedFile>) => void;
-  clearFiles: () => void;
+  addFiles: (files: UploadedFile[]) => void
+  removeFile: (fileId: string) => void
+  updateFileStatus: (
+    fileId: string,
+    status: UploadedFile["status"],
+    updates?: Partial<UploadedFile>
+  ) => void
+  clearFiles: () => void
 }
 
 const stepOrder: WizardStep[] = [
-  'upload',
-  'model',
-  'audience',
-  'style',
-  'review',
-  'processing',
-  'results',
-];
+  "upload",
+  "model",
+  "audience",
+  "style",
+  "review",
+  "processing",
+  "results",
+]
 
 const initialData: WizardData = {
   files: [],
@@ -109,157 +113,173 @@ const initialData: WizardData = {
   includeCharts: true,
   batchId: null,
   enhancementResults: [],
-};
+}
 
 export const useWizardStore = create<WizardState>()(
   devtools(
     persist(
       (set, get) => ({
-        currentStep: 'upload',
+        currentStep: "upload",
         completedSteps: [],
         data: initialData,
         errors: {},
         isProcessing: false,
 
         setStep: (step) => {
-          const state = get();
+          const state = get()
           if (state.canNavigateToStep(step)) {
-            set({ currentStep: step });
+            set({ currentStep: step })
           }
         },
 
         nextStep: () => {
-          const state = get();
-          const currentIndex = stepOrder.indexOf(state.currentStep);
-          
+          const state = get()
+          const currentIndex = stepOrder.indexOf(state.currentStep)
+
           if (currentIndex < stepOrder.length - 1) {
-            const nextStep = stepOrder[currentIndex + 1];
-            
+            const nextStep = stepOrder[currentIndex + 1]
+
             // Mark current step as completed if valid
             if (state.validateCurrentStep()) {
               set((prev) => ({
-                completedSteps: Array.from(new Set([...prev.completedSteps, prev.currentStep])),
+                completedSteps: Array.from(
+                  new Set([...prev.completedSteps, prev.currentStep])
+                ),
                 currentStep: nextStep,
-              }));
+              }))
             }
           }
         },
 
         previousStep: () => {
-          const state = get();
-          const currentIndex = stepOrder.indexOf(state.currentStep);
-          
+          const state = get()
+          const currentIndex = stepOrder.indexOf(state.currentStep)
+
           if (currentIndex > 0) {
-            set({ currentStep: stepOrder[currentIndex - 1] });
+            set({ currentStep: stepOrder[currentIndex - 1] })
           }
         },
 
         updateData: (newData) => {
           set((state) => ({
             data: { ...state.data, ...newData },
-          }));
+          }))
         },
 
         setError: (step, error) => {
           set((state) => ({
             errors: { ...state.errors, [step]: error || undefined },
-          }));
+          }))
         },
 
         clearError: (step) => {
           set((state) => {
-            const newErrors = { ...state.errors };
-            delete newErrors[step];
-            return { errors: newErrors };
-          });
+            const newErrors = { ...state.errors }
+            delete newErrors[step]
+            return { errors: newErrors }
+          })
         },
 
         setProcessing: (processing) => {
-          set({ isProcessing: processing });
+          set({ isProcessing: processing })
         },
 
         reset: () => {
           set({
-            currentStep: 'upload',
+            currentStep: "upload",
             completedSteps: [],
             data: initialData,
             errors: {},
             isProcessing: false,
-          });
+          })
         },
 
         canNavigateToStep: (step) => {
-          const state = get();
-          const targetIndex = stepOrder.indexOf(step);
-          const currentIndex = stepOrder.indexOf(state.currentStep);
-          
+          const state = get()
+          const targetIndex = stepOrder.indexOf(step)
+          const currentIndex = stepOrder.indexOf(state.currentStep)
+
           // Can always go back
-          if (targetIndex <= currentIndex) return true;
-          
+          if (targetIndex <= currentIndex) return true
+
           // Can only go forward if all previous steps are completed
           for (let i = 0; i < targetIndex; i++) {
             if (!state.completedSteps.includes(stepOrder[i])) {
-              return false;
+              return false
             }
           }
-          
-          return true;
+
+          return true
         },
 
         isStepCompleted: (step) => {
-          return get().completedSteps.includes(step);
+          return get().completedSteps.includes(step)
         },
 
         validateCurrentStep: () => {
-          const state = get();
-          const { currentStep, data } = state;
-          
-          state.clearError(currentStep);
-          
+          const state = get()
+          const { currentStep, data } = state
+
+          state.clearError(currentStep)
+
           switch (currentStep) {
-            case 'upload':
+            case "upload":
               if (data.files.length === 0) {
-                state.setError('upload', 'Please select at least one file to upload');
-                return false;
+                state.setError(
+                  "upload",
+                  "Please select at least one file to upload"
+                )
+                return false
               }
               // Check if all files have been uploaded successfully
-              const allUploaded = data.files.every(f => f.status === 'uploaded');
+              const allUploaded = data.files.every(
+                (f) => f.status === "uploaded"
+              )
               if (!allUploaded) {
-                state.setError('upload', 'Please wait for all files to finish uploading');
-                return false;
+                state.setError(
+                  "upload",
+                  "Please wait for all files to finish uploading"
+                )
+                return false
               }
-              return true;
-              
-            case 'model':
+              return true
+
+            case "model":
               if (!data.selectedModel) {
-                state.setError('model', 'Please select an AI model');
-                return false;
+                state.setError("model", "Please select an AI model")
+                return false
               }
-              return true;
-              
-            case 'audience':
+              return true
+
+            case "audience":
               if (!data.targetAudience || !data.gradeLevel) {
-                state.setError('audience', 'Please select target audience and grade level');
-                return false;
+                state.setError(
+                  "audience",
+                  "Please select target audience and grade level"
+                )
+                return false
               }
-              return true;
-              
-            case 'style':
+              return true
+
+            case "style":
               if (!data.enhancementStyle || !data.colorScheme) {
-                state.setError('style', 'Please select enhancement style and color scheme');
-                return false;
+                state.setError(
+                  "style",
+                  "Please select enhancement style and color scheme"
+                )
+                return false
               }
-              return true;
-              
-            case 'review':
+              return true
+
+            case "review":
               // Review step is always valid
-              return true;
-              
+              return true
+
             default:
-              return true;
+              return true
           }
         },
-        
+
         // File management actions
         addFiles: (newFiles) => {
           set((state) => ({
@@ -267,55 +287,53 @@ export const useWizardStore = create<WizardState>()(
               ...state.data,
               files: [...state.data.files, ...newFiles],
             },
-          }));
+          }))
         },
-        
+
         removeFile: (fileId) => {
           set((state) => ({
             data: {
               ...state.data,
-              files: state.data.files.filter(f => f.id !== fileId),
+              files: state.data.files.filter((f) => f.id !== fileId),
             },
-          }));
-          
+          }))
+
           // Revoke object URL to free memory
-          const file = get().data.files.find(f => f.id === fileId);
+          const file = get().data.files.find((f) => f.id === fileId)
           if (file?.fileUrl) {
-            URL.revokeObjectURL(file.fileUrl);
+            URL.revokeObjectURL(file.fileUrl)
           }
         },
-        
+
         updateFileStatus: (fileId, status, updates = {}) => {
           set((state) => ({
             data: {
               ...state.data,
-              files: state.data.files.map(f => 
-                f.id === fileId 
-                  ? { ...f, status, ...updates }
-                  : f
+              files: state.data.files.map((f) =>
+                f.id === fileId ? { ...f, status, ...updates } : f
               ),
             },
-          }));
+          }))
         },
-        
+
         clearFiles: () => {
           // Revoke all object URLs
-          get().data.files.forEach(file => {
+          get().data.files.forEach((file) => {
             if (file.fileUrl) {
-              URL.revokeObjectURL(file.fileUrl);
+              URL.revokeObjectURL(file.fileUrl)
             }
-          });
-          
+          })
+
           set((state) => ({
             data: {
               ...state.data,
               files: [],
             },
-          }));
+          }))
         },
       }),
       {
-        name: 'enhancement-wizard',
+        name: "enhancement-wizard",
         partialize: (state) => ({
           // Only persist non-file data
           data: {
@@ -328,4 +346,4 @@ export const useWizardStore = create<WizardState>()(
       }
     )
   )
-);
+)

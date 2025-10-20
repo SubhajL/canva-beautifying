@@ -1,4 +1,4 @@
-import { ExportRequest, ExportResult, ExportFormat } from '../types'
+import { ExportRequest, ExportResult, ExportFormat } from "../types"
 
 export abstract class BaseExporter {
   protected format: ExportFormat
@@ -8,7 +8,7 @@ export abstract class BaseExporter {
   }
 
   abstract export(request: ExportRequest): Promise<ExportResult>
-  
+
   abstract validateOptions(request: ExportRequest): boolean
 
   protected async downloadImage(url: string): Promise<Buffer> {
@@ -21,11 +21,11 @@ export abstract class BaseExporter {
   }
 
   protected generateExportFileName(
-    documentId: string, 
+    documentId: string,
     format: ExportFormat,
     timestamp: boolean = true
   ): string {
-    const date = timestamp ? `-${Date.now()}` : ''
+    const date = timestamp ? `-${Date.now()}` : ""
     return `enhanced-${documentId}${date}.${format}`
   }
 
@@ -37,16 +37,18 @@ export abstract class BaseExporter {
     // This would use the R2 storage service to upload
     // For now, return a mock URL
     const mockUrl = `https://r2.example.com/exports/${fileName}`
-    console.log(`Would upload ${buffer.length} bytes as ${fileName} with type ${contentType}`)
+    console.log(
+      `Would upload ${buffer.length} bytes as ${fileName} with type ${contentType}`
+    )
     return mockUrl
   }
 
   protected getContentType(format: ExportFormat): string {
     const contentTypes: Record<ExportFormat, string> = {
-      png: 'image/png',
-      jpg: 'image/jpeg',
-      pdf: 'application/pdf',
-      canva: 'application/json'
+      png: "image/png",
+      jpg: "image/jpeg",
+      pdf: "application/pdf",
+      canva: "application/json",
     }
     return contentTypes[format]
   }
@@ -61,7 +63,9 @@ export abstract class BaseExporter {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected async getImageDimensions(_buffer: Buffer): Promise<{ width: number; height: number }> {
+  protected async getImageDimensions(
+    _buffer: Buffer
+  ): Promise<{ width: number; height: number }> {
     // In production, use sharp or similar to get actual dimensions
     // For now, return mock dimensions
     return { width: 1920, height: 1080 }

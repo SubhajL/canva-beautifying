@@ -1,54 +1,60 @@
-'use client';
+"use client"
 
-import { useWizardStore } from '@/lib/stores/wizard-store';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Card } from '@/components/ui/card';
-import { Users, GraduationCap, Target } from 'lucide-react';
+import { useWizardStore } from "@/lib/stores/wizard-store"
+import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { Card } from "@/components/ui/card"
+import { Users, GraduationCap, Target } from "lucide-react"
 
 const targetAudiences = [
-  { value: 'students', label: 'Students', icon: GraduationCap },
-  { value: 'teachers', label: 'Teachers', icon: Users },
-  { value: 'parents', label: 'Parents', icon: Users },
-  { value: 'professionals', label: 'Professionals', icon: Target },
-];
+  { value: "students", label: "Students", icon: GraduationCap },
+  { value: "teachers", label: "Teachers", icon: Users },
+  { value: "parents", label: "Parents", icon: Users },
+  { value: "professionals", label: "Professionals", icon: Target },
+]
 
 const gradeLevels = [
-  { value: 'prek', label: 'Pre-K' },
-  { value: 'k-2', label: 'Kindergarten - 2nd Grade' },
-  { value: '3-5', label: '3rd - 5th Grade' },
-  { value: '6-8', label: '6th - 8th Grade' },
-  { value: '9-12', label: '9th - 12th Grade' },
-  { value: 'college', label: 'College/University' },
-  { value: 'adult', label: 'Adult Education' },
-  { value: 'professional', label: 'Professional Development' },
-];
+  { value: "prek", label: "Pre-K" },
+  { value: "k-2", label: "Kindergarten - 2nd Grade" },
+  { value: "3-5", label: "3rd - 5th Grade" },
+  { value: "6-8", label: "6th - 8th Grade" },
+  { value: "9-12", label: "9th - 12th Grade" },
+  { value: "college", label: "College/University" },
+  { value: "adult", label: "Adult Education" },
+  { value: "professional", label: "Professional Development" },
+]
 
 const subjects = [
-  'Mathematics',
-  'Science',
-  'English/Language Arts',
-  'Social Studies',
-  'History',
-  'Geography',
-  'Foreign Language',
-  'Computer Science',
-  'Art & Design',
-  'Music',
-  'Physical Education',
-  'Business',
-  'Marketing',
-  'Other',
-];
+  "Mathematics",
+  "Science",
+  "English/Language Arts",
+  "Social Studies",
+  "History",
+  "Geography",
+  "Foreign Language",
+  "Computer Science",
+  "Art & Design",
+  "Music",
+  "Physical Education",
+  "Business",
+  "Marketing",
+  "Other",
+]
 
 export function AudienceStep() {
-  const { data, updateData } = useWizardStore();
+  const { data, updateData } = useWizardStore()
 
   return (
     <div className="space-y-6">
-      <div className="text-center space-y-2">
+      <div className="space-y-2 text-center">
         <h2 className="text-2xl font-semibold">Define Your Audience</h2>
         <p className="text-muted-foreground">
           Help us understand who will be using this document
@@ -62,27 +68,30 @@ export function AudienceStep() {
             Who is your target audience?
           </Label>
           <RadioGroup
-            value={data.targetAudience || ''}
+            value={data.targetAudience || ""}
             onValueChange={(value) => updateData({ targetAudience: value })}
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {targetAudiences.map((audience) => {
-                const Icon = audience.icon;
+                const Icon = audience.icon
                 return (
                   <Card
                     key={audience.value}
-                    className="cursor-pointer hover:border-primary transition-colors"
+                    className="cursor-pointer transition-colors hover:border-primary"
                   >
                     <label
                       htmlFor={audience.value}
-                      className="flex items-center space-x-3 p-4 cursor-pointer"
+                      className="flex cursor-pointer items-center space-x-3 p-4"
                     >
-                      <RadioGroupItem value={audience.value} id={audience.value} />
+                      <RadioGroupItem
+                        value={audience.value}
+                        id={audience.value}
+                      />
                       <Icon className="h-5 w-5 text-muted-foreground" />
                       <span className="font-medium">{audience.label}</span>
                     </label>
                   </Card>
-                );
+                )
               })}
             </div>
           </RadioGroup>
@@ -94,7 +103,7 @@ export function AudienceStep() {
             What grade level or education stage?
           </Label>
           <Select
-            value={data.gradeLevel || ''}
+            value={data.gradeLevel || ""}
             onValueChange={(value) => updateData({ gradeLevel: value })}
           >
             <SelectTrigger id="grade-level">
@@ -116,7 +125,7 @@ export function AudienceStep() {
             What subject area? (Optional)
           </Label>
           <Select
-            value={data.subject || ''}
+            value={data.subject || ""}
             onValueChange={(value) => updateData({ subject: value })}
           >
             <SelectTrigger id="subject">
@@ -140,7 +149,7 @@ export function AudienceStep() {
           <Textarea
             id="purpose"
             placeholder="e.g., Teaching fractions to 4th graders, Marketing presentation for clients, Study guide for biology exam..."
-            value={data.purpose || ''}
+            value={data.purpose || ""}
             onChange={(e) => updateData({ purpose: e.target.value })}
             className="min-h-[100px]"
           />
@@ -150,5 +159,5 @@ export function AudienceStep() {
         </div>
       </div>
     </div>
-  );
+  )
 }

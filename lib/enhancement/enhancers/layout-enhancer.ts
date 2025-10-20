@@ -1,6 +1,10 @@
-import { BaseEnhancer } from '../base-enhancer'
-import { DocumentAnalysis } from '@/lib/ai/types'
-import { EnhancementStrategy, EnhancementPreferences, LayoutEnhancement } from '../types'
+import { BaseEnhancer } from "../base-enhancer"
+import { DocumentAnalysis } from "@/lib/ai/types"
+import {
+  EnhancementStrategy,
+  EnhancementPreferences,
+  LayoutEnhancement,
+} from "../types"
 
 export class LayoutEnhancer extends BaseEnhancer {
   private readonly gridSystems = {
@@ -8,11 +12,15 @@ export class LayoutEnhancer extends BaseEnhancer {
     modern: { columns: 16, gutters: 24, margins: 80 },
     minimal: { columns: 8, gutters: 32, margins: 120 },
     magazine: { columns: 6, gutters: 16, margins: 40 },
-    presentation: { columns: 4, gutters: 40, margins: 100 }
+    presentation: { columns: 4, gutters: 40, margins: 100 },
   }
 
   constructor() {
-    super('Layout Optimization', 'Restructures layout for better visual hierarchy and flow', 'high')
+    super(
+      "Layout Optimization",
+      "Restructures layout for better visual hierarchy and flow",
+      "high"
+    )
   }
 
   async analyze(
@@ -24,18 +32,21 @@ export class LayoutEnhancer extends BaseEnhancer {
 
     // Generate layout enhancement strategies
     if (layoutScore < 80) {
-      const layoutStrategy = await this.generateLayoutStrategy(analysis, preferences)
+      const layoutStrategy = await this.generateLayoutStrategy(
+        analysis,
+        preferences
+      )
       strategies.push(layoutStrategy)
     }
 
     // Add spacing-focused strategy if needed
-    if (analysis.layout.issues.includes('Insufficient white space')) {
+    if (analysis.layout.issues.includes("Insufficient white space")) {
       const spacingStrategy = await this.generateSpacingStrategy(analysis)
       strategies.push(spacingStrategy)
     }
 
     // Add alignment strategy if needed
-    if (analysis.layout.issues.includes('Poor alignment')) {
+    if (analysis.layout.issues.includes("Poor alignment")) {
       const alignmentStrategy = await this.generateAlignmentStrategy(analysis)
       strategies.push(alignmentStrategy)
     }
@@ -47,7 +58,7 @@ export class LayoutEnhancer extends BaseEnhancer {
     analysis: DocumentAnalysis,
     preferences?: EnhancementPreferences
   ): Promise<EnhancementStrategy> {
-    const style = preferences?.style || 'modern'
+    const style = preferences?.style || "modern"
     const gridSystem = this.selectGridSystem(style)
     const spacing = this.calculateOptimalSpacing(analysis)
     const alignment = this.determineAlignment(style)
@@ -57,29 +68,29 @@ export class LayoutEnhancer extends BaseEnhancer {
         columns: gridSystem.columns,
         rows: this.calculateOptimalRows(analysis),
         gutters: gridSystem.gutters,
-        margins: gridSystem.margins
+        margins: gridSystem.margins,
       },
       spacing: {
         sections: spacing.sections,
         elements: spacing.elements,
-        padding: spacing.padding
+        padding: spacing.padding,
       },
       alignment: alignment,
       hierarchy: {
         levels: this.calculateHierarchyLevels(analysis),
-        emphasis: this.generateEmphasisMap()
-      }
+        emphasis: this.generateEmphasisMap(),
+      },
     }
 
     return {
       id: this.generateStrategyId(),
-      name: 'Optimize Layout Structure',
+      name: "Optimize Layout Structure",
       description: `Apply ${style} grid system with ${gridSystem.columns}-column layout`,
-      priority: 'high',
+      priority: "high",
       impact: this.scoreToImpact(analysis.layout.score),
       changes: {
-        layout: enhancement
-      }
+        layout: enhancement,
+      },
     }
   }
 
@@ -87,39 +98,39 @@ export class LayoutEnhancer extends BaseEnhancer {
     analysis: DocumentAnalysis
   ): Promise<EnhancementStrategy> {
     // const targetWhitespace = this.calculateTargetWhitespace(analysis)
-    
+
     const enhancement: LayoutEnhancement = {
       grid: {
         columns: 12,
         rows: this.calculateOptimalRows(analysis),
         gutters: 32, // Increased gutters
-        margins: 100 // Increased margins
+        margins: 100, // Increased margins
       },
       spacing: {
         sections: 80, // Generous section spacing
         elements: 24, // Comfortable element spacing
-        padding: 32 // Increased padding
+        padding: 32, // Increased padding
       },
-      alignment: 'left',
+      alignment: "left",
       hierarchy: {
         levels: 3,
         emphasis: new Map([
-          ['heading', 3],
-          ['subheading', 2],
-          ['body', 1]
-        ])
-      }
+          ["heading", 3],
+          ["subheading", 2],
+          ["body", 1],
+        ]),
+      },
     }
 
     return {
       id: this.generateStrategyId(),
-      name: 'Improve White Space',
-      description: 'Add breathing room with increased spacing and margins',
-      priority: 'high',
+      name: "Improve White Space",
+      description: "Add breathing room with increased spacing and margins",
+      priority: "high",
       impact: 80,
       changes: {
-        layout: enhancement
-      }
+        layout: enhancement,
+      },
     }
   }
 
@@ -127,49 +138,51 @@ export class LayoutEnhancer extends BaseEnhancer {
     analysis: DocumentAnalysis
   ): Promise<EnhancementStrategy> {
     const optimalAlignment = this.determineOptimalAlignment(analysis)
-    
+
     const enhancement: LayoutEnhancement = {
       grid: {
         columns: 12,
         rows: this.calculateOptimalRows(analysis),
         gutters: 24,
-        margins: 60
+        margins: 60,
       },
       spacing: {
         sections: 60,
         elements: 20,
-        padding: 24
+        padding: 24,
       },
       alignment: optimalAlignment,
       hierarchy: {
         levels: this.calculateHierarchyLevels(analysis),
-        emphasis: this.generateEmphasisMap()
-      }
+        emphasis: this.generateEmphasisMap(),
+      },
     }
 
     return {
       id: this.generateStrategyId(),
-      name: 'Fix Alignment Issues',
+      name: "Fix Alignment Issues",
       description: `Apply consistent ${optimalAlignment} alignment throughout`,
-      priority: 'medium',
+      priority: "medium",
       impact: 70,
       changes: {
-        layout: enhancement
-      }
+        layout: enhancement,
+      },
     }
   }
 
-  private selectGridSystem(
-    style: EnhancementPreferences['style']
-  ): { columns: number; gutters: number; margins: number } {
+  private selectGridSystem(style: EnhancementPreferences["style"]): {
+    columns: number
+    gutters: number
+    margins: number
+  } {
     switch (style) {
-      case 'minimal':
+      case "minimal":
         return this.gridSystems.minimal
-      case 'classic':
+      case "classic":
         return this.gridSystems.classic
-      case 'professional':
+      case "professional":
         return this.gridSystems.modern
-      case 'playful':
+      case "playful":
         return this.gridSystems.magazine
       default:
         return this.gridSystems.modern
@@ -187,33 +200,35 @@ export class LayoutEnhancer extends BaseEnhancer {
     elements: number
     padding: number
   } {
-    const hasSpacingIssues = analysis.layout.issues.includes('Insufficient white space')
-    
+    const hasSpacingIssues = analysis.layout.issues.includes(
+      "Insufficient white space"
+    )
+
     if (hasSpacingIssues) {
       return {
         sections: 72,
         elements: 24,
-        padding: 28
+        padding: 28,
       }
     }
 
     return {
       sections: 60,
       elements: 20,
-      padding: 24
+      padding: 24,
     }
   }
 
   private determineAlignment(
-    style: EnhancementPreferences['style']
-  ): LayoutEnhancement['alignment'] {
+    style: EnhancementPreferences["style"]
+  ): LayoutEnhancement["alignment"] {
     // Choose alignment based on style and content
-    if (style === 'classic' || style === 'professional') {
-      return 'justify'
-    } else if (style === 'playful') {
-      return 'center'
+    if (style === "classic" || style === "professional") {
+      return "justify"
+    } else if (style === "playful") {
+      return "center"
     }
-    return 'left'
+    return "left"
   }
 
   private calculateHierarchyLevels(analysis: DocumentAnalysis): number {
@@ -226,21 +241,21 @@ export class LayoutEnhancer extends BaseEnhancer {
 
   private generateEmphasisMap(): Map<string, number> {
     const emphasis = new Map<string, number>()
-    
+
     // Set emphasis levels for different content types
-    emphasis.set('title', 5)
-    emphasis.set('heading', 4)
-    emphasis.set('subheading', 3)
-    emphasis.set('callout', 3)
-    emphasis.set('body', 1)
-    emphasis.set('caption', 1)
-    
+    emphasis.set("title", 5)
+    emphasis.set("heading", 4)
+    emphasis.set("subheading", 3)
+    emphasis.set("callout", 3)
+    emphasis.set("body", 1)
+    emphasis.set("caption", 1)
+
     return emphasis
   }
 
   private estimateWhitespace(analysis: DocumentAnalysis): number {
     // Estimate current whitespace percentage
-    if (analysis.layout.issues.includes('Insufficient white space')) {
+    if (analysis.layout.issues.includes("Insufficient white space")) {
       return 20 // Low whitespace
     }
     return 40 // Normal whitespace
@@ -254,13 +269,15 @@ export class LayoutEnhancer extends BaseEnhancer {
     return 30
   }
 
-  private determineOptimalAlignment(analysis: DocumentAnalysis): LayoutEnhancement['alignment'] {
+  private determineOptimalAlignment(
+    analysis: DocumentAnalysis
+  ): LayoutEnhancement["alignment"] {
     // Analyze content to determine best alignment
-    const hasLongText = analysis.typography.issues.includes('Poor readability')
+    const hasLongText = analysis.typography.issues.includes("Poor readability")
     const isFormal = analysis.engagement.score > 70
-    
-    if (hasLongText && isFormal) return 'justify'
-    if (isFormal) return 'left'
-    return 'center'
+
+    if (hasLongText && isFormal) return "justify"
+    if (isFormal) return "left"
+    return "center"
   }
 }

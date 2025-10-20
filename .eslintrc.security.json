@@ -1,8 +1,5 @@
 {
-  "extends": [
-    "./.eslintrc.json",
-    "plugin:security/recommended"
-  ],
+  "extends": ["./.eslintrc.json", "plugin:security/recommended"],
   "plugins": ["security"],
   "rules": {
     "security/detect-object-injection": "warn",

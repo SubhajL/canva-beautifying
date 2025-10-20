@@ -6,7 +6,8 @@ import { RadioGroup, RadioGroupItem } from "./radio-group"
 import { Label } from "./label"
 import { Star, ThumbsUp, ThumbsDown } from "lucide-react"
 
-interface FeedbackFormProps extends Omit<React.HTMLAttributes<HTMLFormElement>, 'onSubmit'> {
+interface FeedbackFormProps
+  extends Omit<React.HTMLAttributes<HTMLFormElement>, "onSubmit"> {
   onSubmit?: (data: FeedbackData) => void
   variant?: "simple" | "detailed"
 }
@@ -22,22 +23,25 @@ const FeedbackForm = React.forwardRef<HTMLFormElement, FeedbackFormProps>(
   ({ className, onSubmit, variant = "simple", ...props }, ref) => {
     const [rating, setRating] = React.useState<number>(0)
     const [hoveredRating, setHoveredRating] = React.useState<number>(0)
-    const [satisfaction, setSatisfaction] = React.useState<"positive" | "negative" | null>(null)
+    const [satisfaction, setSatisfaction] = React.useState<
+      "positive" | "negative" | null
+    >(null)
     const [category, setCategory] = React.useState<string>("")
     const [comment, setComment] = React.useState<string>("")
-    
+
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault()
       if (onSubmit) {
         onSubmit({
           rating: variant === "detailed" ? rating : undefined,
-          satisfaction: variant === "simple" ? satisfaction || undefined : undefined,
+          satisfaction:
+            variant === "simple" ? satisfaction || undefined : undefined,
           category: variant === "detailed" ? category : undefined,
           comment,
         })
       }
     }
-    
+
     const categories = [
       { value: "enhancement", label: "Enhancement Quality" },
       { value: "speed", label: "Processing Speed" },
@@ -45,7 +49,7 @@ const FeedbackForm = React.forwardRef<HTMLFormElement, FeedbackFormProps>(
       { value: "features", label: "Features" },
       { value: "other", label: "Other" },
     ]
-    
+
     return (
       <form
         ref={ref}
@@ -93,7 +97,7 @@ const FeedbackForm = React.forwardRef<HTMLFormElement, FeedbackFormProps>(
                     onClick={() => setRating(value)}
                     onMouseEnter={() => setHoveredRating(value)}
                     onMouseLeave={() => setHoveredRating(0)}
-                    className="transition-transform hover:scale-110 focus:outline-none focus:scale-110"
+                    className="transition-transform hover:scale-110 focus:scale-110 focus:outline-none"
                   >
                     <Star
                       className={cn(
@@ -107,14 +111,19 @@ const FeedbackForm = React.forwardRef<HTMLFormElement, FeedbackFormProps>(
                 ))}
               </div>
             </div>
-            
+
             <div className="space-y-3">
-              <Label className="text-base">What would you like to tell us about?</Label>
+              <Label className="text-base">
+                What would you like to tell us about?
+              </Label>
               <RadioGroup value={category} onValueChange={setCategory}>
                 {categories.map((cat) => (
                   <div key={cat.value} className="flex items-center space-x-2">
                     <RadioGroupItem value={cat.value} id={cat.value} />
-                    <Label htmlFor={cat.value} className="font-normal cursor-pointer">
+                    <Label
+                      htmlFor={cat.value}
+                      className="cursor-pointer font-normal"
+                    >
                       {cat.label}
                     </Label>
                   </div>
@@ -123,7 +132,7 @@ const FeedbackForm = React.forwardRef<HTMLFormElement, FeedbackFormProps>(
             </div>
           </>
         )}
-        
+
         <div className="space-y-3">
           <Label htmlFor="comment" className="text-base">
             {variant === "simple" ? "Tell us more (optional)" : "Your feedback"}
@@ -137,12 +146,12 @@ const FeedbackForm = React.forwardRef<HTMLFormElement, FeedbackFormProps>(
             required={variant === "detailed"}
           />
         </div>
-        
+
         <Button
           type="submit"
           className="w-full"
           disabled={
-            variant === "simple" 
+            variant === "simple"
               ? !satisfaction && !comment
               : !rating || !category || !comment
           }

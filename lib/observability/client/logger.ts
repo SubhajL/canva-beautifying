@@ -3,7 +3,7 @@
  * This logger does not depend on any Node.js modules
  */
 
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+export type LogLevel = "debug" | "info" | "warn" | "error"
 
 export interface LogMetadata {
   [key: string]: any
@@ -13,86 +13,92 @@ export class ClientLogger {
   private name: string
   private isDevelopment: boolean
 
-  constructor(name: string = 'app') {
+  constructor(name: string = "app") {
     this.name = name
-    this.isDevelopment = process.env.NODE_ENV === 'development'
+    this.isDevelopment = process.env.NODE_ENV === "development"
   }
 
-  private formatMessage(level: LogLevel, message: string, metadata?: LogMetadata): string {
+  private formatMessage(
+    level: LogLevel,
+    message: string,
+    metadata?: LogMetadata
+  ): string {
     const timestamp = new Date().toISOString()
     const prefix = `[${timestamp}] [${this.name}] [${level.toUpperCase()}]`
-    
+
     if (metadata && Object.keys(metadata).length > 0) {
       return `${prefix} ${message} ${JSON.stringify(metadata)}`
     }
-    
+
     return `${prefix} ${message}`
   }
 
   private log(level: LogLevel, message: string, metadata?: LogMetadata) {
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       // We're in a server environment, don't log
       return
     }
 
     const formattedMessage = this.formatMessage(level, message, metadata)
-    
+
     switch (level) {
-      case 'debug':
+      case "debug":
         if (this.isDevelopment) {
           console.debug(formattedMessage)
         }
         break
-      case 'info':
+      case "info":
         console.info(formattedMessage)
         break
-      case 'warn':
+      case "warn":
         console.warn(formattedMessage)
         break
-      case 'error':
+      case "error":
         console.error(formattedMessage)
         break
     }
 
     // Send to analytics if available
-    if (typeof window !== 'undefined' && window.analytics?.track) {
-      window.analytics.track('log_event', {
+    if (typeof window !== "undefined" && window.analytics?.track) {
+      window.analytics.track("log_event", {
         level,
         message,
         logger: this.name,
-        ...metadata
+        ...metadata,
       })
     }
   }
 
   debug(message: string, metadata?: LogMetadata) {
-    this.log('debug', message, metadata)
+    this.log("debug", message, metadata)
   }
 
   info(message: string, metadata?: LogMetadata) {
-    this.log('info', message, metadata)
+    this.log("info", message, metadata)
   }
 
   warn(message: string, metadata?: LogMetadata) {
-    this.log('warn', message, metadata)
+    this.log("warn", message, metadata)
   }
 
   error(message: string, error?: Error | unknown, metadata?: LogMetadata) {
     const errorObj = error instanceof Error ? error : new Error(String(error))
-    
-    this.log('error', message, {
+
+    this.log("error", message, {
       ...metadata,
       error: {
         name: errorObj.name,
         message: errorObj.message,
-        stack: errorObj.stack
-      }
+        stack: errorObj.stack,
+      },
     })
   }
 
   // Create a child logger with additional context
   child(bindings: LogMetadata): ClientLogger {
-    const childLogger = new ClientLogger(`${this.name}:${bindings.name || 'child'}`)
+    const childLogger = new ClientLogger(
+      `${this.name}:${bindings.name || "child"}`
+    )
     // Store bindings for future use
     ;(childLogger as any)._bindings = { ...bindings }
     return childLogger
@@ -105,12 +111,12 @@ export class ClientLogger {
     metadata?: LogMetadata
   ): Promise<T> {
     const startTime = performance.now()
-    
+
     try {
       this.debug(`Starting ${operation}`, metadata)
       const result = await fn()
       const duration = performance.now() - startTime
-      
+
       this.info(`Completed ${operation}`, {
         ...metadata,
         duration: Math.round(duration),
@@ -120,7 +126,7 @@ export class ClientLogger {
       return result
     } catch (error) {
       const duration = performance.now() - startTime
-      
+
       this.error(`Failed ${operation}`, error, {
         ...metadata,
         duration: Math.round(duration),
@@ -132,13 +138,18 @@ export class ClientLogger {
   }
 
   // Performance logging helper
-  performance(metric: string, value: number, unit: string, metadata?: LogMetadata) {
+  performance(
+    metric: string,
+    value: number,
+    unit: string,
+    metadata?: LogMetadata
+  ) {
     this.info(`Performance metric: ${metric}`, {
       ...metadata,
       metric,
       value,
       unit,
-      type: 'performance',
+      type: "performance",
     })
   }
 
@@ -146,7 +157,7 @@ export class ClientLogger {
   security(event: string, metadata?: LogMetadata) {
     this.warn(`Security event: ${event}`, {
       ...metadata,
-      type: 'security',
+      type: "security",
       securityEvent: event,
     })
   }
@@ -155,7 +166,7 @@ export class ClientLogger {
   audit(action: string, userId: string, metadata?: LogMetadata) {
     this.info(`Audit: ${action}`, {
       ...metadata,
-      type: 'audit',
+      type: "audit",
       action,
       userId,
       timestamp: new Date().toISOString(),
@@ -167,12 +178,12 @@ export class ClientLogger {
 const loggers = new Map<string, ClientLogger>()
 
 export function getClientLogger(name?: string): ClientLogger {
-  const loggerName = name || 'default'
-  
+  const loggerName = name || "default"
+
   if (!loggers.has(loggerName)) {
     loggers.set(loggerName, new ClientLogger(loggerName))
   }
-  
+
   return loggers.get(loggerName)!
 }
 

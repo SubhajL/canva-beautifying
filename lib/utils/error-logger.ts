@@ -3,7 +3,7 @@
  * Logs full error details securely while returning sanitized versions to users
  */
 
-import { ErrorSanitizer } from './error-sanitizer'
+import { ErrorSanitizer } from "./error-sanitizer"
 
 export interface LogContext {
   userId?: string
@@ -16,7 +16,7 @@ export interface LogContext {
 }
 
 export interface LogEntry {
-  level: 'error' | 'warn' | 'info' | 'debug'
+  level: "error" | "warn" | "info" | "debug"
   message: string
   error?: any
   context?: LogContext
@@ -47,26 +47,26 @@ export class SecureLogger {
   static logError(error: Error, context?: LogContext): string {
     const logger = SecureLogger.getInstance()
     const correlationId = logger.generateCorrelationId()
-    
+
     const logEntry: LogEntry = {
-      level: 'error',
+      level: "error",
       message: error.message,
       error: ErrorSanitizer.forLogging(error),
       context: logger.sanitizeContext(context),
       timestamp: new Date().toISOString(),
       correlationId,
     }
-    
+
     logger.addToQueue(logEntry)
-    
+
     // In production, send to monitoring service
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       logger.sendToMonitoring(logEntry)
     } else {
       // In development, log to console
-      console.error('SecureLogger:', logEntry)
+      console.error("SecureLogger:", logEntry)
     }
-    
+
     return correlationId
   }
 
@@ -75,18 +75,18 @@ export class SecureLogger {
    */
   static logWarning(message: string, context?: LogContext): void {
     const logger = SecureLogger.getInstance()
-    
+
     const logEntry: LogEntry = {
-      level: 'warn',
+      level: "warn",
       message: ErrorSanitizer.sanitize(message).message,
       context: logger.sanitizeContext(context),
       timestamp: new Date().toISOString(),
     }
-    
+
     logger.addToQueue(logEntry)
-    
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn('SecureLogger:', logEntry)
+
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("SecureLogger:", logEntry)
     }
   }
 
@@ -95,18 +95,18 @@ export class SecureLogger {
    */
   static logInfo(message: string, context?: LogContext): void {
     const logger = SecureLogger.getInstance()
-    
+
     const logEntry: LogEntry = {
-      level: 'info',
+      level: "info",
       message,
       context: logger.sanitizeContext(context),
       timestamp: new Date().toISOString(),
     }
-    
+
     logger.addToQueue(logEntry)
-    
-    if (process.env.NODE_ENV !== 'production') {
-      console.info('SecureLogger:', logEntry)
+
+    if (process.env.NODE_ENV !== "production") {
+      console.info("SecureLogger:", logEntry)
     }
   }
 
@@ -122,28 +122,30 @@ export class SecureLogger {
    */
   private sanitizeContext(context?: LogContext): LogContext | undefined {
     if (!context) return undefined
-    
+
     const sanitized: LogContext = {}
-    
+
     for (const [key, value] of Object.entries(context)) {
       // Skip sensitive headers
-      if (key.toLowerCase() === 'authorization' || 
-          key.toLowerCase() === 'cookie' ||
-          key.toLowerCase() === 'x-api-key') {
-        sanitized[key] = '[REDACTED]'
+      if (
+        key.toLowerCase() === "authorization" ||
+        key.toLowerCase() === "cookie" ||
+        key.toLowerCase() === "x-api-key"
+      ) {
+        sanitized[key] = "[REDACTED]"
         continue
       }
-      
+
       // Sanitize values
-      if (typeof value === 'string') {
-        sanitized[key] = ErrorSanitizer.containsSensitiveInfo(value) 
-          ? '[REDACTED]' 
+      if (typeof value === "string") {
+        sanitized[key] = ErrorSanitizer.containsSensitiveInfo(value)
+          ? "[REDACTED]"
           : value
       } else {
         sanitized[key] = value
       }
     }
-    
+
     return sanitized
   }
 
@@ -152,7 +154,7 @@ export class SecureLogger {
    */
   private addToQueue(entry: LogEntry): void {
     this.logQueue.push(entry)
-    
+
     // If queue is getting large, flush immediately
     if (this.logQueue.length >= 100) {
       this.flush()
@@ -173,12 +175,12 @@ export class SecureLogger {
    */
   private flush(): void {
     if (this.logQueue.length === 0) return
-    
+
     const logsToFlush = [...this.logQueue]
     this.logQueue = []
-    
+
     // In production, batch send to logging service
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       this.batchSendToLoggingService(logsToFlush)
     }
   }
@@ -190,7 +192,6 @@ export class SecureLogger {
     try {
       // TODO: Implement actual monitoring service integration
       // For now, this is a placeholder
-      
       // Example Sentry integration:
       // if (process.env.SENTRY_DSN) {
       //   Sentry.captureException(entry.error, {
@@ -202,7 +203,6 @@ export class SecureLogger {
       //     }
       //   })
       // }
-      
       // Example DataDog integration:
       // if (process.env.DATADOG_API_KEY) {
       //   await fetch('https://http-intake.logs.datadoghq.com/v1/input', {
@@ -216,7 +216,7 @@ export class SecureLogger {
       // }
     } catch (error) {
       // Don't throw if monitoring fails - log locally
-      console.error('Failed to send to monitoring:', error)
+      console.error("Failed to send to monitoring:", error)
     }
   }
 
@@ -227,7 +227,6 @@ export class SecureLogger {
     try {
       // TODO: Implement actual logging service integration
       // This is where you'd send to CloudWatch, ELK, etc.
-      
       // Example CloudWatch integration:
       // if (process.env.AWS_REGION) {
       //   const cloudwatch = new AWS.CloudWatchLogs()
@@ -241,7 +240,7 @@ export class SecureLogger {
       //   }).promise()
       // }
     } catch (error) {
-      console.error('Failed to batch send logs:', error)
+      console.error("Failed to batch send logs:", error)
     }
   }
 
@@ -254,24 +253,25 @@ export class SecureLogger {
     userId?: string
   ): LogEntry {
     const context: LogContext = {}
-    
+
     if (request) {
       context.method = request.method
       context.url = request.url
-      context.userAgent = request.headers.get('user-agent') || undefined
-      context.ip = request.headers.get('x-forwarded-for') || 
-                   request.headers.get('x-real-ip') ||
-                   undefined
+      context.userAgent = request.headers.get("user-agent") || undefined
+      context.ip =
+        request.headers.get("x-forwarded-for") ||
+        request.headers.get("x-real-ip") ||
+        undefined
     }
-    
+
     if (userId) {
       context.userId = userId
     }
-    
+
     const correlationId = SecureLogger.logError(error, context)
-    
+
     return {
-      level: 'error',
+      level: "error",
       message: error.message,
       error: ErrorSanitizer.forLogging(error),
       context,
@@ -285,22 +285,22 @@ export class SecureLogger {
    */
   static shutdown(): void {
     const logger = SecureLogger.getInstance()
-    
+
     if (logger.flushInterval) {
       clearInterval(logger.flushInterval)
       logger.flushInterval = null
     }
-    
+
     // Final flush
     logger.flush()
   }
 }
 
 // Register shutdown handler
-if (typeof process !== 'undefined') {
-  process.on('exit', () => SecureLogger.shutdown())
-  process.on('SIGINT', () => SecureLogger.shutdown())
-  process.on('SIGTERM', () => SecureLogger.shutdown())
+if (typeof process !== "undefined") {
+  process.on("exit", () => SecureLogger.shutdown())
+  process.on("SIGINT", () => SecureLogger.shutdown())
+  process.on("SIGTERM", () => SecureLogger.shutdown())
 }
 
 export default SecureLogger

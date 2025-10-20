@@ -9,12 +9,14 @@ const cardVariants = cva(
       variant: {
         default: "shadow-sm",
         enhancement: "shadow-lg hover:shadow-xl border-primary/20",
-        pricing: "shadow-md hover:shadow-lg hover:scale-[1.02] border-accent/20",
+        pricing:
+          "shadow-md hover:shadow-lg hover:scale-[1.02] border-accent/20",
         feature: "shadow hover:shadow-md",
         elevated: "shadow-xl border-0",
         outline: "shadow-none hover:border-primary/50",
         ghost: "shadow-none border-0 bg-transparent",
-        gradient: "shadow-lg border-0 bg-gradient-to-br from-primary/10 to-secondary/10",
+        gradient:
+          "shadow-lg border-0 bg-gradient-to-br from-primary/10 to-secondary/10",
       },
       interactive: {
         true: "cursor-pointer",
@@ -106,4 +108,12 @@ const CardFooter = React.forwardRef<
 ))
 CardFooter.displayName = "CardFooter"
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent, cardVariants }
+export {
+  Card,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  cardVariants,
+}

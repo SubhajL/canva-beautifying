@@ -1,4 +1,4 @@
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib"
 
 /**
  * Generate a tiny fallback PDF for E2E testing
@@ -10,7 +10,7 @@ export async function generateFallbackPDF(): Promise<Buffer> {
 
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
 
-  page.drawText('E2E Test Fallback PDF', {
+  page.drawText("E2E Test Fallback PDF", {
     x: 50,
     y: 250,
     size: 20,
@@ -18,7 +18,7 @@ export async function generateFallbackPDF(): Promise<Buffer> {
     color: rgb(0, 0, 0),
   })
 
-  page.drawText('This is a generated fallback document for testing.', {
+  page.drawText("This is a generated fallback document for testing.", {
     x: 50,
     y: 220,
     size: 12,
@@ -26,7 +26,7 @@ export async function generateFallbackPDF(): Promise<Buffer> {
     color: rgb(0.5, 0.5, 0.5),
   })
 
-  page.drawText('No storage configured - using test mode.', {
+  page.drawText("No storage configured - using test mode.", {
     x: 50,
     y: 200,
     size: 10,

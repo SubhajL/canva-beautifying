@@ -1,28 +1,40 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { ArrowLeft, HelpCircle, Search } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Label } from '@/components/ui/label'
-import { useToast } from '@/hooks/use-toast'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { KnowledgeBase } from '@/components/beta/support/knowledge-base'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { ArrowLeft, HelpCircle, Search } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
+import { useToast } from "@/hooks/use-toast"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { KnowledgeBase } from "@/components/beta/support/knowledge-base"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function NewTicketPage() {
   const router = useRouter()
-  const [subject, setSubject] = useState('')
-  const [description, setDescription] = useState('')
-  const [category, setCategory] = useState('general')
-  const [priority, setPriority] = useState('medium')
+  const [subject, setSubject] = useState("")
+  const [description, setDescription] = useState("")
+  const [category, setCategory] = useState("general")
+  const [priority, setPriority] = useState("medium")
   const [loading, setLoading] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
+  const [searchQuery, setSearchQuery] = useState("")
   const [_showKB, _setShowKB] = useState(true)
   const { toast } = useToast()
   const supabase = createClientComponentClient()
@@ -35,30 +47,32 @@ export default function NewTicketPage() {
   const createTicket = async () => {
     if (!subject.trim() || !description.trim()) {
       toast({
-        title: 'Missing information',
-        description: 'Please provide both subject and description',
-        variant: 'destructive'
+        title: "Missing information",
+        description: "Please provide both subject and description",
+        variant: "destructive",
       })
       return
     }
 
     try {
       setLoading(true)
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) {
-        router.push('/login')
+        router.push("/login")
         return
       }
 
       const { data, error } = await supabase
-        .from('support_tickets')
+        .from("support_tickets")
         .insert({
           user_id: user.id,
           subject: subject.trim(),
           description: description.trim(),
           category,
           priority,
-          status: 'open'
+          status: "open",
         })
         .select()
         .single()
@@ -66,17 +80,17 @@ export default function NewTicketPage() {
       if (error) throw error
 
       toast({
-        title: 'Success',
-        description: 'Your support ticket has been created'
+        title: "Success",
+        description: "Your support ticket has been created",
       })
 
       router.push(`/beta/support/ticket/${data.id}`)
     } catch (error) {
-      console.error('Error creating ticket:', error)
+      console.error("Error creating ticket:", error)
       toast({
-        title: 'Error',
-        description: 'Failed to create support ticket',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to create support ticket",
+        variant: "destructive",
       })
     } finally {
       setLoading(false)
@@ -85,50 +99,52 @@ export default function NewTicketPage() {
 
   const getCategoryDescription = (cat: string) => {
     switch (cat) {
-      case 'general':
-        return 'General questions about the platform'
-      case 'technical':
-        return 'Issues with features, bugs, or errors'
-      case 'billing':
-        return 'Questions about pricing, payments, or subscriptions'
-      case 'feature':
-        return 'Suggestions for new features or improvements'
-      case 'bug':
-        return 'Report a bug or unexpected behavior'
+      case "general":
+        return "General questions about the platform"
+      case "technical":
+        return "Issues with features, bugs, or errors"
+      case "billing":
+        return "Questions about pricing, payments, or subscriptions"
+      case "feature":
+        return "Suggestions for new features or improvements"
+      case "bug":
+        return "Report a bug or unexpected behavior"
       default:
-        return ''
+        return ""
     }
   }
 
   const getPriorityDescription = (pri: string) => {
     switch (pri) {
-      case 'low':
-        return 'Can wait - Response within 4 hours'
-      case 'medium':
-        return 'Normal priority - Response within 2 hours'
-      case 'high':
-        return 'Important issue - Response within 1 hour'
-      case 'urgent':
-        return 'Critical issue - Response within 30 minutes'
+      case "low":
+        return "Can wait - Response within 4 hours"
+      case "medium":
+        return "Normal priority - Response within 2 hours"
+      case "high":
+        return "Important issue - Response within 1 hour"
+      case "urgent":
+        return "Critical issue - Response within 30 minutes"
       default:
-        return ''
+        return ""
     }
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
+    <div className="container mx-auto max-w-4xl p-6">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="mb-6 flex items-center gap-4">
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => router.push('/beta/support')}
+          onClick={() => router.push("/beta/support")}
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
           <h1 className="text-3xl font-bold">Create Support Ticket</h1>
-          <p className="text-muted-foreground">Get priority support as a beta user</p>
+          <p className="text-muted-foreground">
+            Get priority support as a beta user
+          </p>
         </div>
       </div>
 
@@ -136,12 +152,13 @@ export default function NewTicketPage() {
       <Alert className="mb-6 border-primary">
         <HelpCircle className="h-4 w-4" />
         <AlertDescription>
-          <strong>Beta User Benefits:</strong> Priority response times • Direct access to support team • 
-          Feature request priority • Extended support hours
+          <strong>Beta User Benefits:</strong> Priority response times • Direct
+          access to support team • Feature request priority • Extended support
+          hours
         </AlertDescription>
       </Alert>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Ticket Form */}
         <Card>
           <CardHeader>
@@ -177,7 +194,7 @@ export default function NewTicketPage() {
                     <SelectItem value="bug">Bug Report</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="mt-1 text-xs text-muted-foreground">
                   {getCategoryDescription(category)}
                 </p>
               </div>
@@ -195,7 +212,7 @@ export default function NewTicketPage() {
                     <SelectItem value="urgent">Urgent</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="mt-1 text-xs text-muted-foreground">
                   {getPriorityDescription(priority)}
                 </p>
               </div>
@@ -210,8 +227,9 @@ export default function NewTicketPage() {
                 placeholder="Please provide detailed information about your issue..."
                 className="mt-1 min-h-[200px]"
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                Include steps to reproduce, error messages, and any relevant details
+              <p className="mt-1 text-xs text-muted-foreground">
+                Include steps to reproduce, error messages, and any relevant
+                details
               </p>
             </div>
 
@@ -220,7 +238,7 @@ export default function NewTicketPage() {
               disabled={loading || !subject.trim() || !description.trim()}
               className="w-full"
             >
-              {loading ? 'Creating...' : 'Create Ticket'}
+              {loading ? "Creating..." : "Create Ticket"}
             </Button>
           </CardContent>
         </Card>
@@ -237,7 +255,9 @@ export default function NewTicketPage() {
             <CardContent>
               <Tabs defaultValue="suggested" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="suggested">Suggested Articles</TabsTrigger>
+                  <TabsTrigger value="suggested">
+                    Suggested Articles
+                  </TabsTrigger>
                   <TabsTrigger value="search">Search All</TabsTrigger>
                 </TabsList>
                 <TabsContent value="suggested" className="mt-4">
@@ -245,7 +265,7 @@ export default function NewTicketPage() {
                     searchQuery={searchQuery}
                     embedded={true}
                     onArticleSelect={(article) => {
-                      window.open(`/help/article/${article.slug}`, '_blank')
+                      window.open(`/help/article/${article.slug}`, "_blank")
                     }}
                   />
                 </TabsContent>
@@ -263,7 +283,7 @@ export default function NewTicketPage() {
                       searchQuery={searchQuery}
                       embedded={true}
                       onArticleSelect={(article) => {
-                        window.open(`/help/article/${article.slug}`, '_blank')
+                        window.open(`/help/article/${article.slug}`, "_blank")
                       }}
                     />
                   </div>

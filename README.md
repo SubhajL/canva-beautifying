@@ -10,7 +10,7 @@ BeautifyAI is an AI-powered platform that automatically enhances and beautifies 
 - **Authentication**: Supabase Auth
 - **Database**: PostgreSQL via Supabase
 - **File Storage**: Cloudflare R2
-- **AI Models**: 
+- **AI Models**:
   - Vision: Gemini 2.0 Flash, GPT-4.1 Mini, Claude 3.5/4 Sonnet
   - Image Generation: Stable Diffusion XL, DALL-E 3
 - **Queue System**: BullMQ with Redis
@@ -20,22 +20,26 @@ BeautifyAI is an AI-powered platform that automatically enhances and beautifies 
 ## 🛠️ Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/yourusername/canva-beautifying.git
 cd canva-beautifying
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Set up environment variables:
+
 ```bash
 cp .env.example .env.local
 ```
 
 4. Run the development server:
+
 ```bash
 npm run dev
 ```
@@ -70,16 +74,19 @@ canva-beautifying/
 ## 🔧 Development
 
 ### Running Tests
+
 ```bash
 npm test
 ```
 
 ### Building for Production
+
 ```bash
 npm run build
 ```
 
 ### Linting
+
 ```bash
 npm run lint
 ```

@@ -1,5 +1,5 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
-import { NextResponse, type NextRequest } from 'next/server'
+import { createServerClient, type CookieOptions } from "@supabase/ssr"
+import { NextResponse, type NextRequest } from "next/server"
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next()
@@ -29,13 +29,13 @@ export async function updateSession(request: NextRequest) {
           remove(name: string, options: CookieOptions) {
             request.cookies.set({
               name,
-              value: '',
+              value: "",
               ...options,
             })
             response = NextResponse.next()
             response.cookies.set({
               name,
-              value: '',
+              value: "",
               ...options,
             })
           },
@@ -47,8 +47,8 @@ export async function updateSession(request: NextRequest) {
   } catch (error) {
     // In test environment, Supabase SSR might not be fully initialized
     // Log the error but continue
-    if (process.env.NODE_ENV === 'test') {
-      console.warn('Supabase session update failed in test environment:', error)
+    if (process.env.NODE_ENV === "test") {
+      console.warn("Supabase session update failed in test environment:", error)
     } else {
       throw error
     }

@@ -1,9 +1,9 @@
-import { NextRequest } from 'next/server'
-import { User } from '@supabase/supabase-js'
+import { NextRequest } from "next/server"
+import { User } from "@supabase/supabase-js"
 
 // API Versions
-export type APIVersion = 'v1' | 'v2'
-export type APIStatus = 'stable' | 'beta' | 'deprecated'
+export type APIVersion = "v1" | "v2"
+export type APIStatus = "stable" | "beta" | "deprecated"
 
 // API Key Types
 export interface APIKey {
@@ -20,14 +20,14 @@ export interface APIKey {
   metadata?: Record<string, unknown>
 }
 
-export type APIKeyScope = 
-  | 'enhance:read'
-  | 'enhance:write'
-  | 'enhance:delete'
-  | 'webhooks:read'
-  | 'webhooks:write'
-  | 'webhooks:delete'
-  | 'admin:all'
+export type APIKeyScope =
+  | "enhance:read"
+  | "enhance:write"
+  | "enhance:delete"
+  | "webhooks:read"
+  | "webhooks:write"
+  | "webhooks:delete"
+  | "admin:all"
 
 export interface APIKeyAuth {
   apiKey: APIKey
@@ -66,14 +66,14 @@ export interface WebhookConfig {
   updated_at: string
 }
 
-export type WebhookEventType = 
-  | 'enhancement.started'
-  | 'enhancement.progress' 
-  | 'enhancement.completed'
-  | 'enhancement.failed'
-  | 'document.uploaded'
-  | 'document.analyzed'
-  | 'export.completed'
+export type WebhookEventType =
+  | "enhancement.started"
+  | "enhancement.progress"
+  | "enhancement.completed"
+  | "enhancement.failed"
+  | "document.uploaded"
+  | "document.analyzed"
+  | "export.completed"
 
 export interface WebhookRetryPolicy {
   max_attempts: number
@@ -107,7 +107,7 @@ export interface CircuitBreakerConfig {
 }
 
 export interface CircuitBreakerState {
-  status: 'closed' | 'open' | 'half-open'
+  status: "closed" | "open" | "half-open"
   failures: number
   successes: number
   lastFailureTime?: number
@@ -177,7 +177,7 @@ export interface MiddlewareOptions {
 // Validation Types
 export interface ValidationOptions {
   schema: unknown // Zod schema
-  source: 'body' | 'query' | 'params'
+  source: "body" | "query" | "params"
   errorHandler?: (errors: unknown) => APIError
 }
 
@@ -201,7 +201,7 @@ export interface OpenAPISecurity {
 
 export interface OpenAPIParameter {
   name: string
-  in: 'path' | 'query' | 'header'
+  in: "path" | "query" | "header"
   required?: boolean
   schema: unknown
   description?: string

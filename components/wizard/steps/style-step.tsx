@@ -1,62 +1,74 @@
-'use client';
+"use client"
 
-import { useWizardStore } from '@/lib/stores/wizard-store';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Switch } from '@/components/ui/switch';
-import { Card, CardContent } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
-import { 
-  Sparkles, 
-  Zap, 
-  Paintbrush, 
+import { useWizardStore } from "@/lib/stores/wizard-store"
+import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Switch } from "@/components/ui/switch"
+import { Card, CardContent } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
+import {
+  Sparkles,
+  Zap,
+  Paintbrush,
   Grid3x3,
   BarChart3,
-  Image
-} from 'lucide-react';
+  Image,
+} from "lucide-react"
 
 const enhancementStyles = [
   {
-    value: 'modern',
-    label: 'Modern & Clean',
-    description: 'Minimalist design with plenty of whitespace',
+    value: "modern",
+    label: "Modern & Clean",
+    description: "Minimalist design with plenty of whitespace",
     icon: Sparkles,
   },
   {
-    value: 'vibrant',
-    label: 'Vibrant & Engaging',
-    description: 'Bold colors and dynamic layouts',
+    value: "vibrant",
+    label: "Vibrant & Engaging",
+    description: "Bold colors and dynamic layouts",
     icon: Zap,
   },
   {
-    value: 'professional',
-    label: 'Professional',
-    description: 'Formal and business-appropriate styling',
+    value: "professional",
+    label: "Professional",
+    description: "Formal and business-appropriate styling",
     icon: Grid3x3,
   },
   {
-    value: 'playful',
-    label: 'Playful & Fun',
-    description: 'Kid-friendly with illustrations and colors',
+    value: "playful",
+    label: "Playful & Fun",
+    description: "Kid-friendly with illustrations and colors",
     icon: Paintbrush,
   },
-];
+]
 
 const colorSchemes = [
-  { value: 'blue', label: 'Blue', colors: ['#3B82F6', '#60A5FA', '#93BBFC'] },
-  { value: 'green', label: 'Green', colors: ['#10B981', '#34D399', '#6EE7B7'] },
-  { value: 'purple', label: 'Purple', colors: ['#8B5CF6', '#A78BFA', '#C4B5FD'] },
-  { value: 'orange', label: 'Orange', colors: ['#F97316', '#FB923C', '#FDBA74'] },
-  { value: 'pink', label: 'Pink', colors: ['#EC4899', '#F472B6', '#F9A8D4'] },
-  { value: 'neutral', label: 'Neutral', colors: ['#6B7280', '#9CA3AF', '#D1D5DB'] },
-];
+  { value: "blue", label: "Blue", colors: ["#3B82F6", "#60A5FA", "#93BBFC"] },
+  { value: "green", label: "Green", colors: ["#10B981", "#34D399", "#6EE7B7"] },
+  {
+    value: "purple",
+    label: "Purple",
+    colors: ["#8B5CF6", "#A78BFA", "#C4B5FD"],
+  },
+  {
+    value: "orange",
+    label: "Orange",
+    colors: ["#F97316", "#FB923C", "#FDBA74"],
+  },
+  { value: "pink", label: "Pink", colors: ["#EC4899", "#F472B6", "#F9A8D4"] },
+  {
+    value: "neutral",
+    label: "Neutral",
+    colors: ["#6B7280", "#9CA3AF", "#D1D5DB"],
+  },
+]
 
 export function StyleStep() {
-  const { data, updateData } = useWizardStore();
+  const { data, updateData } = useWizardStore()
 
   return (
     <div className="space-y-6">
-      <div className="text-center space-y-2">
+      <div className="space-y-2 text-center">
         <h2 className="text-2xl font-semibold">Choose Your Style</h2>
         <p className="text-muted-foreground">
           Select the visual style and customization options
@@ -68,14 +80,14 @@ export function StyleStep() {
         <div className="space-y-3">
           <Label className="text-base font-medium">Enhancement Style</Label>
           <RadioGroup
-            value={data.enhancementStyle || ''}
+            value={data.enhancementStyle || ""}
             onValueChange={(value) => updateData({ enhancementStyle: value })}
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {enhancementStyles.map((style) => {
-                const Icon = style.icon;
-                const isSelected = data.enhancementStyle === style.value;
-                
+                const Icon = style.icon
+                const isSelected = data.enhancementStyle === style.value
+
                 return (
                   <Card
                     key={style.value}
@@ -86,11 +98,11 @@ export function StyleStep() {
                   >
                     <label
                       htmlFor={style.value}
-                      className="block p-4 cursor-pointer"
+                      className="block cursor-pointer p-4"
                     >
                       <div className="flex items-start space-x-3">
-                        <RadioGroupItem 
-                          value={style.value} 
+                        <RadioGroupItem
+                          value={style.value}
                           id={style.value}
                           className="mt-1"
                         />
@@ -106,7 +118,7 @@ export function StyleStep() {
                       </div>
                     </label>
                   </Card>
-                );
+                )
               })}
             </div>
           </RadioGroup>
@@ -116,13 +128,13 @@ export function StyleStep() {
         <div className="space-y-3">
           <Label className="text-base font-medium">Color Scheme</Label>
           <RadioGroup
-            value={data.colorScheme || ''}
+            value={data.colorScheme || ""}
             onValueChange={(value) => updateData({ colorScheme: value })}
           >
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {colorSchemes.map((scheme) => {
-                const isSelected = data.colorScheme === scheme.value;
-                
+                const isSelected = data.colorScheme === scheme.value
+
                 return (
                   <Card
                     key={scheme.value}
@@ -133,11 +145,11 @@ export function StyleStep() {
                   >
                     <label
                       htmlFor={`color-${scheme.value}`}
-                      className="block p-3 cursor-pointer"
+                      className="block cursor-pointer p-3"
                     >
                       <div className="flex flex-col items-center space-y-2">
-                        <RadioGroupItem 
-                          value={scheme.value} 
+                        <RadioGroupItem
+                          value={scheme.value}
                           id={`color-${scheme.value}`}
                           className="sr-only"
                         />
@@ -150,11 +162,13 @@ export function StyleStep() {
                             />
                           ))}
                         </div>
-                        <span className="text-sm font-medium">{scheme.label}</span>
+                        <span className="text-sm font-medium">
+                          {scheme.label}
+                        </span>
                       </div>
                     </label>
                   </Card>
-                );
+                )
               })}
             </div>
           </RadioGroup>
@@ -164,25 +178,33 @@ export function StyleStep() {
         <div className="space-y-3">
           <Label className="text-base font-medium">Visual Complexity</Label>
           <RadioGroup
-            value={data.visualComplexity || 'moderate'}
-            onValueChange={(value: any) => updateData({ visualComplexity: value })}
+            value={data.visualComplexity || "moderate"}
+            onValueChange={(value: any) =>
+              updateData({ visualComplexity: value })
+            }
           >
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="simple" id="simple" />
-                <Label htmlFor="simple" className="font-normal cursor-pointer">
+                <Label htmlFor="simple" className="cursor-pointer font-normal">
                   Simple - Minimal graphics and clean layouts
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="moderate" id="moderate" />
-                <Label htmlFor="moderate" className="font-normal cursor-pointer">
+                <Label
+                  htmlFor="moderate"
+                  className="cursor-pointer font-normal"
+                >
                   Moderate - Balanced mix of text and visuals
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="detailed" id="detailed" />
-                <Label htmlFor="detailed" className="font-normal cursor-pointer">
+                <Label
+                  htmlFor="detailed"
+                  className="cursor-pointer font-normal"
+                >
                   Detailed - Rich visuals and comprehensive layouts
                 </Label>
               </div>
@@ -200,7 +222,10 @@ export function StyleStep() {
                   {/* eslint-disable-next-line jsx-a11y/alt-text */}
                   <Image className="h-5 w-5 text-muted-foreground" />
                   <div>
-                    <Label htmlFor="graphics" className="font-medium cursor-pointer">
+                    <Label
+                      htmlFor="graphics"
+                      className="cursor-pointer font-medium"
+                    >
                       Include Graphics & Icons
                     </Label>
                     <p className="text-sm text-muted-foreground">
@@ -211,7 +236,7 @@ export function StyleStep() {
                 <Switch
                   id="graphics"
                   checked={data.includeGraphics}
-                  onCheckedChange={(checked) => 
+                  onCheckedChange={(checked) =>
                     updateData({ includeGraphics: checked })
                   }
                 />
@@ -221,7 +246,10 @@ export function StyleStep() {
                 <div className="flex items-center space-x-3">
                   <BarChart3 className="h-5 w-5 text-muted-foreground" />
                   <div>
-                    <Label htmlFor="charts" className="font-medium cursor-pointer">
+                    <Label
+                      htmlFor="charts"
+                      className="cursor-pointer font-medium"
+                    >
                       Generate Charts & Graphs
                     </Label>
                     <p className="text-sm text-muted-foreground">
@@ -232,7 +260,7 @@ export function StyleStep() {
                 <Switch
                   id="charts"
                   checked={data.includeCharts}
-                  onCheckedChange={(checked) => 
+                  onCheckedChange={(checked) =>
                     updateData({ includeCharts: checked })
                   }
                 />
@@ -242,5 +270,5 @@ export function StyleStep() {
         </div>
       </div>
     </div>
-  );
+  )
 }

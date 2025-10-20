@@ -1,9 +1,9 @@
-import { BetaMessageAdmin } from '@/components/admin/BetaMessageAdmin';
+import { BetaMessageAdmin } from "@/components/admin/BetaMessageAdmin"
 
 export default function AdminBetaMessagesPage() {
   return (
-    <div className="container max-w-7xl mx-auto py-8 px-4">
+    <div className="container mx-auto max-w-7xl px-4 py-8">
       <BetaMessageAdmin />
     </div>
-  );
+  )
 }

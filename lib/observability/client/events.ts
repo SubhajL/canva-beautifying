@@ -2,7 +2,7 @@
  * Client-safe event tracking for browser and Edge Runtime environments
  */
 
-import { logger } from './logger'
+import { logger } from "./logger"
 
 export interface TelemetryEvent {
   name: string
@@ -21,15 +21,15 @@ export function createTelemetryEvent(
   }
 
   // Log the event in development
-  if (process.env.NODE_ENV === 'development') {
-    logger.debug('Telemetry event', {
+  if (process.env.NODE_ENV === "development") {
+    logger.debug("Telemetry event", {
       event: name,
       ...properties,
     })
   }
 
   // Send to analytics if available
-  if (typeof window !== 'undefined' && window.analytics?.track) {
+  if (typeof window !== "undefined" && window.analytics?.track) {
     window.analytics.track(name, {
       ...properties,
       timestamp: event.timestamp.toISOString(),
@@ -37,9 +37,12 @@ export function createTelemetryEvent(
   }
 
   // Also send to any custom telemetry endpoint if configured
-  if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_TELEMETRY_ENDPOINT) {
-    sendTelemetryToEndpoint(event).catch(error => {
-      logger.warn('Failed to send telemetry event', { error: error.message })
+  if (
+    typeof window !== "undefined" &&
+    process.env.NEXT_PUBLIC_TELEMETRY_ENDPOINT
+  ) {
+    sendTelemetryToEndpoint(event).catch((error) => {
+      logger.warn("Failed to send telemetry event", { error: error.message })
     })
   }
 }
@@ -66,10 +69,10 @@ export function trackEvent(
 export function trackPerformance(
   metric: string,
   value: number,
-  unit: string = 'ms',
+  unit: string = "ms",
   metadata?: Record<string, any>
 ): void {
-  createTelemetryEvent('performance_metric', {
+  createTelemetryEvent("performance_metric", {
     metric,
     value,
     unit,
@@ -78,11 +81,8 @@ export function trackPerformance(
 }
 
 // Error tracking
-export function trackError(
-  error: Error,
-  context?: Record<string, any>
-): void {
-  createTelemetryEvent('error_occurred', {
+export function trackError(error: Error, context?: Record<string, any>): void {
+  createTelemetryEvent("error_occurred", {
     error_name: error.name,
     error_message: error.message,
     error_stack: error.stack,
@@ -93,10 +93,10 @@ export function trackError(
 // User interaction tracking
 export function trackInteraction(
   element: string,
-  action: 'click' | 'hover' | 'focus' | 'blur',
+  action: "click" | "hover" | "focus" | "blur",
   metadata?: Record<string, any>
 ): void {
-  createTelemetryEvent('user_interaction', {
+  createTelemetryEvent("user_interaction", {
     element,
     action,
     ...metadata,
@@ -109,7 +109,7 @@ export function trackPageView(
   referrer?: string,
   metadata?: Record<string, any>
 ): void {
-  createTelemetryEvent('page_view', {
+  createTelemetryEvent("page_view", {
     pathname,
     referrer: referrer || document.referrer,
     title: document.title,
@@ -123,7 +123,7 @@ export function trackFeatureUsage(
   action: string,
   metadata?: Record<string, any>
 ): void {
-  createTelemetryEvent('feature_usage', {
+  createTelemetryEvent("feature_usage", {
     feature,
     action,
     ...metadata,
@@ -138,7 +138,7 @@ export function trackApiCall(
   duration: number,
   metadata?: Record<string, any>
 ): void {
-  createTelemetryEvent('api_call', {
+  createTelemetryEvent("api_call", {
     endpoint,
     method,
     status,
@@ -155,9 +155,9 @@ async function sendTelemetryToEndpoint(event: TelemetryEvent): Promise<void> {
 
   try {
     await fetch(endpoint, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         ...event,
@@ -168,16 +168,19 @@ async function sendTelemetryToEndpoint(event: TelemetryEvent): Promise<void> {
     })
   } catch (error) {
     // Silently fail - we don't want telemetry failures to affect the app
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('Failed to send telemetry:', error)
+    if (process.env.NODE_ENV === "development") {
+      console.warn("Failed to send telemetry:", error)
     }
   }
 }
 
 // Auto-track page views if enabled
-if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_AUTO_TRACK_PAGE_VIEWS === 'true') {
+if (
+  typeof window !== "undefined" &&
+  process.env.NEXT_PUBLIC_AUTO_TRACK_PAGE_VIEWS === "true"
+) {
   // Track initial page view
-  window.addEventListener('load', () => {
+  window.addEventListener("load", () => {
     trackPageView(window.location.pathname)
   })
 

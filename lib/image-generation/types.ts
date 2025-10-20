@@ -1,39 +1,39 @@
 export interface ImageGenerationRequest {
   prompt: string
   style?: ImageStyle
-  model?: 'stable-diffusion-xl' | 'dall-e-3'
+  model?: "stable-diffusion-xl" | "dall-e-3"
   size?: ImageSize
-  quality?: 'standard' | 'hd'
+  quality?: "standard" | "hd"
   negativePrompt?: string
   seed?: number
-  userTier?: 'free' | 'basic' | 'pro' | 'premium'
+  userTier?: "free" | "basic" | "pro" | "premium"
   userId?: string
 }
 
-export type ImageStyle = 
-  | 'realistic'
-  | 'artistic'
-  | 'cartoon'
-  | 'watercolor'
-  | 'minimalist'
-  | 'abstract'
-  | 'professional'
-  | 'playful'
-  | 'educational'
-  | 'photographic'
-  | 'digital-art'
-  | 'pencil-sketch'
+export type ImageStyle =
+  | "realistic"
+  | "artistic"
+  | "cartoon"
+  | "watercolor"
+  | "minimalist"
+  | "abstract"
+  | "professional"
+  | "playful"
+  | "educational"
+  | "photographic"
+  | "digital-art"
+  | "pencil-sketch"
 
-export type ImageSize = 
-  | '256x256'
-  | '512x512'
-  | '1024x1024'
-  | '1024x1792'
-  | '1792x1024'
+export type ImageSize =
+  | "256x256"
+  | "512x512"
+  | "1024x1024"
+  | "1024x1792"
+  | "1792x1024"
 
 export interface GeneratedImage {
   url: string
-  model: 'stable-diffusion-xl' | 'dall-e-3'
+  model: "stable-diffusion-xl" | "dall-e-3"
   prompt: string
   revisedPrompt?: string
   size: ImageSize
@@ -53,7 +53,7 @@ export interface PromptTemplate {
 }
 
 export interface GenerationError {
-  code: 'RATE_LIMIT' | 'INVALID_PROMPT' | 'API_ERROR' | 'INSUFFICIENT_CREDITS'
+  code: "RATE_LIMIT" | "INVALID_PROMPT" | "API_ERROR" | "INSUFFICIENT_CREDITS"
   message: string
   model: string
   fallbackAvailable: boolean
@@ -67,14 +67,14 @@ export interface ImageGenerationProvider {
 }
 
 export interface BackgroundGenerationRequest extends ImageGenerationRequest {
-  documentType: 'worksheet' | 'presentation' | 'poster' | 'flyer'
+  documentType: "worksheet" | "presentation" | "poster" | "flyer"
   colorPalette: string[]
   theme?: string
 }
 
 export interface DecorativeElementRequest extends ImageGenerationRequest {
-  elementType: 'icon' | 'pattern' | 'border' | 'illustration' | 'divider'
-  position?: 'header' | 'footer' | 'corner' | 'center' | 'side'
+  elementType: "icon" | "pattern" | "border" | "illustration" | "divider"
+  position?: "header" | "footer" | "corner" | "center" | "side"
   transparency?: boolean
 }
 
@@ -98,7 +98,7 @@ export interface GenerationMetrics {
   averageGenerationTime: number
   cacheHitRate: number
   modelUsage: {
-    'stable-diffusion-xl': number
-    'dall-e-3': number
+    "stable-diffusion-xl": number
+    "dall-e-3": number
   }
 }

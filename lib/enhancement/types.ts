@@ -1,4 +1,4 @@
-import { DocumentAnalysis } from '@/lib/ai/types'
+import { DocumentAnalysis } from "@/lib/ai/types"
 
 export interface EnhancementRequest {
   documentId: string
@@ -12,8 +12,13 @@ export interface EnhancementRequest {
 }
 
 export interface EnhancementPreferences {
-  style?: 'modern' | 'classic' | 'playful' | 'professional' | 'minimalist'
-  colorScheme?: 'vibrant' | 'muted' | 'monochrome' | 'complementary' | 'analogous'
+  style?: "modern" | "classic" | "playful" | "professional" | "minimalist"
+  colorScheme?:
+    | "vibrant"
+    | "muted"
+    | "monochrome"
+    | "complementary"
+    | "analogous"
   preserveContent?: boolean
   autoApprove?: boolean
 }
@@ -64,7 +69,7 @@ export interface LayoutEnhancement {
     elements: number
     padding: number
   }
-  alignment: 'left' | 'center' | 'right' | 'justify'
+  alignment: "left" | "center" | "right" | "justify"
   hierarchy: {
     levels: number
     emphasis: Map<string, number>
@@ -72,29 +77,31 @@ export interface LayoutEnhancement {
 }
 
 export interface BackgroundEnhancement {
-  type: 'solid' | 'gradient' | 'pattern' | 'image'
-  value: string | {
-    colors?: string[]
-    direction?: string
-    pattern?: string
-    imageUrl?: string
-    opacity?: number
-  }
+  type: "solid" | "gradient" | "pattern" | "image"
+  value:
+    | string
+    | {
+        colors?: string[]
+        direction?: string
+        pattern?: string
+        imageUrl?: string
+        opacity?: number
+      }
 }
 
 export interface DecorativeElement {
-  type: 'shape' | 'icon' | 'pattern' | 'divider'
+  type: "shape" | "icon" | "pattern" | "divider"
   position: { x: number; y: number }
   size: { width: number; height: number }
   style: Record<string, string | number | boolean>
-  purpose: 'emphasis' | 'decoration' | 'separation' | 'background'
+  purpose: "emphasis" | "decoration" | "separation" | "background"
 }
 
 export interface EnhancementStrategy {
   id: string
   name: string
   description: string
-  priority: 'low' | 'medium' | 'high'
+  priority: "low" | "medium" | "high"
   impact: number // 0-100
   changes: {
     colors?: ColorEnhancement
@@ -126,7 +133,13 @@ export interface EnhancementResult {
 
 export interface EnhancementPipeline {
   analyze(request: EnhancementRequest): Promise<DocumentAnalysis>
-  generateStrategies(analysis: DocumentAnalysis, preferences?: EnhancementPreferences): Promise<EnhancementStrategy[]>
-  applyEnhancements(documentUrl: string, strategies: EnhancementStrategy[]): Promise<string>
+  generateStrategies(
+    analysis: DocumentAnalysis,
+    preferences?: EnhancementPreferences
+  ): Promise<EnhancementStrategy[]>
+  applyEnhancements(
+    documentUrl: string,
+    strategies: EnhancementStrategy[]
+  ): Promise<string>
   evaluate(originalUrl: string, enhancedUrl: string): Promise<number>
 }

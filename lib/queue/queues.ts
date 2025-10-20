@@ -1,13 +1,18 @@
-import { Queue, QueueEvents } from 'bullmq'
-import { getQueueConnection, QUEUE_NAMES, DEFAULT_JOB_OPTIONS, PRIORITY_LEVELS } from './config'
-import { injectJobTraceContext } from '@/lib/observability/tracing'
+import { Queue, QueueEvents } from "bullmq"
+import {
+  getQueueConnection,
+  QUEUE_NAMES,
+  DEFAULT_JOB_OPTIONS,
+  PRIORITY_LEVELS,
+} from "./config"
+import { injectJobTraceContext } from "@/lib/observability/tracing"
 import type {
   DocumentAnalysisJobData,
   EnhancementJobData,
   ExportJobData,
   EmailJobData,
-  JobProgress
-} from './types'
+  JobProgress,
+} from "./types"
 
 // Create queue instances
 export const documentAnalysisQueue = new Queue<DocumentAnalysisJobData>(
@@ -26,32 +31,29 @@ export const enhancementQueue = new Queue<EnhancementJobData>(
   }
 )
 
-export const exportQueue = new Queue<ExportJobData>(
-  QUEUE_NAMES.EXPORT,
-  {
-    connection: getQueueConnection(),
-    defaultJobOptions: DEFAULT_JOB_OPTIONS,
-  }
-)
+export const exportQueue = new Queue<ExportJobData>(QUEUE_NAMES.EXPORT, {
+  connection: getQueueConnection(),
+  defaultJobOptions: DEFAULT_JOB_OPTIONS,
+})
 
-export const emailQueue = new Queue<EmailJobData>(
-  QUEUE_NAMES.EMAIL,
-  {
-    connection: getQueueConnection(),
-    defaultJobOptions: {
-      ...DEFAULT_JOB_OPTIONS,
-      removeOnComplete: {
-        age: 300, // keep email jobs for 5 minutes only
-        count: 50,
-      },
+export const emailQueue = new Queue<EmailJobData>(QUEUE_NAMES.EMAIL, {
+  connection: getQueueConnection(),
+  defaultJobOptions: {
+    ...DEFAULT_JOB_OPTIONS,
+    removeOnComplete: {
+      age: 300, // keep email jobs for 5 minutes only
+      count: 50,
     },
-  }
-)
+  },
+})
 
 // Create queue event listeners for monitoring
-export const documentAnalysisQueueEvents = new QueueEvents(QUEUE_NAMES.DOCUMENT_ANALYSIS, {
-  connection: getQueueConnection(),
-})
+export const documentAnalysisQueueEvents = new QueueEvents(
+  QUEUE_NAMES.DOCUMENT_ANALYSIS,
+  {
+    connection: getQueueConnection(),
+  }
+)
 
 export const enhancementQueueEvents = new QueueEvents(QUEUE_NAMES.ENHANCEMENT, {
   connection: getQueueConnection(),
@@ -68,11 +70,11 @@ export const emailQueueEvents = new QueueEvents(QUEUE_NAMES.EMAIL, {
 // Helper function to add jobs with priority based on subscription tier
 export const getPriorityByTier = (tier: string): number => {
   switch (tier) {
-    case 'premium':
+    case "premium":
       return PRIORITY_LEVELS.CRITICAL
-    case 'pro':
+    case "pro":
       return PRIORITY_LEVELS.HIGH
-    case 'basic':
+    case "basic":
       return PRIORITY_LEVELS.NORMAL
     default:
       return PRIORITY_LEVELS.LOW
@@ -120,32 +122,24 @@ export const addExportJob = async (data: ExportJobData) => {
   // Inject trace context for distributed tracing
   const jobDataWithTrace = injectJobTraceContext(data)
 
-  return await exportQueue.add(
-    `export-${data.documentId}`,
-    jobDataWithTrace,
-    {
-      priority,
-      removeOnComplete: true,
-      removeOnFail: false,
-    }
-  )
+  return await exportQueue.add(`export-${data.documentId}`, jobDataWithTrace, {
+    priority,
+    removeOnComplete: true,
+    removeOnFail: false,
+  })
 }
 
 export const addEmailJob = async (data: EmailJobData) => {
   const priority = data.priority ?? PRIORITY_LEVELS.NORMAL
-  
-  return await emailQueue.add(
-    `email-${data.template}`,
-    data,
-    {
-      priority,
-      attempts: 5, // More attempts for email
-      backoff: {
-        type: 'exponential',
-        delay: 5000, // Start with 5 seconds
-      },
-    }
-  )
+
+  return await emailQueue.add(`email-${data.template}`, data, {
+    priority,
+    attempts: 5, // More attempts for email
+    backoff: {
+      type: "exponential",
+      delay: 5000, // Start with 5 seconds
+    },
+  })
 }
 
 // Helper function to update job progress

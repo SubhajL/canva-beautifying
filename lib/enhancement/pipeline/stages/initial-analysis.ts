@@ -1,18 +1,28 @@
-import { 
-  PipelineContext, 
+import {
+  PipelineContext,
   InitialAnalysisResult,
   LayoutSection,
-  DesignIssue 
-} from '../types'
-import { downloadFromR2 } from '@/lib/r2/client'
-import { AIService } from '@/lib/ai/ai-service'
-import { extractTextFromPDF, extractTextFromImage } from '@/lib/utils/document-utils'
-import sharp from 'sharp'
-import { PDFDocument } from 'pdf-lib'
-import chroma from 'chroma-js'
+  DesignIssue,
+} from "../types"
+import { downloadFromR2 } from "@/lib/r2/client"
+import { AIService } from "@/lib/ai/ai-service"
+import {
+  extractTextFromPDF,
+  extractTextFromImage,
+} from "@/lib/utils/document-utils"
+import sharp from "sharp"
+import { PDFDocument } from "pdf-lib"
+import chroma from "chroma-js"
 
 // Color harmony types
-type ColorHarmony = 'monochromatic' | 'analogous' | 'complementary' | 'triadic' | 'tetradic' | 'split-complementary' | 'chaotic'
+type ColorHarmony =
+  | "monochromatic"
+  | "analogous"
+  | "complementary"
+  | "triadic"
+  | "tetradic"
+  | "split-complementary"
+  | "chaotic"
 
 // Typography metrics
 interface TypographyMetrics {
@@ -31,7 +41,7 @@ interface VisualHierarchy {
   levels: HierarchyLevel[]
   flowScore: number
   emphasisBalance: number
-  scanPath: 'F-pattern' | 'Z-pattern' | 'circular' | 'chaotic'
+  scanPath: "F-pattern" | "Z-pattern" | "circular" | "chaotic"
 }
 
 interface HierarchyLevel {
@@ -41,7 +51,7 @@ interface HierarchyLevel {
 }
 
 // Enhanced layout analysis
-type BaseLayoutAnalysis = InitialAnalysisResult['layoutAnalysis'];
+type BaseLayoutAnalysis = InitialAnalysisResult["layoutAnalysis"]
 interface EnhancedLayoutAnalysis extends BaseLayoutAnalysis {
   margins: {
     top: number
@@ -89,8 +99,8 @@ interface ColorAnalysis {
       }
     }>
   }
-  colorTemperature: 'warm' | 'cool' | 'neutral'
-  saturationLevel: 'muted' | 'moderate' | 'vibrant'
+  colorTemperature: "warm" | "cool" | "neutral"
+  saturationLevel: "muted" | "moderate" | "vibrant"
 }
 
 // Engagement metrics
@@ -120,31 +130,38 @@ export class InitialAnalysisStage {
     try {
       // Download the document
       const fileBuffer = await downloadFromR2(context.originalFileUrl)
-      
+
       // Convert to image for analysis
       let imageBuffer = fileBuffer
-      if (context.fileType === 'pdf') {
+      if (context.fileType === "pdf") {
         imageBuffer = await this.convertPDFPageToImage(fileBuffer)
       }
-      
+
       // Run all analyses in parallel for performance
-      const [extractedText, enhancedLayout, colorAnalysis, typographyMetrics, visualHierarchy, engagementMetrics] = await Promise.all([
+      const [
+        extractedText,
+        enhancedLayout,
+        colorAnalysis,
+        typographyMetrics,
+        visualHierarchy,
+        engagementMetrics,
+      ] = await Promise.all([
         this.extractText(fileBuffer, context.fileType),
         this.analyzeEnhancedLayout(imageBuffer, context.fileType, signal),
         this.analyzeColors(imageBuffer, signal),
         this.analyzeTypography(imageBuffer, signal),
         this.analyzeVisualHierarchy(imageBuffer, signal),
-        this.calculateEngagementScore(imageBuffer, signal)
+        this.calculateEngagementScore(imageBuffer, signal),
       ])
-      
+
       // Convert enhanced layout to standard format
-      const layoutAnalysis: InitialAnalysisResult['layoutAnalysis'] = {
+      const layoutAnalysis: InitialAnalysisResult["layoutAnalysis"] = {
         structure: enhancedLayout.structure,
         sections: enhancedLayout.sections,
         whitespace: enhancedLayout.whitespace,
-        alignment: enhancedLayout.alignment
+        alignment: enhancedLayout.alignment,
       }
-      
+
       // Identify design issues based on all analyses
       const designIssues = await this.identifyDesignIssues(
         fileBuffer,
@@ -155,7 +172,7 @@ export class InitialAnalysisStage {
         context.fileType,
         signal
       )
-      
+
       // Calculate comprehensive design score
       const currentScore = this.calculateComprehensiveScore(
         enhancedLayout,
@@ -165,10 +182,13 @@ export class InitialAnalysisStage {
         engagementMetrics,
         designIssues
       )
-      
+
       // Get document metadata
-      const metadata = await this.getDocumentMetadata(fileBuffer, context.fileType)
-      
+      const metadata = await this.getDocumentMetadata(
+        fileBuffer,
+        context.fileType
+      )
+
       // Store detailed analysis results in metadata for later stages
       const enhancedMetadata = {
         ...metadata,
@@ -177,10 +197,10 @@ export class InitialAnalysisStage {
           typography: typographyMetrics,
           visualHierarchy,
           engagement: engagementMetrics,
-          enhancedLayout
-        }
+          enhancedLayout,
+        },
       }
-      
+
       return {
         extractedText,
         layoutAnalysis,
@@ -189,34 +209,36 @@ export class InitialAnalysisStage {
         metadata: enhancedMetadata as any,
       }
     } catch (error) {
-      console.error('Initial analysis failed:', error)
-      throw new Error(`Initial analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      console.error("Initial analysis failed:", error)
+      throw new Error(
+        `Initial analysis failed: ${error instanceof Error ? error.message : "Unknown error"}`
+      )
     }
   }
 
   private async extractText(
     fileBuffer: Buffer,
     fileType: string
-  ): Promise<InitialAnalysisResult['extractedText']> {
+  ): Promise<InitialAnalysisResult["extractedText"]> {
     let rawText: string
-    
-    if (fileType === 'pdf') {
+
+    if (fileType === "pdf") {
       rawText = await extractTextFromPDF(fileBuffer)
     } else {
       rawText = await extractTextFromImage(fileBuffer)
     }
-    
+
     // Parse and categorize text
-    const lines = rawText.split('\n').filter(line => line.trim())
+    const lines = rawText.split("\n").filter((line) => line.trim())
     const headings: string[] = []
     const bodyText: string[] = []
     const captions: string[] = []
     let title: string | undefined
-    
+
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim()
       if (!line) continue
-      
+
       // Simple heuristics for text categorization
       if (i === 0 && line.length < 100) {
         title = line
@@ -228,7 +250,7 @@ export class InitialAnalysisStage {
         bodyText.push(line)
       }
     }
-    
+
     return {
       title,
       headings,
@@ -246,7 +268,7 @@ export class InitialAnalysisStage {
     const imageMetadata = await sharp(imageBuffer).metadata()
     const { width: _width = 0, height: _height = 0 } = imageMetadata
     // width and height could be used for pixel calculations if needed
-    
+
     // Use vision model for comprehensive layout analysis
     const visionPrompt = `Perform a comprehensive layout analysis of this document. Analyze:
     
@@ -322,57 +344,72 @@ export class InitialAnalysisStage {
         "overall": 87
       }
     }`
-    
+
     const response = await this.aiService.analyzeImage(
       imageBuffer,
       visionPrompt,
-      { 
-        model: 'gemini-2.0-flash-exp',
-        subscriptionTier: 'pro' 
+      {
+        model: "gemini-2.0-flash-exp",
+        subscriptionTier: "pro",
       },
       signal
     )
-    
+
     const analysis = this.parseJSONResponse(response.analysis)
-    
+
     // Process sections
-    const sections: LayoutSection[] = (analysis.sections || []).map((section: any, index: number) => ({
-      id: `section-${index}`,
-      type: section.type || 'content',
-      bounds: section.bounds || { x: 0, y: 0, width: 100, height: 100 },
-      zIndex: index,
-    }))
-    
+    const sections: LayoutSection[] = (analysis.sections || []).map(
+      (section: any, index: number) => ({
+        id: `section-${index}`,
+        type: section.type || "content",
+        bounds: section.bounds || { x: 0, y: 0, width: 100, height: 100 },
+        zIndex: index,
+      })
+    )
+
     // Calculate margin consistency
-    const margins = analysis.margins || { top: 50, right: 50, bottom: 50, left: 50 }
-    const marginValues = [margins.top, margins.right, margins.bottom, margins.left]
+    const margins = analysis.margins || {
+      top: 50,
+      right: 50,
+      bottom: 50,
+      left: 50,
+    }
+    const marginValues = [
+      margins.top,
+      margins.right,
+      margins.bottom,
+      margins.left,
+    ]
     const avgMargin = marginValues.reduce((a, b) => a + b) / 4
-    const marginConsistency = 100 - (marginValues.reduce((acc, val) => acc + Math.abs(val - avgMargin), 0) / avgMargin)
-    
+    const marginConsistency =
+      100 -
+      marginValues.reduce((acc, val) => acc + Math.abs(val - avgMargin), 0) /
+        avgMargin
+
     // Compile enhanced layout analysis
     return {
-      structure: analysis.structure || 'single-column',
+      structure: analysis.structure || "single-column",
       sections,
       whitespace: analysis.whitespace?.percentage || 20,
-      alignment: analysis.alignment?.primary || 'left',
+      alignment: analysis.alignment?.primary || "left",
       margins: {
         ...margins,
-        consistency: Math.max(0, Math.min(100, marginConsistency))
+        consistency: Math.max(0, Math.min(100, marginConsistency)),
       },
       spacing: {
         lineHeight: analysis.spacing?.lineHeight || 1.5,
         paragraphSpacing: analysis.spacing?.paragraphSpacing || 20,
         elementSpacing: analysis.spacing?.elementSpacing || 30,
-        consistency: analysis.spacing?.consistencyScore || 75
+        consistency: analysis.spacing?.consistencyScore || 75,
       },
       gridAnalysis: {
         hasGrid: analysis.grid?.hasGrid || false,
         columns: analysis.grid?.columns,
         gutters: analysis.grid?.gutters,
-        baseline: analysis.grid?.baseline
+        baseline: analysis.grid?.baseline,
       },
       alignmentScore: analysis.alignment?.score || 75,
-      balanceScore: analysis.balance?.overall || 75
+      balanceScore: analysis.balance?.overall || 75,
     }
   }
 
@@ -381,9 +418,8 @@ export class InitialAnalysisStage {
     signal?: AbortSignal
   ): Promise<ColorAnalysis> {
     // Extract dominant colors using sharp
-    const { dominant } = await sharp(imageBuffer)
-      .stats()
-    
+    const { dominant } = await sharp(imageBuffer).stats()
+
     // Use AI vision model for comprehensive color analysis
     const visionPrompt = `Analyze the color usage in this document comprehensively:
     
@@ -448,72 +484,82 @@ export class InitialAnalysisStage {
         }
       }
     }`
-    
+
     const response = await this.aiService.analyzeImage(
       imageBuffer,
       visionPrompt,
-      { 
-        model: 'gemini-2.0-flash-exp',
-        subscriptionTier: 'pro' 
+      {
+        model: "gemini-2.0-flash-exp",
+        subscriptionTier: "pro",
       },
       signal
     )
-    
+
     const analysis = this.parseJSONResponse(response.analysis)
-    
+
     // Calculate color harmony based on color theory
     const harmony = this.analyzeColorHarmony(analysis.dominantColors || [])
-    
+
     // Process contrast issues
-    const contrastIssues = (analysis.contrast?.issues || []).map((issue: any) => ({
-      foreground: issue.foreground || '#000000',
-      background: issue.background || '#FFFFFF',
-      ratio: issue.ratio || 1,
-      passes: {
-        AA: issue.passesAA || false,
-        AAA: issue.passesAAA || false
-      }
-    }))
-    
+    const contrastIssues = (analysis.contrast?.issues || []).map(
+      (issue: any) => ({
+        foreground: issue.foreground || "#000000",
+        background: issue.background || "#FFFFFF",
+        ratio: issue.ratio || 1,
+        passes: {
+          AA: issue.passesAA || false,
+          AAA: issue.passesAAA || false,
+        },
+      })
+    )
+
     return {
-      dominantColors: analysis.dominantColors || [`rgb(${dominant.r}, ${dominant.g}, ${dominant.b})`],
+      dominantColors: analysis.dominantColors || [
+        `rgb(${dominant.r}, ${dominant.g}, ${dominant.b})`,
+      ],
       palette: {
-        primary: analysis.palette?.primary || `rgb(${dominant.r}, ${dominant.g}, ${dominant.b})`,
-        secondary: analysis.palette?.secondary || '#6B7280',
-        accent: analysis.palette?.accent || '#3B82F6',
-        neutrals: analysis.palette?.neutrals || ['#F3F4F6', '#E5E7EB', '#9CA3AF']
+        primary:
+          analysis.palette?.primary ||
+          `rgb(${dominant.r}, ${dominant.g}, ${dominant.b})`,
+        secondary: analysis.palette?.secondary || "#6B7280",
+        accent: analysis.palette?.accent || "#3B82F6",
+        neutrals: analysis.palette?.neutrals || [
+          "#F3F4F6",
+          "#E5E7EB",
+          "#9CA3AF",
+        ],
       },
-      harmony: harmony || analysis.harmony?.type || 'monochromatic',
+      harmony: harmony || analysis.harmony?.type || "monochromatic",
       contrast: {
         textBackground: analysis.contrast?.overallScore || 85,
         overall: analysis.contrast?.overallScore || 85,
-        issues: contrastIssues
+        issues: contrastIssues,
       },
-      colorTemperature: analysis.properties?.temperature || 'neutral',
-      saturationLevel: analysis.properties?.saturation || 'moderate'
+      colorTemperature: analysis.properties?.temperature || "neutral",
+      saturationLevel: analysis.properties?.saturation || "moderate",
     }
   }
 
   private analyzeColorHarmony(colors: string[]): ColorHarmony {
-    if (colors.length < 2) return 'monochromatic'
-    
+    if (colors.length < 2) return "monochromatic"
+
     try {
       // Convert colors to HSL for analysis
-      const hslColors = colors.map(c => {
+      const hslColors = colors.map((c) => {
         const color = chroma(c)
         return {
-          h: color.get('hsl.h'),
-          s: color.get('hsl.s'),
-          l: color.get('hsl.l')
+          h: color.get("hsl.h"),
+          s: color.get("hsl.s"),
+          l: color.get("hsl.l"),
         }
       })
-      
+
       // Check for monochromatic (same hue, different saturation/lightness)
-      const hues = hslColors.map(c => c.h)
-      const uniqueHues = [...new Set(hues.map(h => Math.round(h / 10) * 10))]
-      
-      if (uniqueHues.length === 1) return 'monochromatic'
-      
+      const hues = hslColors.map((c) => c.h)
+      const uniqueHues = [...new Set(hues.map((h) => Math.round(h / 10) * 10))]
+
+      if (uniqueHues.length === 1) return "monochromatic"
+
       // Check for analogous (adjacent hues, within 60 degrees)
       const hueDifferences = []
       for (let i = 0; i < hues.length - 1; i++) {
@@ -521,26 +567,28 @@ export class InitialAnalysisStage {
           hueDifferences.push(Math.abs(hues[i] - hues[j]))
         }
       }
-      
+
       const maxDiff = Math.max(...hueDifferences)
-      if (maxDiff <= 60) return 'analogous'
-      
+      if (maxDiff <= 60) return "analogous"
+
       // Check for complementary (opposite hues, around 180 degrees)
-      if (hueDifferences.some(d => d >= 150 && d <= 210)) return 'complementary'
-      
+      if (hueDifferences.some((d) => d >= 150 && d <= 210))
+        return "complementary"
+
       // Check for triadic (120 degrees apart)
-      if (hueDifferences.some(d => d >= 100 && d <= 140)) return 'triadic'
-      
+      if (hueDifferences.some((d) => d >= 100 && d <= 140)) return "triadic"
+
       // Check for split-complementary
-      if (uniqueHues.length === 3 && hueDifferences.some(d => d >= 150)) return 'split-complementary'
-      
+      if (uniqueHues.length === 3 && hueDifferences.some((d) => d >= 150))
+        return "split-complementary"
+
       // Check for tetradic (square)
-      if (uniqueHues.length === 4) return 'tetradic'
-      
-      return 'chaotic'
+      if (uniqueHues.length === 4) return "tetradic"
+
+      return "chaotic"
     } catch (error) {
-      console.error('Color harmony analysis error:', error)
-      return 'chaotic'
+      console.error("Color harmony analysis error:", error)
+      return "chaotic"
     }
   }
 
@@ -614,25 +662,25 @@ export class InitialAnalysisStage {
         {"type": "font-count", "severity": "low", "description": "Minor issue"}
       ]
     }`
-    
+
     const response = await this.aiService.analyzeImage(
       imageBuffer,
       visionPrompt,
-      { 
-        model: 'gemini-2.0-flash-exp',
-        subscriptionTier: 'pro' 
+      {
+        model: "gemini-2.0-flash-exp",
+        subscriptionTier: "pro",
       },
       signal
     )
-    
+
     const analysis = this.parseJSONResponse(response.analysis)
-    
+
     // Calculate readability score based on multiple factors
     const readabilityScore = this.calculateReadabilityScore(analysis)
-    
+
     // Calculate typography consistency
     const consistency = this.calculateTypographyConsistency(analysis)
-    
+
     return {
       fontCount: analysis.fonts?.count || 1,
       sizeVariations: analysis.sizes?.count || 3,
@@ -640,51 +688,56 @@ export class InitialAnalysisStage {
       consistency: consistency,
       hierarchy: {
         levels: analysis.hierarchy?.levels || 3,
-        clarity: analysis.hierarchy?.clarity || 75
-      }
+        clarity: analysis.hierarchy?.clarity || 75,
+      },
     }
   }
 
   private calculateReadabilityScore(analysis: any): number {
     let score = 100
-    
+
     // Penalize for too many fonts
     if (analysis.fonts?.count > 3) score -= 15
     if (analysis.fonts?.count > 4) score -= 10
-    
+
     // Check line length (optimal: 50-75 characters)
     const lineLength = analysis.readability?.lineLength || 65
     if (lineLength < 45 || lineLength > 90) score -= 20
     else if (lineLength < 50 || lineLength > 75) score -= 10
-    
+
     // Check line height (optimal: 1.4-1.8)
     const lineHeight = analysis.readability?.lineHeight || 1.5
     if (lineHeight < 1.2 || lineHeight > 2.0) score -= 15
     else if (lineHeight < 1.4 || lineHeight > 1.8) score -= 5
-    
+
     // Add font pairing score influence
     const pairingScore = analysis.fonts?.pairingScore || 80
-    score = (score * 0.7) + (pairingScore * 0.3)
-    
+    score = score * 0.7 + pairingScore * 0.3
+
     return Math.max(0, Math.min(100, Math.round(score)))
   }
 
   private calculateTypographyConsistency(analysis: any): number {
     let score = 100
-    
+
     // Check size ratios consistency
     const ratios = analysis.sizes?.ratios || []
     if (ratios.length > 0) {
-      const avgRatio = ratios.reduce((a: number, b: number) => a + b) / ratios.length
-      const variance = ratios.reduce((acc: number, r: number) => acc + Math.abs(r - avgRatio), 0) / ratios.length
+      const avgRatio =
+        ratios.reduce((a: number, b: number) => a + b) / ratios.length
+      const variance =
+        ratios.reduce(
+          (acc: number, r: number) => acc + Math.abs(r - avgRatio),
+          0
+        ) / ratios.length
       score -= variance * 50 // Penalize inconsistent ratios
     }
-    
+
     // Penalize too many size variations
     const sizeCount = analysis.sizes?.count || 3
     if (sizeCount > 6) score -= 20
     else if (sizeCount > 5) score -= 10
-    
+
     return Math.max(0, Math.min(100, Math.round(score)))
   }
 
@@ -750,46 +803,67 @@ export class InitialAnalysisStage {
         "techniques": ["size", "color", "spacing", "weight"]
       }
     }`
-    
+
     const response = await this.aiService.analyzeImage(
       imageBuffer,
       visionPrompt,
-      { 
-        model: 'gemini-2.0-flash-exp',
-        subscriptionTier: 'pro' 
+      {
+        model: "gemini-2.0-flash-exp",
+        subscriptionTier: "pro",
       },
       signal
     )
-    
+
     const analysis = this.parseJSONResponse(response.analysis)
-    
+
     // Process hierarchy levels
-    const levels: HierarchyLevel[] = (analysis.levels || []).map((level: any) => ({
-      importance: level.importance || 50,
-      elements: level.elements || [],
-      visualWeight: level.visualWeight || 50
-    }))
-    
+    const levels: HierarchyLevel[] = (analysis.levels || []).map(
+      (level: any) => ({
+        importance: level.importance || 50,
+        elements: level.elements || [],
+        visualWeight: level.visualWeight || 50,
+      })
+    )
+
     // Determine scan path
     const scanPath = this.determineScanPath(analysis.flow?.pattern)
-    
+
     return {
-      levels: levels.length > 0 ? levels : [
-        { importance: 100, elements: ['Primary content'], visualWeight: 80 },
-        { importance: 50, elements: ['Secondary content'], visualWeight: 50 }
-      ],
+      levels:
+        levels.length > 0
+          ? levels
+          : [
+              {
+                importance: 100,
+                elements: ["Primary content"],
+                visualWeight: 80,
+              },
+              {
+                importance: 50,
+                elements: ["Secondary content"],
+                visualWeight: 50,
+              },
+            ],
       flowScore: analysis.flow?.score || 70,
       emphasisBalance: analysis.emphasis?.balance || 75,
-      scanPath: scanPath
+      scanPath: scanPath,
     }
   }
 
-  private determineScanPath(pattern: string): VisualHierarchy['scanPath'] {
-    const normalizedPattern = (pattern || '').toLowerCase()
-    if (normalizedPattern.includes('f-pattern') || normalizedPattern.includes('f pattern')) return 'F-pattern'
-    if (normalizedPattern.includes('z-pattern') || normalizedPattern.includes('z pattern')) return 'Z-pattern'
-    if (normalizedPattern.includes('circular')) return 'circular'
-    return 'chaotic'
+  private determineScanPath(pattern: string): VisualHierarchy["scanPath"] {
+    const normalizedPattern = (pattern || "").toLowerCase()
+    if (
+      normalizedPattern.includes("f-pattern") ||
+      normalizedPattern.includes("f pattern")
+    )
+      return "F-pattern"
+    if (
+      normalizedPattern.includes("z-pattern") ||
+      normalizedPattern.includes("z pattern")
+    )
+      return "Z-pattern"
+    if (normalizedPattern.includes("circular")) return "circular"
+    return "chaotic"
   }
 
   private async calculateEngagementScore(
@@ -839,19 +913,19 @@ export class InitialAnalysisStage {
       "strengths": ["Clear hierarchy", "Good contrast"],
       "weaknesses": ["Dated colors", "Dense text blocks"]
     }`
-    
+
     const response = await this.aiService.analyzeImage(
       imageBuffer,
       visionPrompt,
-      { 
-        model: 'gemini-2.0-flash-exp',
-        subscriptionTier: 'pro' 
+      {
+        model: "gemini-2.0-flash-exp",
+        subscriptionTier: "pro",
       },
       signal
     )
-    
+
     const analysis = this.parseJSONResponse(response.analysis)
-    
+
     return {
       visualAppeal: analysis.visualAppeal || 70,
       readability: analysis.readability || 75,
@@ -859,9 +933,9 @@ export class InitialAnalysisStage {
       emotionalImpact: {
         energy: analysis.emotionalImpact?.energy || 60,
         trust: analysis.emotionalImpact?.trust || 75,
-        creativity: analysis.emotionalImpact?.creativity || 50
+        creativity: analysis.emotionalImpact?.creativity || 50,
       },
-      predictedEngagement: analysis.predictedEngagement || 70
+      predictedEngagement: analysis.predictedEngagement || 70,
     }
   }
 
@@ -875,125 +949,129 @@ export class InitialAnalysisStage {
     _signal?: AbortSignal
   ): Promise<DesignIssue[]> {
     const issues: DesignIssue[] = []
-    
+
     // Analyze layout issues
     if (enhancedLayout.alignmentScore < 70) {
       issues.push({
-        type: 'alignment',
-        severity: enhancedLayout.alignmentScore < 50 ? 'high' : 'medium',
-        description: 'Elements are not properly aligned to a consistent grid'
+        type: "alignment",
+        severity: enhancedLayout.alignmentScore < 50 ? "high" : "medium",
+        description: "Elements are not properly aligned to a consistent grid",
       })
     }
-    
+
     if (enhancedLayout.balanceScore < 70) {
       issues.push({
-        type: 'layout',
-        severity: enhancedLayout.balanceScore < 50 ? 'high' : 'medium',
-        description: 'Document layout lacks visual balance'
+        type: "layout",
+        severity: enhancedLayout.balanceScore < 50 ? "high" : "medium",
+        description: "Document layout lacks visual balance",
       })
     }
-    
+
     if (enhancedLayout.margins.consistency < 70) {
       issues.push({
-        type: 'spacing',
-        severity: 'medium',
-        description: 'Inconsistent margins throughout the document'
+        type: "spacing",
+        severity: "medium",
+        description: "Inconsistent margins throughout the document",
       })
     }
-    
+
     if (enhancedLayout.spacing.consistency < 70) {
       issues.push({
-        type: 'spacing',
-        severity: enhancedLayout.spacing.consistency < 50 ? 'high' : 'medium',
-        description: 'Inconsistent spacing between elements'
+        type: "spacing",
+        severity: enhancedLayout.spacing.consistency < 50 ? "high" : "medium",
+        description: "Inconsistent spacing between elements",
       })
     }
-    
+
     // Analyze color issues
-    if (colorAnalysis.harmony === 'chaotic') {
+    if (colorAnalysis.harmony === "chaotic") {
       issues.push({
-        type: 'color',
-        severity: 'high',
-        description: 'Color palette lacks harmony and cohesion'
+        type: "color",
+        severity: "high",
+        description: "Color palette lacks harmony and cohesion",
       })
     }
-    
+
     // Add contrast issues
-    colorAnalysis.contrast.issues.forEach(issue => {
+    colorAnalysis.contrast.issues.forEach((issue) => {
       if (!issue.passes.AA) {
         issues.push({
-          type: 'contrast',
-          severity: !issue.passes.AA && issue.ratio < 3 ? 'high' : 'medium',
-          description: `Poor contrast ratio (${issue.ratio.toFixed(1)}:1) between foreground and background colors`
+          type: "contrast",
+          severity: !issue.passes.AA && issue.ratio < 3 ? "high" : "medium",
+          description: `Poor contrast ratio (${issue.ratio.toFixed(1)}:1) between foreground and background colors`,
         })
       }
     })
-    
+
     // Analyze typography issues
     if (typographyMetrics.fontCount > 3) {
       issues.push({
-        type: 'typography',
-        severity: typographyMetrics.fontCount > 4 ? 'high' : 'medium',
-        description: `Too many font families used (${typographyMetrics.fontCount}). Recommended maximum is 3.`
+        type: "typography",
+        severity: typographyMetrics.fontCount > 4 ? "high" : "medium",
+        description: `Too many font families used (${typographyMetrics.fontCount}). Recommended maximum is 3.`,
       })
     }
-    
+
     if (typographyMetrics.readabilityScore < 70) {
       issues.push({
-        type: 'typography',
-        severity: typographyMetrics.readabilityScore < 50 ? 'high' : 'medium',
-        description: 'Typography choices negatively impact readability'
+        type: "typography",
+        severity: typographyMetrics.readabilityScore < 50 ? "high" : "medium",
+        description: "Typography choices negatively impact readability",
       })
     }
-    
+
     if (typographyMetrics.consistency < 70) {
       issues.push({
-        type: 'typography',
-        severity: 'medium',
-        description: 'Inconsistent typography sizing and spacing'
+        type: "typography",
+        severity: "medium",
+        description: "Inconsistent typography sizing and spacing",
       })
     }
-    
+
     // Analyze visual hierarchy issues
     if (visualHierarchy.flowScore < 70) {
       issues.push({
-        type: 'layout',
-        severity: visualHierarchy.flowScore < 50 ? 'high' : 'medium',
-        description: 'Document lacks clear visual flow and reading path'
+        type: "layout",
+        severity: visualHierarchy.flowScore < 50 ? "high" : "medium",
+        description: "Document lacks clear visual flow and reading path",
       })
     }
-    
-    if (visualHierarchy.scanPath === 'chaotic') {
+
+    if (visualHierarchy.scanPath === "chaotic") {
       issues.push({
-        type: 'layout',
-        severity: 'high',
-        description: 'No clear scanning pattern - information is presented chaotically'
+        type: "layout",
+        severity: "high",
+        description:
+          "No clear scanning pattern - information is presented chaotically",
       })
     }
-    
+
     if (typographyMetrics.hierarchy.clarity < 70) {
       issues.push({
-        type: 'typography',
-        severity: 'medium',
-        description: 'Visual hierarchy is unclear - headings and body text lack sufficient differentiation'
+        type: "typography",
+        severity: "medium",
+        description:
+          "Visual hierarchy is unclear - headings and body text lack sufficient differentiation",
       })
     }
-    
+
     // Check whitespace issues
     if (enhancedLayout.whitespace < 15) {
       issues.push({
-        type: 'spacing',
-        severity: 'high',
-        description: 'Document is too dense - insufficient whitespace for visual breathing room'
+        type: "spacing",
+        severity: "high",
+        description:
+          "Document is too dense - insufficient whitespace for visual breathing room",
       })
     } else if (enhancedLayout.whitespace > 50) {
       issues.push({
-        type: 'spacing',
-        severity: 'medium',
-        description: 'Excessive whitespace - document feels empty or unfinished'
+        type: "spacing",
+        severity: "medium",
+        description:
+          "Excessive whitespace - document feels empty or unfinished",
       })
     }
-    
+
     return issues
   }
 
@@ -1004,113 +1082,129 @@ export class InitialAnalysisStage {
     visualHierarchy: VisualHierarchy,
     engagementMetrics: EngagementMetrics,
     designIssues: DesignIssue[]
-  ): InitialAnalysisResult['currentScore'] {
+  ): InitialAnalysisResult["currentScore"] {
     // Calculate color score based on harmony, contrast, and issues
     let colorScore = 85 // Base score
-    
+
     // Adjust for color harmony
-    if (colorAnalysis.harmony === 'chaotic') colorScore -= 25
-    else if (['complementary', 'analogous', 'triadic'].includes(colorAnalysis.harmony)) colorScore += 5
-    
+    if (colorAnalysis.harmony === "chaotic") colorScore -= 25
+    else if (
+      ["complementary", "analogous", "triadic"].includes(colorAnalysis.harmony)
+    )
+      colorScore += 5
+
     // Adjust for contrast
-    colorScore = (colorScore * 0.6) + (colorAnalysis.contrast.overall * 0.4)
-    
+    colorScore = colorScore * 0.6 + colorAnalysis.contrast.overall * 0.4
+
     // Calculate typography score
-    let typographyScore = (typographyMetrics.readabilityScore * 0.5) + 
-                         (typographyMetrics.consistency * 0.3) +
-                         (typographyMetrics.hierarchy.clarity * 0.2)
-    
+    let typographyScore =
+      typographyMetrics.readabilityScore * 0.5 +
+      typographyMetrics.consistency * 0.3 +
+      typographyMetrics.hierarchy.clarity * 0.2
+
     // Calculate layout score
-    let layoutScore = (enhancedLayout.alignmentScore * 0.3) +
-                     (enhancedLayout.balanceScore * 0.3) +
-                     (visualHierarchy.flowScore * 0.2) +
-                     (enhancedLayout.spacing.consistency * 0.2)
-    
+    let layoutScore =
+      enhancedLayout.alignmentScore * 0.3 +
+      enhancedLayout.balanceScore * 0.3 +
+      visualHierarchy.flowScore * 0.2 +
+      enhancedLayout.spacing.consistency * 0.2
+
     // Adjust for whitespace
     if (enhancedLayout.whitespace >= 20 && enhancedLayout.whitespace <= 40) {
       layoutScore = Math.min(100, layoutScore + 5)
     }
-    
+
     // Calculate visual score based on engagement metrics and hierarchy
-    let visualScore = (engagementMetrics.visualAppeal * 0.4) +
-                     (visualHierarchy.emphasisBalance * 0.3) +
-                     (engagementMetrics.professionalScore * 0.3)
-    
+    let visualScore =
+      engagementMetrics.visualAppeal * 0.4 +
+      visualHierarchy.emphasisBalance * 0.3 +
+      engagementMetrics.professionalScore * 0.3
+
     // Apply penalties based on issues
     const issuePenalties = {
       color: 0,
       typography: 0,
       layout: 0,
-      visual: 0
+      visual: 0,
     }
-    
+
     for (const issue of designIssues) {
-      const penalty = issue.severity === 'high' ? 15 : issue.severity === 'medium' ? 8 : 3
-      
+      const penalty =
+        issue.severity === "high" ? 15 : issue.severity === "medium" ? 8 : 3
+
       switch (issue.type) {
-        case 'color':
-        case 'contrast':
+        case "color":
+        case "contrast":
           issuePenalties.color += penalty
           break
-        case 'typography':
+        case "typography":
           issuePenalties.typography += penalty
           break
-        case 'layout':
-        case 'spacing':
-        case 'alignment':
+        case "layout":
+        case "spacing":
+        case "alignment":
           issuePenalties.layout += penalty
           issuePenalties.visual += penalty * 0.5 // Layout issues also affect visual score
           break
       }
     }
-    
+
     // Apply penalties with maximum reduction of 40 points per category
     colorScore = Math.max(20, colorScore - Math.min(40, issuePenalties.color))
-    typographyScore = Math.max(20, typographyScore - Math.min(40, issuePenalties.typography))
-    layoutScore = Math.max(20, layoutScore - Math.min(40, issuePenalties.layout))
-    visualScore = Math.max(20, visualScore - Math.min(40, issuePenalties.visual))
-    
+    typographyScore = Math.max(
+      20,
+      typographyScore - Math.min(40, issuePenalties.typography)
+    )
+    layoutScore = Math.max(
+      20,
+      layoutScore - Math.min(40, issuePenalties.layout)
+    )
+    visualScore = Math.max(
+      20,
+      visualScore - Math.min(40, issuePenalties.visual)
+    )
+
     // Calculate overall score with weighted average
     const overall = Math.round(
-      (colorScore * 0.2) +
-      (typographyScore * 0.25) +
-      (layoutScore * 0.3) +
-      (visualScore * 0.25)
+      colorScore * 0.2 +
+        typographyScore * 0.25 +
+        layoutScore * 0.3 +
+        visualScore * 0.25
     )
-    
+
     return {
       overall: Math.max(0, Math.min(100, overall)),
       color: Math.max(0, Math.min(100, Math.round(colorScore))),
       typography: Math.max(0, Math.min(100, Math.round(typographyScore))),
       layout: Math.max(0, Math.min(100, Math.round(layoutScore))),
-      visuals: Math.max(0, Math.min(100, Math.round(visualScore)))
+      visuals: Math.max(0, Math.min(100, Math.round(visualScore))),
     }
   }
 
   private async getDocumentMetadata(
     fileBuffer: Buffer,
     fileType: string
-  ): Promise<InitialAnalysisResult['metadata']> {
-    const metadata: InitialAnalysisResult['metadata'] = {
+  ): Promise<InitialAnalysisResult["metadata"]> {
+    const metadata: InitialAnalysisResult["metadata"] = {
       fileSize: fileBuffer.length,
       dimensions: { width: 0, height: 0 },
       hasImages: false,
       imageCount: 0,
     }
-    
-    if (fileType === 'pdf') {
+
+    if (fileType === "pdf") {
       const pdfDoc = await PDFDocument.load(fileBuffer)
       const pageCount = pdfDoc.getPageCount()
       const firstPage = pdfDoc.getPage(0)
-      
+
       metadata.pageCount = pageCount
       metadata.dimensions = {
         width: firstPage.getWidth(),
         height: firstPage.getHeight(),
       }
-      
+
       // Check for images (simplified)
-      metadata.hasImages = fileBuffer.toString('binary').includes('/Image')
+      metadata.hasImages = fileBuffer.toString("binary").includes("/Image")
     } else {
       // Image file
       const imageMetadata = await sharp(fileBuffer).metadata()
@@ -1121,7 +1215,7 @@ export class InitialAnalysisStage {
       metadata.hasImages = true
       metadata.imageCount = 1
     }
-    
+
     return metadata
   }
 
@@ -1130,21 +1224,21 @@ export class InitialAnalysisStage {
     // For now, we'll create a placeholder
     const pdfDoc = await PDFDocument.load(pdfBuffer)
     const firstPage = pdfDoc.getPage(0)
-    
+
     // Create a white image with PDF dimensions
     const width = Math.round(firstPage.getWidth())
     const height = Math.round(firstPage.getHeight())
-    
+
     return await sharp({
       create: {
         width,
         height,
         channels: 3,
-        background: { r: 255, g: 255, b: 255 }
-      }
+        background: { r: 255, g: 255, b: 255 },
+      },
     })
-    .png()
-    .toBuffer()
+      .png()
+      .toBuffer()
   }
 
   private parseJSONResponse(response: string): any {
@@ -1154,11 +1248,11 @@ export class InitialAnalysisStage {
       if (jsonMatch) {
         return JSON.parse(jsonMatch[1])
       }
-      
+
       // Try direct parse
       return JSON.parse(response)
     } catch (error) {
-      console.error('Failed to parse JSON response:', error)
+      console.error("Failed to parse JSON response:", error)
       return {}
     }
   }

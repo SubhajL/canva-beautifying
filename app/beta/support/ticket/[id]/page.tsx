@@ -1,8 +1,8 @@
-'use client'
+"use client"
 
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { 
+import { useState, useEffect, useRef, useCallback } from "react"
+import { useParams, useRouter } from "next/navigation"
+import {
   ArrowLeft,
   Send,
   Paperclip,
@@ -11,18 +11,18 @@ import {
   AlertCircle,
   Star,
   User,
-  Bot
-} from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Separator } from '@/components/ui/separator'
-import { useToast } from '@/hooks/use-toast'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { format, formatDistanceToNow } from 'date-fns'
+  Bot,
+} from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Separator } from "@/components/ui/separator"
+import { useToast } from "@/hooks/use-toast"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { format, formatDistanceToNow } from "date-fns"
 import {
   Dialog,
   DialogContent,
@@ -30,16 +30,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Label } from '@/components/ui/label'
+} from "@/components/ui/dialog"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Label } from "@/components/ui/label"
 
 interface TicketDetails {
   id: string
   subject: string
   description: string
-  status: 'open' | 'in_progress' | 'resolved' | 'closed'
-  priority: 'low' | 'medium' | 'high' | 'urgent'
+  status: "open" | "in_progress" | "resolved" | "closed"
+  priority: "low" | "medium" | "high" | "urgent"
   category: string
   created_at: string
   updated_at: string
@@ -61,7 +61,7 @@ interface TicketDetails {
     id: string
     message: string
     sender_id: string
-    sender_type: 'user' | 'agent'
+    sender_type: "user" | "agent"
     created_at: string
     sender: {
       full_name: string
@@ -74,27 +74,30 @@ export default function TicketDetailPage() {
   const params = useParams()
   const router = useRouter()
   const [ticket, setTicket] = useState<TicketDetails | null>(null)
-  const [message, setMessage] = useState('')
+  const [message, setMessage] = useState("")
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
-  const [rating, setRating] = useState<string>('')
+  const [rating, setRating] = useState<string>("")
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { toast } = useToast()
   const supabase = createClientComponentClient()
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
 
   const fetchTicket = useCallback(async () => {
     try {
       setLoading(true)
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) return
 
       const { data, error } = await supabase
-        .from('support_tickets')
-        .select(`
+        .from("support_tickets")
+        .select(
+          `
           *,
           user:user_id(
             id,
@@ -117,25 +120,26 @@ export default function TicketDetailPage() {
               user_metadata->avatar_url
             )
           )
-        `)
-        .eq('id', params.id)
+        `
+        )
+        .eq("id", params.id)
         .single()
 
       if (error) throw error
 
       // Verify user owns this ticket
       if (data.user_id !== user.id) {
-        router.push('/beta/support')
+        router.push("/beta/support")
         return
       }
 
       setTicket(data)
     } catch (error) {
-      console.error('Error fetching ticket:', error)
+      console.error("Error fetching ticket:", error)
       toast({
-        title: 'Error',
-        description: 'Failed to load ticket details',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to load ticket details",
+        variant: "destructive",
       })
     } finally {
       setLoading(false)
@@ -144,17 +148,18 @@ export default function TicketDetailPage() {
 
   useEffect(() => {
     fetchTicket()
-    
+
     // Set up real-time subscription
     const subscription = supabase
       .channel(`ticket:${params.id}`)
-      .on('postgres_changes', 
-        { 
-          event: 'INSERT', 
-          schema: 'public', 
-          table: 'support_messages',
-          filter: `ticket_id=eq.${params.id}`
-        }, 
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "support_messages",
+          filter: `ticket_id=eq.${params.id}`,
+        },
         () => fetchTicket()
       )
       .subscribe()
@@ -173,28 +178,28 @@ export default function TicketDetailPage() {
 
     try {
       setSending(true)
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) return
 
-      const { error } = await supabase
-        .from('support_messages')
-        .insert({
-          ticket_id: ticket.id,
-          message: message.trim(),
-          sender_id: user.id,
-          sender_type: 'user'
-        })
+      const { error } = await supabase.from("support_messages").insert({
+        ticket_id: ticket.id,
+        message: message.trim(),
+        sender_id: user.id,
+        sender_type: "user",
+      })
 
       if (error) throw error
 
-      setMessage('')
+      setMessage("")
       fetchTicket()
     } catch (error) {
-      console.error('Error sending message:', error)
+      console.error("Error sending message:", error)
       toast({
-        title: 'Error',
-        description: 'Failed to send message',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to send message",
+        variant: "destructive",
       })
     } finally {
       setSending(false)
@@ -206,46 +211,55 @@ export default function TicketDetailPage() {
 
     try {
       const { error } = await supabase
-        .from('support_tickets')
-        .update({ 
+        .from("support_tickets")
+        .update({
           satisfaction_rating: parseInt(rating),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', ticket.id)
+        .eq("id", ticket.id)
 
       if (error) throw error
 
       toast({
-        title: 'Thank you!',
-        description: 'Your feedback has been recorded'
+        title: "Thank you!",
+        description: "Your feedback has been recorded",
       })
       fetchTicket()
     } catch (error) {
-      console.error('Error submitting rating:', error)
+      console.error("Error submitting rating:", error)
       toast({
-        title: 'Error',
-        description: 'Failed to submit rating',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to submit rating",
+        variant: "destructive",
       })
     }
   }
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'destructive'
-      case 'high': return 'default'
-      case 'medium': return 'secondary'
-      case 'low': return 'outline'
-      default: return 'secondary'
+      case "urgent":
+        return "destructive"
+      case "high":
+        return "default"
+      case "medium":
+        return "secondary"
+      case "low":
+        return "outline"
+      default:
+        return "secondary"
     }
   }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'open': return <AlertCircle className="h-4 w-4" />
-      case 'in_progress': return <Clock className="h-4 w-4" />
-      case 'resolved': return <CheckCircle className="h-4 w-4" />
-      default: return null
+      case "open":
+        return <AlertCircle className="h-4 w-4" />
+      case "in_progress":
+        return <Clock className="h-4 w-4" />
+      case "resolved":
+        return <CheckCircle className="h-4 w-4" />
+      default:
+        return null
     }
   }
 
@@ -258,30 +272,32 @@ export default function TicketDetailPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-5xl">
+    <div className="container mx-auto max-w-5xl p-6">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="mb-6 flex items-center gap-4">
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => router.push('/beta/support')}
+          onClick={() => router.push("/beta/support")}
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div className="flex-1">
           <h1 className="text-2xl font-bold">{ticket.subject}</h1>
-          <div className="flex items-center gap-2 mt-1">
+          <div className="mt-1 flex items-center gap-2">
             <Badge variant={getPriorityColor(ticket.priority)}>
               {ticket.priority}
             </Badge>
             <Badge variant="outline">{ticket.category}</Badge>
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               {getStatusIcon(ticket.status)}
-              <span className="capitalize">{ticket.status.replace('_', ' ')}</span>
+              <span className="capitalize">
+                {ticket.status.replace("_", " ")}
+              </span>
             </div>
           </div>
         </div>
-        {ticket.status === 'resolved' && !ticket.satisfaction_rating && (
+        {ticket.status === "resolved" && !ticket.satisfaction_rating && (
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="outline">
@@ -296,20 +312,33 @@ export default function TicketDetailPage() {
                   Your feedback helps us improve our service
                 </DialogDescription>
               </DialogHeader>
-              <RadioGroup value={rating} onValueChange={setRating} className="space-y-2 my-4">
+              <RadioGroup
+                value={rating}
+                onValueChange={setRating}
+                className="my-4 space-y-2"
+              >
                 {[5, 4, 3, 2, 1].map((value) => (
                   <div key={value} className="flex items-center space-x-2">
-                    <RadioGroupItem value={value.toString()} id={`rating-${value}`} />
-                    <Label htmlFor={`rating-${value}`} className="flex items-center gap-1 cursor-pointer">
+                    <RadioGroupItem
+                      value={value.toString()}
+                      id={`rating-${value}`}
+                    />
+                    <Label
+                      htmlFor={`rating-${value}`}
+                      className="flex cursor-pointer items-center gap-1"
+                    >
                       {[...Array(value)].map((_, i) => (
-                        <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <Star
+                          key={i}
+                          className="h-4 w-4 fill-yellow-400 text-yellow-400"
+                        />
                       ))}
                       <span className="ml-2 text-sm text-muted-foreground">
-                        {value === 5 && 'Excellent'}
-                        {value === 4 && 'Good'}
-                        {value === 3 && 'Average'}
-                        {value === 2 && 'Poor'}
-                        {value === 1 && 'Very Poor'}
+                        {value === 5 && "Excellent"}
+                        {value === 4 && "Good"}
+                        {value === 3 && "Average"}
+                        {value === 2 && "Poor"}
+                        {value === 1 && "Very Poor"}
                       </span>
                     </Label>
                   </div>
@@ -323,20 +352,20 @@ export default function TicketDetailPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Messages */}
         <div className="lg:col-span-2">
-          <Card className="h-[600px] flex flex-col">
+          <Card className="flex h-[600px] flex-col">
             <CardHeader>
               <CardTitle>Conversation</CardTitle>
             </CardHeader>
-            <CardContent className="flex-1 flex flex-col p-0">
+            <CardContent className="flex flex-1 flex-col p-0">
               <ScrollArea className="flex-1 px-6">
                 <div className="space-y-4 pb-4">
                   {/* Initial ticket message */}
                   <div className="flex gap-3">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={''} />
+                      <AvatarImage src={""} />
                       <AvatarFallback>
                         <User className="h-4 w-4" />
                       </AvatarFallback>
@@ -348,8 +377,10 @@ export default function TicketDetailPage() {
                           {formatDistanceToNow(new Date(ticket.created_at))} ago
                         </span>
                       </div>
-                      <div className="bg-muted rounded-lg p-3 mt-1">
-                        <p className="whitespace-pre-wrap">{ticket.description}</p>
+                      <div className="mt-1 rounded-lg bg-muted p-3">
+                        <p className="whitespace-pre-wrap">
+                          {ticket.description}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -358,7 +389,7 @@ export default function TicketDetailPage() {
                   {ticket.messages.map((msg) => (
                     <div key={msg.id} className="flex gap-3">
                       <Avatar className="h-8 w-8">
-                        {msg.sender_type === 'agent' ? (
+                        {msg.sender_type === "agent" ? (
                           <>
                             <AvatarImage src={msg.sender.avatar_url} />
                             <AvatarFallback>
@@ -374,17 +405,21 @@ export default function TicketDetailPage() {
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <span className="font-medium">
-                            {msg.sender_type === 'agent' ? msg.sender.full_name : 'You'}
+                            {msg.sender_type === "agent"
+                              ? msg.sender.full_name
+                              : "You"}
                           </span>
                           <span className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(msg.created_at))} ago
                           </span>
                         </div>
-                        <div className={`rounded-lg p-3 mt-1 ${
-                          msg.sender_type === 'agent' 
-                            ? 'bg-primary text-primary-foreground' 
-                            : 'bg-muted'
-                        }`}>
+                        <div
+                          className={`mt-1 rounded-lg p-3 ${
+                            msg.sender_type === "agent"
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted"
+                          }`}
+                        >
                           <p className="whitespace-pre-wrap">{msg.message}</p>
                         </div>
                       </div>
@@ -393,11 +428,11 @@ export default function TicketDetailPage() {
                   <div ref={messagesEndRef} />
                 </div>
               </ScrollArea>
-              
-              {ticket.status !== 'closed' && (
+
+              {ticket.status !== "closed" && (
                 <>
                   <Separator />
-                  <div className="p-4 flex gap-2">
+                  <div className="flex gap-2 p-4">
                     <Textarea
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
@@ -405,7 +440,7 @@ export default function TicketDetailPage() {
                       className="resize-none"
                       rows={2}
                       onKeyPress={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
+                        if (e.key === "Enter" && !e.shiftKey) {
                           e.preventDefault()
                           sendMessage()
                         }
@@ -415,8 +450,8 @@ export default function TicketDetailPage() {
                       <Button size="icon" variant="outline">
                         <Paperclip className="h-4 w-4" />
                       </Button>
-                      <Button 
-                        size="icon" 
+                      <Button
+                        size="icon"
                         onClick={sendMessage}
                         disabled={!message.trim() || sending}
                       >
@@ -441,14 +476,17 @@ export default function TicketDetailPage() {
               <div>
                 <p className="text-sm text-muted-foreground">Created</p>
                 <p className="text-sm font-medium">
-                  {format(new Date(ticket.created_at), 'MMM d, yyyy h:mm a')}
+                  {format(new Date(ticket.created_at), "MMM d, yyyy h:mm a")}
                 </p>
               </div>
               {ticket.first_response_at && (
                 <div>
-                  <p className="text-sm text-muted-foreground">First Response</p>
+                  <p className="text-sm text-muted-foreground">
+                    First Response
+                  </p>
                   <p className="text-sm font-medium">
-                    {formatDistanceToNow(new Date(ticket.first_response_at))} after creation
+                    {formatDistanceToNow(new Date(ticket.first_response_at))}{" "}
+                    after creation
                   </p>
                 </div>
               )}
@@ -456,7 +494,7 @@ export default function TicketDetailPage() {
                 <div>
                   <p className="text-sm text-muted-foreground">Resolved</p>
                   <p className="text-sm font-medium">
-                    {format(new Date(ticket.resolved_at), 'MMM d, yyyy h:mm a')}
+                    {format(new Date(ticket.resolved_at), "MMM d, yyyy h:mm a")}
                   </p>
                 </div>
               )}
@@ -464,7 +502,10 @@ export default function TicketDetailPage() {
                 <div>
                   <p className="text-sm text-muted-foreground">SLA Deadline</p>
                   <p className="text-sm font-medium">
-                    {format(new Date(ticket.sla_deadline), 'MMM d, yyyy h:mm a')}
+                    {format(
+                      new Date(ticket.sla_deadline),
+                      "MMM d, yyyy h:mm a"
+                    )}
                   </p>
                 </div>
               )}
@@ -486,8 +527,12 @@ export default function TicketDetailPage() {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">{ticket.assigned_agent.full_name}</p>
-                    <p className="text-sm text-muted-foreground">Support Specialist</p>
+                    <p className="font-medium">
+                      {ticket.assigned_agent.full_name}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Support Specialist
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -507,8 +552,8 @@ export default function TicketDetailPage() {
                       key={i}
                       className={`h-5 w-5 ${
                         i < ticket.satisfaction_rating!
-                          ? 'fill-yellow-400 text-yellow-400'
-                          : 'text-gray-300'
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "text-gray-300"
                       }`}
                     />
                   ))}

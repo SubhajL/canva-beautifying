@@ -1,15 +1,15 @@
-'use client'
+"use client"
 
-import React, { Component, ErrorInfo, ReactNode } from 'react'
-import { Button } from '@/components/ui/button'
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react'
-import { 
-  logger, 
-  captureErrorBoundaryException, 
-  getUserErrorMessage, 
-  createTelemetryEvent 
-} from '@/lib/observability/client'
-import Link from 'next/link'
+import React, { Component, ErrorInfo, ReactNode } from "react"
+import { Button } from "@/components/ui/button"
+import { AlertTriangle, RefreshCw, Home } from "lucide-react"
+import {
+  logger,
+  captureErrorBoundaryException,
+  getUserErrorMessage,
+  createTelemetryEvent,
+} from "@/lib/observability/client"
+import Link from "next/link"
 
 interface Props {
   children: ReactNode
@@ -48,8 +48,8 @@ export class GlobalErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     const errorId = Math.random().toString(36).substring(7)
-    
-    logger.error('Global error boundary caught error', {
+
+    logger.error("Global error boundary caught error", {
       error: error.message,
       stack: error.stack,
       componentStack: errorInfo.componentStack,
@@ -58,13 +58,13 @@ export class GlobalErrorBoundary extends Component<Props, State> {
     })
 
     captureErrorBoundaryException(error, errorInfo, {
-      boundary: 'global',
+      boundary: "global",
       errorId,
       retryCount: this.state.retryCount,
     })
 
-    createTelemetryEvent('error_boundary_triggered', {
-      boundary: 'global',
+    createTelemetryEvent("error_boundary_triggered", {
+      boundary: "global",
       errorId,
       errorMessage: error.message,
       retryCount: this.state.retryCount,
@@ -79,14 +79,14 @@ export class GlobalErrorBoundary extends Component<Props, State> {
   handleReset = () => {
     const { error, errorId, retryCount } = this.state
 
-    logger.info('User attempting error recovery', {
+    logger.info("User attempting error recovery", {
       errorId,
       retryCount: retryCount + 1,
       errorMessage: error?.message,
     })
 
-    createTelemetryEvent('error_boundary_reset', {
-      boundary: 'global',
+    createTelemetryEvent("error_boundary_reset", {
+      boundary: "global",
       errorId,
       retryCount: retryCount + 1,
     })
@@ -101,7 +101,7 @@ export class GlobalErrorBoundary extends Component<Props, State> {
   }
 
   handleFullRefresh = () => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       window.location.reload()
     }
   }
@@ -115,14 +115,14 @@ export class GlobalErrorBoundary extends Component<Props, State> {
         return fallback(error, this.handleReset)
       }
 
-      const isDevelopment = process.env.NODE_ENV === 'development'
+      const isDevelopment = process.env.NODE_ENV === "development"
       const userMessage = getUserErrorMessage(error)
       const showRetry = retryCount < 3
 
       return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
-          <div className="max-w-md w-full space-y-6">
-            <div className="bg-white rounded-lg shadow-lg p-6 space-y-4">
+        <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+          <div className="w-full max-w-md space-y-6">
+            <div className="space-y-4 rounded-lg bg-white p-6 shadow-lg">
               <div className="flex items-center space-x-3">
                 <div className="flex-shrink-0">
                   <AlertTriangle className="h-8 w-8 text-red-500" />
@@ -131,14 +131,12 @@ export class GlobalErrorBoundary extends Component<Props, State> {
                   <h1 className="text-xl font-semibold text-gray-900">
                     Something went wrong
                   </h1>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {userMessage}
-                  </p>
+                  <p className="mt-1 text-sm text-gray-600">{userMessage}</p>
                 </div>
               </div>
 
               {errorId && (
-                <div className="bg-gray-50 rounded p-3">
+                <div className="rounded bg-gray-50 p-3">
                   <p className="text-xs text-gray-600">
                     Error ID: <code className="font-mono">{errorId}</code>
                   </p>
@@ -151,13 +149,13 @@ export class GlobalErrorBoundary extends Component<Props, State> {
                     Error details (development only)
                   </summary>
                   <div className="mt-2 space-y-2">
-                    <div className="bg-gray-100 rounded p-3 overflow-x-auto">
-                      <p className="text-xs font-mono text-red-700 whitespace-pre-wrap">
+                    <div className="overflow-x-auto rounded bg-gray-100 p-3">
+                      <p className="whitespace-pre-wrap font-mono text-xs text-red-700">
                         {error.message}
                       </p>
                     </div>
                     {error.stack && (
-                      <div className="bg-gray-100 rounded p-3 overflow-x-auto max-h-40 overflow-y-auto">
+                      <div className="max-h-40 overflow-x-auto overflow-y-auto rounded bg-gray-100 p-3">
                         <pre className="text-xs text-gray-700">
                           {error.stack}
                         </pre>
@@ -174,23 +172,23 @@ export class GlobalErrorBoundary extends Component<Props, State> {
                     variant="default"
                     className="flex-1"
                   >
-                    <RefreshCw className="w-4 h-4 mr-2" />
+                    <RefreshCw className="mr-2 h-4 w-4" />
                     Try again
                   </Button>
                 )}
                 <Button
                   onClick={this.handleFullRefresh}
-                  variant={showRetry ? 'outline' : 'default'}
+                  variant={showRetry ? "outline" : "default"}
                   className="flex-1"
                 >
-                  <RefreshCw className="w-4 h-4 mr-2" />
+                  <RefreshCw className="mr-2 h-4 w-4" />
                   Refresh page
                 </Button>
               </div>
 
               <Link href="/" className="block">
                 <Button variant="ghost" className="w-full">
-                  <Home className="w-4 h-4 mr-2" />
+                  <Home className="mr-2 h-4 w-4" />
                   Go to homepage
                 </Button>
               </Link>

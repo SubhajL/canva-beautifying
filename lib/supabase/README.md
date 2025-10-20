@@ -35,11 +35,13 @@
 ### 4. Configure Authentication
 
 #### Enable Email Authentication
+
 1. Go to Authentication → Providers
 2. Email is enabled by default
 3. Configure email templates if needed
 
 #### Enable Google OAuth
+
 1. Go to Authentication → Providers → Google
 2. Enable Google provider
 3. Add your Google OAuth credentials:
@@ -49,6 +51,7 @@
 4. Add credentials to Supabase
 
 #### Enable Microsoft OAuth
+
 1. Go to Authentication → Providers → Azure (Microsoft)
 2. Enable Azure provider
 3. Add your Microsoft OAuth credentials:
@@ -88,14 +91,16 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
 ## Usage Examples
 
 ### Sign Up
+
 ```typescript
-import { useAuth } from '@/contexts/auth-context'
+import { useAuth } from "@/contexts/auth-context"
 
 const { signUp } = useAuth()
-await signUp(email, password, { name: 'John Doe' })
+await signUp(email, password, { name: "John Doe" })
 ```
 
 ### Sign In
+
 ```typescript
 const { signIn, signInWithGoogle } = useAuth()
 
@@ -107,6 +112,7 @@ await signInWithGoogle()
 ```
 
 ### Check Authentication
+
 ```typescript
 const { user, loading } = useAuth()
 
@@ -115,18 +121,20 @@ if (!user) return <div>Not authenticated</div>
 ```
 
 ### Protected Routes
+
 Routes are automatically protected by middleware. To make a route public, add it to the middleware matcher exclusions.
 
 ### Database Queries
+
 ```typescript
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from "@/lib/supabase/server"
 
 // Get user's enhancements
 const supabase = await createClient()
 const { data: enhancements } = await supabase
-  .from('enhancements')
-  .select('*')
-  .order('created_at', { ascending: false })
+  .from("enhancements")
+  .select("*")
+  .order("created_at", { ascending: false })
 ```
 
 ## Security Notes
@@ -139,14 +147,17 @@ const { data: enhancements } = await supabase
 ## Troubleshooting
 
 **"Invalid API key"**
+
 - Check your environment variables are correct
 - Ensure `.env.local` is loaded (restart dev server)
 
 **"User not found"**
+
 - Check if user exists in Authentication → Users
 - Verify email confirmation if required
 
 **OAuth not working**
+
 - Verify redirect URLs match exactly
 - Check OAuth app credentials are correct
 - Ensure providers are enabled in Supabase

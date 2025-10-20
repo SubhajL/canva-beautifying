@@ -4,7 +4,9 @@
 
 export async function uploadToR2(buffer: Buffer, key: string): Promise<string> {
   // For testing, just return a mock URL
-  console.log(`[Mock] Would upload ${buffer.length} bytes to R2 with key: ${key}`)
+  console.log(
+    `[Mock] Would upload ${buffer.length} bytes to R2 with key: ${key}`
+  )
   return `https://r2.example.com/${key}`
 }
 

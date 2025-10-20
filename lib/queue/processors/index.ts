@@ -1,8 +1,8 @@
-import { createDocumentAnalysisWorker } from './document-analysis.processor'
-import { createEnhancementWorker } from './enhancement.processor'
-import { createExportWorker } from './export.processor'
-import { createEmailWorker } from './email.processor'
-import { createBetaEmailWorker } from './beta-email.processor'
+import { createDocumentAnalysisWorker } from "./document-analysis.processor"
+import { createEnhancementWorker } from "./enhancement.processor"
+import { createExportWorker } from "./export.processor"
+import { createEmailWorker } from "./email.processor"
+import { createBetaEmailWorker } from "./beta-email.processor"
 
 // Store worker instances
 let workers: {
@@ -15,8 +15,8 @@ let workers: {
 
 // Start all workers
 export const startWorkers = async () => {
-  console.log('Starting queue workers...')
-  
+  console.log("Starting queue workers...")
+
   try {
     // Create and start workers
     workers.documentAnalysis = createDocumentAnalysisWorker()
@@ -24,20 +24,20 @@ export const startWorkers = async () => {
     workers.export = createExportWorker()
     workers.email = createEmailWorker()
     workers.betaEmail = createBetaEmailWorker()
-    
-    console.log('All queue workers started successfully')
+
+    console.log("All queue workers started successfully")
   } catch (error) {
-    console.error('Failed to start workers:', error)
+    console.error("Failed to start workers:", error)
     throw error
   }
 }
 
 // Stop all workers gracefully
 export const stopWorkers = async () => {
-  console.log('Stopping queue workers...')
-  
+  console.log("Stopping queue workers...")
+
   const closePromises = []
-  
+
   if (workers.documentAnalysis) {
     closePromises.push(workers.documentAnalysis.close())
   }
@@ -53,17 +53,17 @@ export const stopWorkers = async () => {
   if (workers.betaEmail) {
     closePromises.push(workers.betaEmail.close())
   }
-  
+
   await Promise.all(closePromises)
   workers = {}
-  
-  console.log('All queue workers stopped')
+
+  console.log("All queue workers stopped")
 }
 
 // Pause all workers
 export const pauseWorkers = async () => {
   const pausePromises = []
-  
+
   if (workers.documentAnalysis) {
     pausePromises.push(workers.documentAnalysis.pause())
   }
@@ -79,15 +79,15 @@ export const pauseWorkers = async () => {
   if (workers.betaEmail) {
     pausePromises.push(workers.betaEmail.pause())
   }
-  
+
   await Promise.all(pausePromises)
-  console.log('All queue workers paused')
+  console.log("All queue workers paused")
 }
 
 // Resume all workers
 export const resumeWorkers = async () => {
   const resumePromises = []
-  
+
   if (workers.documentAnalysis) {
     resumePromises.push(workers.documentAnalysis.resume())
   }
@@ -103,18 +103,18 @@ export const resumeWorkers = async () => {
   if (workers.betaEmail) {
     resumePromises.push(workers.betaEmail.resume())
   }
-  
+
   await Promise.all(resumePromises)
-  console.log('All queue workers resumed')
+  console.log("All queue workers resumed")
 }
 
 // Get worker status
 export const getWorkerStatus = () => {
   return {
-    documentAnalysis: workers.documentAnalysis ? 'running' : 'stopped',
-    enhancement: workers.enhancement ? 'running' : 'stopped',
-    export: workers.export ? 'running' : 'stopped',
-    email: workers.email ? 'running' : 'stopped',
-    betaEmail: workers.betaEmail ? 'running' : 'stopped',
+    documentAnalysis: workers.documentAnalysis ? "running" : "stopped",
+    enhancement: workers.enhancement ? "running" : "stopped",
+    export: workers.export ? "running" : "stopped",
+    email: workers.email ? "running" : "stopped",
+    betaEmail: workers.betaEmail ? "running" : "stopped",
   }
 }

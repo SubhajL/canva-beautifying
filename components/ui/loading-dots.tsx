@@ -13,20 +13,20 @@ const LoadingDots = React.forwardRef<HTMLDivElement, LoadingDotsProps>(
       default: "space-x-2",
       lg: "space-x-3",
     }
-    
+
     const dotSizeClasses = {
       sm: "h-1.5 w-1.5",
       default: "h-2 w-2",
       lg: "h-3 w-3",
     }
-    
+
     const colorClasses = {
       default: "bg-foreground",
       primary: "bg-primary",
       secondary: "bg-secondary",
       muted: "bg-muted-foreground",
     }
-    
+
     return (
       <div
         ref={ref}

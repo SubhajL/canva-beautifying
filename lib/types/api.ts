@@ -2,8 +2,8 @@
  * API-related type definitions
  */
 
-import { NextRequest } from 'next/server'
-import { User } from '@supabase/supabase-js'
+import { NextRequest } from "next/server"
+import { User } from "@supabase/supabase-js"
 
 // Request context types
 export interface AuthenticatedRequest extends NextRequest {
@@ -24,7 +24,7 @@ export interface PaginationParams {
 
 export interface SortParams {
   sortBy?: string
-  sortOrder?: 'asc' | 'desc'
+  sortOrder?: "asc" | "desc"
 }
 
 export interface FilterParams {
@@ -39,7 +39,7 @@ export interface ApiError {
   details?: Record<string, unknown>
 }
 
-// Success response types  
+// Success response types
 export interface ApiSuccessResponse<T = unknown> {
   data: T
   message?: string

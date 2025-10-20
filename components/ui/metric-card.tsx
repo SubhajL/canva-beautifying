@@ -15,19 +15,13 @@ interface MetricCardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const MetricCard = React.forwardRef<HTMLDivElement, MetricCardProps>(
-  ({ 
-    className, 
-    label, 
-    value,
-    change,
-    icon: Icon,
-    prefix,
-    suffix,
-    ...props 
-  }, ref) => {
+  (
+    { className, label, value, change, icon: Icon, prefix, suffix, ...props },
+    ref
+  ) => {
     const getTrendIcon = () => {
       if (!change) return null
-      
+
       switch (change.type) {
         case "increase":
           return TrendingUp
@@ -37,10 +31,10 @@ const MetricCard = React.forwardRef<HTMLDivElement, MetricCardProps>(
           return Minus
       }
     }
-    
+
     const getTrendColor = () => {
       if (!change) return ""
-      
+
       switch (change.type) {
         case "increase":
           return "text-success"
@@ -50,9 +44,9 @@ const MetricCard = React.forwardRef<HTMLDivElement, MetricCardProps>(
           return "text-muted-foreground"
       }
     }
-    
+
     const TrendIcon = getTrendIcon()
-    
+
     return (
       <div
         ref={ref}
@@ -71,7 +65,12 @@ const MetricCard = React.forwardRef<HTMLDivElement, MetricCardProps>(
               {suffix}
             </p>
             {change && (
-              <div className={cn("flex items-center gap-1 text-sm", getTrendColor())}>
+              <div
+                className={cn(
+                  "flex items-center gap-1 text-sm",
+                  getTrendColor()
+                )}
+              >
                 {TrendIcon && <TrendIcon className="h-4 w-4" />}
                 <span>{Math.abs(change.value)}%</span>
               </div>

@@ -1,7 +1,7 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import Image from 'next/image'
+import { useState } from "react"
+import Image from "next/image"
 import {
   Dialog,
   DialogContent,
@@ -9,26 +9,26 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { 
-  Copy, 
-  Mail, 
-  Link2, 
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Copy,
+  Mail,
+  Link2,
   QrCode,
   Download,
   CheckCircle,
   Twitter,
   Linkedin,
-  Facebook
-} from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
-import { createClient } from '@/lib/supabase/client'
-import QRCode from 'qrcode'
+  Facebook,
+} from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import { createClient } from "@/lib/supabase/client"
+import QRCode from "qrcode"
 
 interface ShareDialogProps {
   open: boolean
@@ -37,13 +37,18 @@ interface ShareDialogProps {
   documentName: string
 }
 
-export function ShareDialog({ open, onOpenChange, enhancementId, documentName }: ShareDialogProps) {
+export function ShareDialog({
+  open,
+  onOpenChange,
+  enhancementId,
+  documentName,
+}: ShareDialogProps) {
   const { toast } = useToast()
-  const [shareUrl, setShareUrl] = useState('')
+  const [shareUrl, setShareUrl] = useState("")
   const [isPublic, setIsPublic] = useState(false)
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [qrCodeUrl, setQrCodeUrl] = useState('')
+  const [qrCodeUrl, setQrCodeUrl] = useState("")
   const [expiryDays, setExpiryDays] = useState(7)
 
   const generateShareLink = async () => {
@@ -57,15 +62,13 @@ export function ShareDialog({ open, onOpenChange, enhancementId, documentName }:
       expiresAt.setDate(expiresAt.getDate() + expiryDays)
 
       // Store share token in database
-      const { error } = await supabase
-        .from('share_links')
-        .insert({
-          id: shareToken,
-          enhancement_id: enhancementId,
-          is_public: isPublic,
-          expires_at: expiresAt.toISOString(),
-          created_by: (await supabase.auth.getUser()).data.user?.id,
-        })
+      const { error } = await supabase.from("share_links").insert({
+        id: shareToken,
+        enhancement_id: enhancementId,
+        is_public: isPublic,
+        expires_at: expiresAt.toISOString(),
+        created_by: (await supabase.auth.getUser()).data.user?.id,
+      })
 
       if (error) throw error
 
@@ -78,22 +81,22 @@ export function ShareDialog({ open, onOpenChange, enhancementId, documentName }:
         width: 256,
         margin: 2,
         color: {
-          dark: '#000000',
-          light: '#FFFFFF',
+          dark: "#000000",
+          light: "#FFFFFF",
         },
       })
       setQrCodeUrl(qrDataUrl)
 
       toast({
-        title: 'Share Link Created',
-        description: 'Your share link has been generated successfully.',
+        title: "Share Link Created",
+        description: "Your share link has been generated successfully.",
       })
     } catch (error) {
-      console.error('Error creating share link:', error)
+      console.error("Error creating share link:", error)
       toast({
-        title: 'Error',
-        description: 'Failed to create share link. Please try again.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to create share link. Please try again.",
+        variant: "destructive",
       })
     } finally {
       setLoading(false)
@@ -105,27 +108,33 @@ export function ShareDialog({ open, onOpenChange, enhancementId, documentName }:
       await navigator.clipboard.writeText(shareUrl)
       setCopied(true)
       toast({
-        title: 'Copied!',
-        description: 'Share link copied to clipboard.',
+        title: "Copied!",
+        description: "Share link copied to clipboard.",
       })
       setTimeout(() => setCopied(false), 2000)
     } catch (_error) {
       toast({
-        title: 'Error',
-        description: 'Failed to copy link. Please try again.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to copy link. Please try again.",
+        variant: "destructive",
       })
     }
   }
 
   const shareViaEmail = () => {
-    const subject = encodeURIComponent(`Check out my enhanced document: ${documentName}`)
-    const body = encodeURIComponent(`I've enhanced my document using BeautifyAI. Take a look at the results: ${shareUrl}`)
+    const subject = encodeURIComponent(
+      `Check out my enhanced document: ${documentName}`
+    )
+    const body = encodeURIComponent(
+      `I've enhanced my document using BeautifyAI. Take a look at the results: ${shareUrl}`
+    )
     window.open(`mailto:?subject=${subject}&body=${body}`)
   }
 
   const shareOnSocial = (platform: string) => {
-    const text = encodeURIComponent(`Check out my enhanced document using BeautifyAI!`)
+    const text = encodeURIComponent(
+      `Check out my enhanced document using BeautifyAI!`
+    )
     const url = encodeURIComponent(shareUrl)
 
     const shareUrls: Record<string, string> = {
@@ -135,12 +144,12 @@ export function ShareDialog({ open, onOpenChange, enhancementId, documentName }:
     }
 
     if (shareUrls[platform]) {
-      window.open(shareUrls[platform], '_blank', 'width=600,height=400')
+      window.open(shareUrls[platform], "_blank", "width=600,height=400")
     }
   }
 
   const downloadQRCode = () => {
-    const link = document.createElement('a')
+    const link = document.createElement("a")
     link.download = `${documentName}_qr_code.png`
     link.href = qrCodeUrl
     link.click()
@@ -152,7 +161,8 @@ export function ShareDialog({ open, onOpenChange, enhancementId, documentName }:
         <DialogHeader>
           <DialogTitle>Share Enhancement Results</DialogTitle>
           <DialogDescription>
-            Share your enhanced document with others via link, email, or social media.
+            Share your enhanced document with others via link, email, or social
+            media.
           </DialogDescription>
         </DialogHeader>
 
@@ -175,16 +185,16 @@ export function ShareDialog({ open, onOpenChange, enhancementId, documentName }:
                   />
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {isPublic 
-                    ? 'Anyone with the link can view this enhancement'
-                    : 'Only users with an account can view this enhancement'}
+                  {isPublic
+                    ? "Anyone with the link can view this enhancement"
+                    : "Only users with an account can view this enhancement"}
                 </p>
 
                 <div>
                   <Label htmlFor="expiry">Link Expiry</Label>
                   <select
                     id="expiry"
-                    className="w-full mt-2 px-3 py-2 border rounded-md"
+                    className="mt-2 w-full rounded-md border px-3 py-2"
                     value={expiryDays}
                     onChange={(e) => setExpiryDays(Number(e.target.value))}
                   >
@@ -195,15 +205,15 @@ export function ShareDialog({ open, onOpenChange, enhancementId, documentName }:
                   </select>
                 </div>
 
-                <Button 
-                  onClick={generateShareLink} 
+                <Button
+                  onClick={generateShareLink}
                   disabled={loading}
                   className="w-full"
                 >
                   {loading ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white" />
                   ) : (
-                    <Link2 className="h-4 w-4 mr-2" />
+                    <Link2 className="mr-2 h-4 w-4" />
                   )}
                   Generate Share Link
                 </Button>
@@ -230,7 +240,7 @@ export function ShareDialog({ open, onOpenChange, enhancementId, documentName }:
                   className="w-full"
                   onClick={shareViaEmail}
                 >
-                  <Mail className="h-4 w-4 mr-2" />
+                  <Mail className="mr-2 h-4 w-4" />
                   Share via Email
                 </Button>
 
@@ -238,8 +248,8 @@ export function ShareDialog({ open, onOpenChange, enhancementId, documentName }:
                   variant="ghost"
                   className="w-full"
                   onClick={() => {
-                    setShareUrl('')
-                    setQrCodeUrl('')
+                    setShareUrl("")
+                    setQrCodeUrl("")
                   }}
                 >
                   Generate New Link
@@ -250,9 +260,9 @@ export function ShareDialog({ open, onOpenChange, enhancementId, documentName }:
 
           <TabsContent value="qr" className="space-y-4">
             {!qrCodeUrl ? (
-              <div className="text-center py-8">
-                <QrCode className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground mb-4">
+              <div className="py-8 text-center">
+                <QrCode className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                <p className="mb-4 text-muted-foreground">
                   Generate a share link first to create a QR code
                 </p>
                 <Button onClick={generateShareLink} disabled={loading}>
@@ -261,8 +271,8 @@ export function ShareDialog({ open, onOpenChange, enhancementId, documentName }:
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="bg-white p-4 rounded-lg border">
-                  <div className="relative w-full max-w-[256px] h-[256px] mx-auto">
+                <div className="rounded-lg border bg-white p-4">
+                  <div className="relative mx-auto h-[256px] w-full max-w-[256px]">
                     <Image
                       src={qrCodeUrl}
                       alt="QR Code"
@@ -276,7 +286,7 @@ export function ShareDialog({ open, onOpenChange, enhancementId, documentName }:
                   className="w-full"
                   onClick={downloadQRCode}
                 >
-                  <Download className="h-4 w-4 mr-2" />
+                  <Download className="mr-2 h-4 w-4" />
                   Download QR Code
                 </Button>
               </div>
@@ -285,8 +295,8 @@ export function ShareDialog({ open, onOpenChange, enhancementId, documentName }:
 
           <TabsContent value="social" className="space-y-4">
             {!shareUrl ? (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground mb-4">
+              <div className="py-8 text-center">
+                <p className="mb-4 text-muted-foreground">
                   Generate a share link first to share on social media
                 </p>
                 <Button onClick={generateShareLink} disabled={loading}>
@@ -298,25 +308,25 @@ export function ShareDialog({ open, onOpenChange, enhancementId, documentName }:
                 <Button
                   variant="outline"
                   className="w-full justify-start"
-                  onClick={() => shareOnSocial('twitter')}
+                  onClick={() => shareOnSocial("twitter")}
                 >
-                  <Twitter className="h-4 w-4 mr-2" />
+                  <Twitter className="mr-2 h-4 w-4" />
                   Share on Twitter
                 </Button>
                 <Button
                   variant="outline"
                   className="w-full justify-start"
-                  onClick={() => shareOnSocial('linkedin')}
+                  onClick={() => shareOnSocial("linkedin")}
                 >
-                  <Linkedin className="h-4 w-4 mr-2" />
+                  <Linkedin className="mr-2 h-4 w-4" />
                   Share on LinkedIn
                 </Button>
                 <Button
                   variant="outline"
                   className="w-full justify-start"
-                  onClick={() => shareOnSocial('facebook')}
+                  onClick={() => shareOnSocial("facebook")}
                 >
-                  <Facebook className="h-4 w-4 mr-2" />
+                  <Facebook className="mr-2 h-4 w-4" />
                   Share on Facebook
                 </Button>
               </div>

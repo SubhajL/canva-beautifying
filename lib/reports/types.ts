@@ -1,29 +1,29 @@
-import { DocumentAnalysis } from '@/lib/ai/types'
-import { EnhancementStrategy } from '@/lib/enhancement/types'
+import { DocumentAnalysis } from "@/lib/ai/types"
+import { EnhancementStrategy } from "@/lib/enhancement/types"
 
 export interface EnhancementReport {
   id: string
   documentId: string
   userId: string
   generatedAt: Date
-  
+
   // Document information
   documentInfo: {
     name: string
     originalUrl: string
     enhancedUrl: string
-    documentType: 'worksheet' | 'presentation' | 'poster' | 'flyer' | 'other'
+    documentType: "worksheet" | "presentation" | "poster" | "flyer" | "other"
     originalSize: number
     enhancedSize: number
   }
-  
+
   // Before/After comparison
   comparison: {
     before: AnalysisSnapshot
     after: AnalysisSnapshot
     improvements: ImprovementMetrics
   }
-  
+
   // Applied enhancements
   enhancements: {
     applied: AppliedEnhancement[]
@@ -31,22 +31,22 @@ export interface EnhancementReport {
     totalCount: number
     byCategory: Record<string, number>
   }
-  
+
   // Predicted engagement
   engagement: {
     predictedScore: number
     improvementPercentage: number
     audienceImpact: AudienceImpact
   }
-  
+
   // Educational insights
   insights: EducationalInsight[]
-  
+
   // Report metadata
   metadata: {
     reportVersion: string
     processingTime: number
-    generationMethod: 'automatic' | 'manual'
+    generationMethod: "automatic" | "manual"
     customizations?: ReportCustomization
   }
 }
@@ -76,9 +76,9 @@ export interface ImprovementMetrics {
 export interface AppliedEnhancement {
   id: string
   name: string
-  category: 'color' | 'typography' | 'layout' | 'background' | 'decorative'
+  category: "color" | "typography" | "layout" | "background" | "decorative"
   description: string
-  impact: 'low' | 'medium' | 'high'
+  impact: "low" | "medium" | "high"
   beforeValue?: string | number | Record<string, unknown>
   afterValue?: string | number | Record<string, unknown>
   visualExample?: {
@@ -89,7 +89,7 @@ export interface AppliedEnhancement {
 
 export interface AudienceImpact {
   targetAudience: string
-  engagementLikelihood: 'low' | 'medium' | 'high' | 'very high'
+  engagementLikelihood: "low" | "medium" | "high" | "very high"
   keyImprovements: string[]
   expectedOutcomes: string[]
 }
@@ -101,20 +101,20 @@ export interface EducationalInsight {
   description: string
   tip: string
   relatedEnhancement?: string
-  difficulty: 'beginner' | 'intermediate' | 'advanced'
+  difficulty: "beginner" | "intermediate" | "advanced"
   resources?: Array<{
     title: string
     url: string
-    type: 'article' | 'video' | 'tutorial'
+    type: "article" | "video" | "tutorial"
   }>
 }
 
 export interface ReportCustomization {
   includeScreenshots: boolean
-  detailLevel: 'summary' | 'detailed' | 'comprehensive'
+  detailLevel: "summary" | "detailed" | "comprehensive"
   includeTechnicalDetails: boolean
   includeEducationalContent: boolean
-  focusAreas?: Array<'color' | 'typography' | 'layout' | 'engagement'>
+  focusAreas?: Array<"color" | "typography" | "layout" | "engagement">
   language?: string
 }
 
@@ -141,5 +141,5 @@ export interface ReportGenerationOptions {
     appliedStrategies: string[]
   }
   customization?: ReportCustomization
-  format?: 'json' | 'pdf' | 'html'
+  format?: "json" | "pdf" | "html"
 }

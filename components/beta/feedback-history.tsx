@@ -1,23 +1,29 @@
-'use client';
+"use client"
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { createClient } from '@/lib/supabase/client';
-import { 
-  MessageSquare, 
-  Bug, 
-  Lightbulb, 
+import { useEffect, useState } from "react"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { createClient } from "@/lib/supabase/client"
+import {
+  MessageSquare,
+  Bug,
+  Lightbulb,
   Zap,
   Clock,
   CheckCircle,
   XCircle,
   AlertCircle,
-  ChevronRight
-} from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { Skeleton } from '@/components/ui/skeleton';
+  ChevronRight,
+} from "lucide-react"
+import { formatDistanceToNow } from "date-fns"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Table,
   TableBody,
@@ -25,116 +31,118 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table"
 
 interface FeedbackHistoryProps {
-  userId: string;
+  userId: string
 }
 
 interface Feedback {
-  id: string;
-  feedback_type: 'bug' | 'feature' | 'improvement' | 'general';
-  title: string;
-  description: string;
-  status: 'pending' | 'reviewed' | 'resolved' | 'wont_fix';
-  priority: 'low' | 'medium' | 'high' | 'critical';
-  rating?: number;
-  admin_notes?: string;
-  created_at: string;
-  updated_at: string;
+  id: string
+  feedback_type: "bug" | "feature" | "improvement" | "general"
+  title: string
+  description: string
+  status: "pending" | "reviewed" | "resolved" | "wont_fix"
+  priority: "low" | "medium" | "high" | "critical"
+  rating?: number
+  admin_notes?: string
+  created_at: string
+  updated_at: string
 }
 
 export function FeedbackHistory({ userId }: FeedbackHistoryProps) {
-  const [feedback, setFeedback] = useState<Feedback[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showAll, setShowAll] = useState(false);
+  const [feedback, setFeedback] = useState<Feedback[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showAll, setShowAll] = useState(false)
 
   useEffect(() => {
     const fetchFeedback = async () => {
       try {
-        const supabase = createClient();
-        
+        const supabase = createClient()
+
         const { data, error } = await supabase
-          .from('beta_feedback')
-          .select('*')
-          .eq('user_id', userId)
-          .order('created_at', { ascending: false });
+          .from("beta_feedback")
+          .select("*")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false })
 
         if (!error && data) {
-          setFeedback(data);
+          setFeedback(data)
         }
       } catch (error) {
-        console.error('Error fetching feedback:', error);
+        console.error("Error fetching feedback:", error)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchFeedback();
-  }, [userId]);
+    fetchFeedback()
+  }, [userId])
 
-  const getTypeIcon = (type: Feedback['feedback_type']) => {
+  const getTypeIcon = (type: Feedback["feedback_type"]) => {
     switch (type) {
-      case 'bug':
-        return { icon: Bug, color: 'text-red-600' };
-      case 'feature':
-        return { icon: Lightbulb, color: 'text-yellow-600' };
-      case 'improvement':
-        return { icon: Zap, color: 'text-purple-600' };
-      case 'general':
-        return { icon: MessageSquare, color: 'text-blue-600' };
+      case "bug":
+        return { icon: Bug, color: "text-red-600" }
+      case "feature":
+        return { icon: Lightbulb, color: "text-yellow-600" }
+      case "improvement":
+        return { icon: Zap, color: "text-purple-600" }
+      case "general":
+        return { icon: MessageSquare, color: "text-blue-600" }
     }
-  };
+  }
 
-  const getStatusIcon = (status: Feedback['status']) => {
+  const getStatusIcon = (status: Feedback["status"]) => {
     switch (status) {
-      case 'pending':
-        return { icon: Clock, color: 'text-yellow-600' };
-      case 'reviewed':
-        return { icon: AlertCircle, color: 'text-blue-600' };
-      case 'resolved':
-        return { icon: CheckCircle, color: 'text-green-600' };
-      case 'wont_fix':
-        return { icon: XCircle, color: 'text-gray-600' };
+      case "pending":
+        return { icon: Clock, color: "text-yellow-600" }
+      case "reviewed":
+        return { icon: AlertCircle, color: "text-blue-600" }
+      case "resolved":
+        return { icon: CheckCircle, color: "text-green-600" }
+      case "wont_fix":
+        return { icon: XCircle, color: "text-gray-600" }
     }
-  };
+  }
 
-  const getStatusBadge = (status: Feedback['status']) => {
+  const getStatusBadge = (status: Feedback["status"]) => {
     const variants = {
-      pending: 'secondary',
-      reviewed: 'outline',
-      resolved: 'default',
-      wont_fix: 'destructive',
-    } as const;
+      pending: "secondary",
+      reviewed: "outline",
+      resolved: "default",
+      wont_fix: "destructive",
+    } as const
 
     return (
       <Badge variant={variants[status]} className="text-xs">
-        {status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+        {status.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
       </Badge>
-    );
-  };
+    )
+  }
 
-  const getPriorityBadge = (priority: Feedback['priority']) => {
+  const getPriorityBadge = (priority: Feedback["priority"]) => {
     const colors = {
-      low: 'text-gray-600 bg-gray-100',
-      medium: 'text-yellow-600 bg-yellow-100',
-      high: 'text-orange-600 bg-orange-100',
-      critical: 'text-red-600 bg-red-100',
-    };
+      low: "text-gray-600 bg-gray-100",
+      medium: "text-yellow-600 bg-yellow-100",
+      high: "text-orange-600 bg-orange-100",
+      critical: "text-red-600 bg-red-100",
+    }
 
     return (
       <Badge variant="outline" className={`text-xs ${colors[priority]}`}>
         {priority.charAt(0).toUpperCase() + priority.slice(1)}
       </Badge>
-    );
-  };
+    )
+  }
 
   if (loading) {
     return (
       <Card>
         <CardHeader>
           <CardTitle>Feedback History</CardTitle>
-          <CardDescription>Track the status of your submitted feedback</CardDescription>
+          <CardDescription>
+            Track the status of your submitted feedback
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
@@ -144,10 +152,10 @@ export function FeedbackHistory({ userId }: FeedbackHistoryProps) {
           </div>
         </CardContent>
       </Card>
-    );
+    )
   }
 
-  const displayedFeedback = showAll ? feedback : feedback.slice(0, 5);
+  const displayedFeedback = showAll ? feedback : feedback.slice(0, 5)
 
   return (
     <Card>
@@ -155,27 +163,27 @@ export function FeedbackHistory({ userId }: FeedbackHistoryProps) {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle>Feedback History</CardTitle>
-            <CardDescription>Track the status of your submitted feedback</CardDescription>
+            <CardDescription>
+              Track the status of your submitted feedback
+            </CardDescription>
           </div>
           {feedback.length > 0 && (
-            <Badge variant="secondary">
-              {feedback.length} Total
-            </Badge>
+            <Badge variant="secondary">{feedback.length} Total</Badge>
           )}
         </div>
       </CardHeader>
       <CardContent>
         {feedback.length === 0 ? (
-          <div className="text-center py-8">
-            <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+          <div className="py-8 text-center">
+            <MessageSquare className="mx-auto mb-3 h-12 w-12 text-muted-foreground" />
             <p className="text-muted-foreground">No feedback submitted yet</p>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="mt-1 text-sm text-muted-foreground">
               Start by sharing your thoughts using the quick feedback form above
             </p>
           </div>
         ) : (
           <>
-            <div className="border rounded-lg overflow-hidden">
+            <div className="overflow-hidden rounded-lg border">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -189,9 +197,12 @@ export function FeedbackHistory({ userId }: FeedbackHistoryProps) {
                 </TableHeader>
                 <TableBody>
                   {displayedFeedback.map((item) => {
-                    const { icon: TypeIcon, color: typeColor } = getTypeIcon(item.feedback_type);
-                    const { icon: StatusIcon, color: statusColor } = getStatusIcon(item.status);
-                    
+                    const { icon: TypeIcon, color: typeColor } = getTypeIcon(
+                      item.feedback_type
+                    )
+                    const { icon: StatusIcon, color: statusColor } =
+                      getStatusIcon(item.status)
+
                     return (
                       <TableRow key={item.id}>
                         <TableCell>
@@ -199,12 +210,14 @@ export function FeedbackHistory({ userId }: FeedbackHistoryProps) {
                         </TableCell>
                         <TableCell>
                           <div className="space-y-1">
-                            <p className="font-medium text-sm line-clamp-1">{item.title}</p>
-                            <p className="text-xs text-muted-foreground line-clamp-2">
+                            <p className="line-clamp-1 text-sm font-medium">
+                              {item.title}
+                            </p>
+                            <p className="line-clamp-2 text-xs text-muted-foreground">
                               {item.description}
                             </p>
                             {item.admin_notes && (
-                              <p className="text-xs text-primary mt-1">
+                              <p className="mt-1 text-xs text-primary">
                                 Admin: {item.admin_notes}
                               </p>
                             )}
@@ -216,12 +229,12 @@ export function FeedbackHistory({ userId }: FeedbackHistoryProps) {
                             {getStatusBadge(item.status)}
                           </div>
                         </TableCell>
-                        <TableCell>
-                          {getPriorityBadge(item.priority)}
-                        </TableCell>
+                        <TableCell>{getPriorityBadge(item.priority)}</TableCell>
                         <TableCell>
                           <span className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
+                            {formatDistanceToNow(new Date(item.created_at), {
+                              addSuffix: true,
+                            })}
                           </span>
                         </TableCell>
                         <TableCell>
@@ -235,7 +248,7 @@ export function FeedbackHistory({ userId }: FeedbackHistoryProps) {
                           </Button>
                         </TableCell>
                       </TableRow>
-                    );
+                    )
                   })}
                 </TableBody>
               </Table>
@@ -248,34 +261,39 @@ export function FeedbackHistory({ userId }: FeedbackHistoryProps) {
                   size="sm"
                   onClick={() => setShowAll(!showAll)}
                 >
-                  {showAll ? 'Show Less' : `Show All (${feedback.length})`}
+                  {showAll ? "Show Less" : `Show All (${feedback.length})`}
                 </Button>
               </div>
             )}
 
             {/* Feedback Stats Summary */}
-            <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
               <div className="text-center">
                 <p className="text-2xl font-bold text-green-600">
-                  {feedback.filter(f => f.status === 'resolved').length}
+                  {feedback.filter((f) => f.status === "resolved").length}
                 </p>
                 <p className="text-xs text-muted-foreground">Resolved</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold text-blue-600">
-                  {feedback.filter(f => f.status === 'reviewed').length}
+                  {feedback.filter((f) => f.status === "reviewed").length}
                 </p>
                 <p className="text-xs text-muted-foreground">Under Review</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold text-yellow-600">
-                  {feedback.filter(f => f.status === 'pending').length}
+                  {feedback.filter((f) => f.status === "pending").length}
                 </p>
                 <p className="text-xs text-muted-foreground">Pending</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold text-primary">
-                  {Math.round((feedback.filter(f => f.status === 'resolved').length / feedback.length) * 100) || 0}%
+                  {Math.round(
+                    (feedback.filter((f) => f.status === "resolved").length /
+                      feedback.length) *
+                      100
+                  ) || 0}
+                  %
                 </p>
                 <p className="text-xs text-muted-foreground">Resolution Rate</p>
               </div>
@@ -284,5 +302,5 @@ export function FeedbackHistory({ userId }: FeedbackHistoryProps) {
         )}
       </CardContent>
     </Card>
-  );
+  )
 }

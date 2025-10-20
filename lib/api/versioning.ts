@@ -1,7 +1,7 @@
-import { NextRequest } from 'next/server'
+import { NextRequest } from "next/server"
 
-export type APIVersion = 'v1' | 'v2'
-export type VersionStrategy = 'header' | 'path' | 'both'
+export type APIVersion = "v1" | "v2"
+export type VersionStrategy = "header" | "path" | "both"
 
 interface VersionConfig {
   strategy: VersionStrategy
@@ -23,11 +23,11 @@ export class APIVersionManager {
 
   private constructor(config: Partial<VersionConfig> = {}) {
     this.config = {
-      strategy: config.strategy || 'both',
-      defaultVersion: config.defaultVersion || 'v1',
-      supportedVersions: config.supportedVersions || ['v1', 'v2'],
-      headerName: config.headerName || 'X-API-Version',
-      deprecated: config.deprecated || {}
+      strategy: config.strategy || "both",
+      defaultVersion: config.defaultVersion || "v1",
+      supportedVersions: config.supportedVersions || ["v1", "v2"],
+      headerName: config.headerName || "X-API-Version",
+      deprecated: config.deprecated || {},
     }
   }
 
@@ -48,7 +48,7 @@ export class APIVersionManager {
     let version: APIVersion | null = null
 
     // Try path-based versioning
-    if (strategy === 'path' || strategy === 'both') {
+    if (strategy === "path" || strategy === "both") {
       const pathMatch = pathname.match(/\/api\/(v\d+)\//)
       if (pathMatch && this.isValidVersion(pathMatch[1] as APIVersion)) {
         version = pathMatch[1] as APIVersion
@@ -56,7 +56,7 @@ export class APIVersionManager {
     }
 
     // Try header-based versioning
-    if (!version && (strategy === 'header' || strategy === 'both')) {
+    if (!version && (strategy === "header" || strategy === "both")) {
       const headerVersion = request.headers.get(headerName)
       if (headerVersion && this.isValidVersion(headerVersion as APIVersion)) {
         version = headerVersion as APIVersion
@@ -92,14 +92,14 @@ export class APIVersionManager {
    */
   getVersionHeaders(version: APIVersion): Record<string, string> {
     const headers: Record<string, string> = {
-      'X-API-Version': version,
+      "X-API-Version": version,
     }
 
     const deprecationInfo = this.getDeprecationInfo(version)
     if (deprecationInfo) {
-      headers['X-API-Deprecated'] = 'true'
-      headers['X-API-Sunset'] = deprecationInfo.sunsetDate.toISOString()
-      headers['X-API-Deprecation-Message'] = deprecationInfo.message
+      headers["X-API-Deprecated"] = "true"
+      headers["X-API-Sunset"] = deprecationInfo.sunsetDate.toISOString()
+      headers["X-API-Deprecation-Message"] = deprecationInfo.message
     }
 
     return headers
@@ -149,32 +149,44 @@ export interface VersionFeatures {
 export const versionFeatures: VersionFeatures = {
   v1: {
     maxFileSize: 50 * 1024 * 1024, // 50MB
-    supportedFormats: ['pdf', 'png', 'jpg', 'jpeg', 'webp', 'ppt', 'pptx'],
+    supportedFormats: ["pdf", "png", "jpg", "jpeg", "webp", "ppt", "pptx"],
     rateLimits: {
       requestsPerMinute: 60,
-      requestsPerHour: 600
-    }
+      requestsPerHour: 600,
+    },
   },
   v2: {
     maxFileSize: 100 * 1024 * 1024, // 100MB
-    supportedFormats: ['pdf', 'png', 'jpg', 'jpeg', 'webp', 'ppt', 'pptx', 'svg', 'gif'],
+    supportedFormats: [
+      "pdf",
+      "png",
+      "jpg",
+      "jpeg",
+      "webp",
+      "ppt",
+      "pptx",
+      "svg",
+      "gif",
+    ],
     rateLimits: {
       requestsPerMinute: 120,
-      requestsPerHour: 1200
+      requestsPerHour: 1200,
     },
     features: {
       batchProcessing: true,
       webhooks: true,
       advancedAnalytics: true,
-      multiModel: true
-    }
-  }
+      multiModel: true,
+    },
+  },
 }
 
 /**
  * Get features for a specific API version
  */
-export function getVersionFeatures<V extends APIVersion>(version: V): VersionFeatures[V] {
+export function getVersionFeatures<V extends APIVersion>(
+  version: V
+): VersionFeatures[V] {
   return versionFeatures[version]
 }
 
@@ -185,15 +197,15 @@ export function withVersion<T extends (...args: any[]) => any>(
   handlers: Record<APIVersion, T>
 ): (request: NextRequest, ...args: Parameters<T>) => ReturnType<T> {
   const versionManager = APIVersionManager.getInstance()
-  
+
   return (request: NextRequest, ...args: Parameters<T>): ReturnType<T> => {
     const version = versionManager.extractVersion(request)
     const handler = handlers[version]
-    
+
     if (!handler) {
       throw new Error(`No handler defined for API version ${version}`)
     }
-    
+
     return handler(request, ...args)
   }
 }

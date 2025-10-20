@@ -1,9 +1,9 @@
-'use client'
+"use client"
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
-import { useAuth } from '@/contexts/auth-context'
-import { getSocketManager } from '@/lib/websocket/client'
-import type { Notification } from '@/lib/websocket/types'
+import React, { createContext, useContext, useEffect, useState } from "react"
+import { useAuth } from "@/contexts/auth-context"
+import { getSocketManager } from "@/lib/websocket/client"
+import type { Notification } from "@/lib/websocket/types"
 
 interface WebSocketContextValue {
   isConnected: boolean
@@ -13,7 +13,9 @@ interface WebSocketContextValue {
   reconnect: () => Promise<void>
 }
 
-const WebSocketContext = createContext<WebSocketContextValue | undefined>(undefined)
+const WebSocketContext = createContext<WebSocketContextValue | undefined>(
+  undefined
+)
 
 export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth()
@@ -44,17 +46,17 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
 
     const handleError = (...args: unknown[]) => {
       const error = args[0] as string
-      console.error('WebSocket error:', error)
+      console.error("WebSocket error:", error)
       setConnectionError(error)
     }
 
     // Notification handler
     const handleNotification = (...args: unknown[]) => {
       const notification = args[0] as Notification
-      setNotifications(prev => [...prev, notification])
-      
+      setNotifications((prev) => [...prev, notification])
+
       // Auto-clear info notifications after 5 seconds
-      if (notification.type === 'info') {
+      if (notification.type === "info") {
         setTimeout(() => {
           clearNotification(notification.id)
         }, 5000)
@@ -62,30 +64,30 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Subscribe to events
-    socketManager.on('connected', handleConnected)
-    socketManager.on('disconnected', handleDisconnected)
-    socketManager.on('connection_failed', handleConnectionFailed)
-    socketManager.on('error', handleError)
-    socketManager.on('notification', handleNotification)
+    socketManager.on("connected", handleConnected)
+    socketManager.on("disconnected", handleDisconnected)
+    socketManager.on("connection_failed", handleConnectionFailed)
+    socketManager.on("error", handleError)
+    socketManager.on("notification", handleNotification)
 
     // Subscribe to user's notifications
-    socketManager.on('ready', () => {
+    socketManager.on("ready", () => {
       socketManager.subscribeToUser(user.id)
     })
 
     // Connect
-    socketManager.connect().catch(err => {
-      console.error('Failed to connect WebSocket:', err)
+    socketManager.connect().catch((err) => {
+      console.error("Failed to connect WebSocket:", err)
       setConnectionError(err.message)
     })
 
     return () => {
-      socketManager.off('connected', handleConnected)
-      socketManager.off('disconnected', handleDisconnected)
-      socketManager.off('connection_failed', handleConnectionFailed)
-      socketManager.off('error', handleError)
-      socketManager.off('notification', handleNotification)
-      
+      socketManager.off("connected", handleConnected)
+      socketManager.off("disconnected", handleDisconnected)
+      socketManager.off("connection_failed", handleConnectionFailed)
+      socketManager.off("error", handleError)
+      socketManager.off("notification", handleNotification)
+
       if (socketManager.isConnected()) {
         socketManager.unsubscribeFromUser(user.id)
         socketManager.disconnect()
@@ -94,7 +96,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   }, [user])
 
   const clearNotification = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id))
+    setNotifications((prev) => prev.filter((n) => n.id !== id))
   }
 
   const reconnect = async () => {
@@ -102,8 +104,10 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
     try {
       await socketManager.connect()
     } catch (err) {
-      console.error('Reconnection failed:', err)
-      setConnectionError(err instanceof Error ? err.message : 'Connection failed')
+      console.error("Reconnection failed:", err)
+      setConnectionError(
+        err instanceof Error ? err.message : "Connection failed"
+      )
     }
   }
 
@@ -125,7 +129,9 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
 export function useWebSocketConnection() {
   const context = useContext(WebSocketContext)
   if (!context) {
-    throw new Error('useWebSocketConnection must be used within WebSocketProvider')
+    throw new Error(
+      "useWebSocketConnection must be used within WebSocketProvider"
+    )
   }
   return context
 }

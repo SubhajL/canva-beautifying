@@ -14,7 +14,7 @@ const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
       default: "icon",
       lg: "icon-lg",
     } as const
-    
+
     return (
       <Button
         ref={ref}

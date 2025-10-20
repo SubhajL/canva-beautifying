@@ -1,36 +1,36 @@
-import { 
-  AIModel, 
-  HealthStatus, 
-  HealthMetric, 
-  HealthCheckResult, 
-  HealthMonitorConfig, 
+import {
+  AIModel,
+  HealthStatus,
+  HealthMetric,
+  HealthCheckResult,
+  HealthMonitorConfig,
   HealthChangeCallback,
   AIProviderResponse,
   EnhancementRequest,
-  DocumentAnalysis
-} from './types'
-import { BaseAIProvider } from './base-provider'
+  DocumentAnalysis,
+} from "./types"
+import { BaseAIProvider } from "./base-provider"
 
 export class ProviderHealthMonitor {
   private healthChecks: Map<AIModel, HealthCheckResult> = new Map()
   private monitoringIntervals: Map<AIModel, NodeJS.Timeout> = new Map()
   private healthChangeCallbacks: Set<HealthChangeCallback> = new Set()
   private providers: Map<AIModel, BaseAIProvider> = new Map()
-  
+
   private readonly defaultConfig: HealthMonitorConfig = {
     checkInterval: 30000, // 30 seconds
     healthyThreshold: 2000, // 2 seconds
     degradedThreshold: 5000, // 5 seconds
     failureThreshold: 3, // 3 consecutive failures
     metricsWindowSize: 20, // Keep last 20 metrics
-    errorRateThreshold: 0.1 // 10% error rate
+    errorRateThreshold: 0.1, // 10% error rate
   }
-  
+
   private readonly healthCheckPrompts: Record<AIModel, string> = {
-    'gemini-2.0-flash': "Respond with 'OK' if operational",
-    'gpt-4o-mini': "Reply 'OK' to confirm availability",
-    'claude-3.5-sonnet': "Say 'OK' if you can process this",
-    'claude-4-sonnet': "Reply 'OK' to confirm readiness"
+    "gemini-2.0-flash": "Respond with 'OK' if operational",
+    "gpt-4o-mini": "Reply 'OK' to confirm availability",
+    "claude-3.5-sonnet": "Say 'OK' if you can process this",
+    "claude-4-sonnet": "Reply 'OK' to confirm readiness",
   }
 
   constructor(
@@ -46,23 +46,24 @@ export class ProviderHealthMonitor {
     this.providers.forEach((provider, model) => {
       this.healthChecks.set(model, {
         provider: model,
-        status: 'healthy',
+        status: "healthy",
         responseTime: 0,
         lastChecked: new Date(),
         errorRate: 0,
         averageLatency: 0,
         recentMetrics: [],
-        consecutiveFailures: 0
+        consecutiveFailures: 0,
       })
     })
   }
 
   async startMonitoring(interval?: number): Promise<void> {
-    const checkInterval = interval || this.config.checkInterval || this.defaultConfig.checkInterval
-    
+    const checkInterval =
+      interval || this.config.checkInterval || this.defaultConfig.checkInterval
+
     // Initial health check for all providers
     await this.runHealthChecks()
-    
+
     // Set up periodic checks for each provider
     this.providers.forEach((provider, model) => {
       // Clear existing interval if any
@@ -70,7 +71,7 @@ export class ProviderHealthMonitor {
       if (existingInterval) {
         clearInterval(existingInterval)
       }
-      
+
       // Set new interval
       const intervalId = setInterval(
         () => this.checkProviderHealth(model),
@@ -89,7 +90,7 @@ export class ProviderHealthMonitor {
   }
 
   private async runHealthChecks(): Promise<void> {
-    const checks = Array.from(this.providers.keys()).map(model => 
+    const checks = Array.from(this.providers.keys()).map((model) =>
       this.checkProviderHealth(model)
     )
     await Promise.allSettled(checks)
@@ -98,7 +99,7 @@ export class ProviderHealthMonitor {
   async checkProviderHealth(model: AIModel): Promise<void> {
     const startTime = Date.now()
     const provider = this.providers.get(model)
-    
+
     if (!provider) {
       console.warn(`Provider not found for model: ${model}`)
       return
@@ -106,18 +107,18 @@ export class ProviderHealthMonitor {
 
     let success = false
     let error: string | undefined
-    
+
     try {
       const prompt = this.getHealthCheckPrompt(model)
       const response = await this.executeHealthCheck(model, prompt)
-      
+
       if (response.success && this.validateHealthResponse(response, model)) {
         success = true
       } else {
-        error = response.error || 'Invalid health check response'
+        error = response.error || "Invalid health check response"
       }
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Unknown error'
+      error = err instanceof Error ? err.message : "Unknown error"
     }
 
     const responseTime = Date.now() - startTime
@@ -125,7 +126,7 @@ export class ProviderHealthMonitor {
       timestamp: Date.now(),
       responseTime,
       success,
-      error
+      error,
     })
   }
 
@@ -134,7 +135,7 @@ export class ProviderHealthMonitor {
   }
 
   private async executeHealthCheck(
-    model: AIModel, 
+    model: AIModel,
     prompt: string
   ): Promise<AIProviderResponse> {
     const provider = this.providers.get(model)
@@ -144,12 +145,12 @@ export class ProviderHealthMonitor {
 
     // Create a minimal health check request
     const healthCheckRequest: EnhancementRequest = {
-      documentUrl: 'health-check',
-      documentType: 'worksheet',
-      userTier: 'free',
+      documentUrl: "health-check",
+      documentType: "worksheet",
+      userTier: "free",
       preferences: {
-        style: 'modern'
-      }
+        style: "modern",
+      },
     }
 
     // For health check, we'll use a simple document analysis with a tiny prompt
@@ -160,9 +161,14 @@ export class ProviderHealthMonitor {
         layout: { score: 50, issues: [], suggestions: [] },
         colors: { score: 50, palette: [], issues: [], suggestions: [] },
         typography: { score: 50, fonts: [], issues: [], suggestions: [] },
-        engagement: { score: 50, readability: 50, visualAppeal: 50, suggestions: [] },
+        engagement: {
+          score: 50,
+          readability: 50,
+          visualAppeal: 50,
+          suggestions: [],
+        },
         overallScore: 50,
-        priority: 'low'
+        priority: "low",
       }
 
       // Override the enhancement request with our health check prompt
@@ -171,33 +177,39 @@ export class ProviderHealthMonitor {
         preferences: {
           ...healthCheckRequest.preferences,
           // Inject our health check prompt into preferences to test connectivity
-          style: 'modern' as const
-        }
+          style: "modern" as const,
+        },
       }
 
       // Use generateEnhancementPrompt as it's simpler and faster than analyzeDocument
-      const response = await provider.generateEnhancementPrompt(minimalAnalysis, healthRequest)
-      
+      const response = await provider.generateEnhancementPrompt(
+        minimalAnalysis,
+        healthRequest
+      )
+
       // Convert the response to indicate health
       return {
         success: response.success,
-        data: response.success ? 'OK' : undefined,
+        data: response.success ? "OK" : undefined,
         error: response.error,
-        usage: response.usage
+        usage: response.usage,
       }
     } catch (error) {
       throw error
     }
   }
 
-  private validateHealthResponse(response: AIProviderResponse, model: AIModel): boolean {
-    if (!response.data || typeof response.data !== 'string') {
+  private validateHealthResponse(
+    response: AIProviderResponse,
+    model: AIModel
+  ): boolean {
+    if (!response.data || typeof response.data !== "string") {
       return false
     }
-    
+
     // Check for expected response
     const normalizedResponse = response.data.toLowerCase().trim()
-    return normalizedResponse.includes('ok') || normalizedResponse === 'ok'
+    return normalizedResponse.includes("ok") || normalizedResponse === "ok"
   }
 
   private updateHealthMetrics(model: AIModel, metric: HealthMetric): void {
@@ -206,22 +218,23 @@ export class ProviderHealthMonitor {
 
     // Add new metric
     const metrics = [...currentHealth.recentMetrics, metric]
-    
+
     // Keep only recent metrics within window size
-    const windowSize = this.config.metricsWindowSize || this.defaultConfig.metricsWindowSize
+    const windowSize =
+      this.config.metricsWindowSize || this.defaultConfig.metricsWindowSize
     if (metrics.length > windowSize) {
       metrics.splice(0, metrics.length - windowSize)
     }
 
     // Update consecutive failures
-    const consecutiveFailures = metric.success 
-      ? 0 
+    const consecutiveFailures = metric.success
+      ? 0
       : currentHealth.consecutiveFailures + 1
 
     // Calculate metrics
     const errorRate = this.calculateErrorRate(metrics)
     const averageLatency = this.calculateAverageLatency(metrics)
-    
+
     // Determine health status
     const oldStatus = currentHealth.status
     const newStatus = this.calculateHealthStatus(
@@ -240,7 +253,7 @@ export class ProviderHealthMonitor {
       errorRate,
       averageLatency,
       recentMetrics: metrics,
-      consecutiveFailures
+      consecutiveFailures,
     }
 
     this.healthChecks.set(model, updatedHealth)
@@ -253,15 +266,18 @@ export class ProviderHealthMonitor {
 
   private calculateErrorRate(metrics: HealthMetric[]): number {
     if (metrics.length === 0) return 0
-    const failures = metrics.filter(m => !m.success).length
+    const failures = metrics.filter((m) => !m.success).length
     return failures / metrics.length
   }
 
   private calculateAverageLatency(metrics: HealthMetric[]): number {
-    const successfulMetrics = metrics.filter(m => m.success)
+    const successfulMetrics = metrics.filter((m) => m.success)
     if (successfulMetrics.length === 0) return 0
-    
-    const totalLatency = successfulMetrics.reduce((sum, m) => sum + m.responseTime, 0)
+
+    const totalLatency = successfulMetrics.reduce(
+      (sum, m) => sum + m.responseTime,
+      0
+    )
     return totalLatency / successfulMetrics.length
   }
 
@@ -274,30 +290,47 @@ export class ProviderHealthMonitor {
     const config = this.config
 
     // Check for unhealthy conditions
-    if (!success && consecutiveFailures >= (config.failureThreshold || this.defaultConfig.failureThreshold)) {
-      return 'unhealthy'
+    if (
+      !success &&
+      consecutiveFailures >=
+        (config.failureThreshold || this.defaultConfig.failureThreshold)
+    ) {
+      return "unhealthy"
     }
-    
-    if (errorRate > (config.errorRateThreshold || this.defaultConfig.errorRateThreshold)) {
-      return 'unhealthy'
+
+    if (
+      errorRate >
+      (config.errorRateThreshold || this.defaultConfig.errorRateThreshold)
+    ) {
+      return "unhealthy"
     }
 
     // Check for degraded conditions
-    if (responseTime > (config.degradedThreshold || this.defaultConfig.degradedThreshold)) {
-      return 'degraded'
+    if (
+      responseTime >
+      (config.degradedThreshold || this.defaultConfig.degradedThreshold)
+    ) {
+      return "degraded"
     }
-    
-    if (errorRate > (config.errorRateThreshold || this.defaultConfig.errorRateThreshold) * 0.5) {
-      return 'degraded'
+
+    if (
+      errorRate >
+      (config.errorRateThreshold || this.defaultConfig.errorRateThreshold) * 0.5
+    ) {
+      return "degraded"
     }
 
     // Check for healthy conditions
-    if (success && responseTime <= (config.healthyThreshold || this.defaultConfig.healthyThreshold)) {
-      return 'healthy'
+    if (
+      success &&
+      responseTime <=
+        (config.healthyThreshold || this.defaultConfig.healthyThreshold)
+    ) {
+      return "healthy"
     }
 
     // Default to degraded if in between thresholds
-    return 'degraded'
+    return "degraded"
   }
 
   // Stop monitoring without waiting for intervals
@@ -317,18 +350,22 @@ export class ProviderHealthMonitor {
 
   isProviderHealthy(model: AIModel): boolean {
     const health = this.healthChecks.get(model)
-    return health?.status === 'healthy'
+    return health?.status === "healthy"
   }
 
   calculateHealthScore(metrics: HealthMetric[]): number {
     if (metrics.length === 0) return 0
 
-    const successRate = metrics.filter(m => m.success).length / metrics.length
+    const successRate = metrics.filter((m) => m.success).length / metrics.length
     const avgLatency = this.calculateAverageLatency(metrics)
-    const normalizedLatency = Math.min(avgLatency / (this.config.degradedThreshold || this.defaultConfig.degradedThreshold), 1)
-    
+    const normalizedLatency = Math.min(
+      avgLatency /
+        (this.config.degradedThreshold || this.defaultConfig.degradedThreshold),
+      1
+    )
+
     // Score = 70% success rate + 30% latency performance
-    const score = (successRate * 0.7) + ((1 - normalizedLatency) * 0.3)
+    const score = successRate * 0.7 + (1 - normalizedLatency) * 0.3
     return Math.round(score * 100)
   }
 
@@ -338,9 +375,9 @@ export class ProviderHealthMonitor {
 
     this.healthChecks.forEach((health, model) => {
       const filteredMetrics = health.recentMetrics.filter(
-        metric => now - metric.timestamp < maxAge
+        (metric) => now - metric.timestamp < maxAge
       )
-      
+
       if (filteredMetrics.length !== health.recentMetrics.length) {
         health.recentMetrics = filteredMetrics
         this.healthChecks.set(model, health)
@@ -362,11 +399,11 @@ export class ProviderHealthMonitor {
     newStatus: HealthStatus,
     result: HealthCheckResult
   ): void {
-    this.healthChangeCallbacks.forEach(callback => {
+    this.healthChangeCallbacks.forEach((callback) => {
       try {
         callback(model, oldStatus, newStatus, result)
       } catch (error) {
-        console.error('Error in health change callback:', error)
+        console.error("Error in health change callback:", error)
       }
     })
   }

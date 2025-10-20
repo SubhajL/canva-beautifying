@@ -11,18 +11,22 @@ export interface EnhancementCompleteEmailData {
   appUrl: string
 }
 
-export const enhancementCompleteEmailTemplate = (data: EnhancementCompleteEmailData): { subject: string; html: string } => {
+export const enhancementCompleteEmailTemplate = (
+  data: EnhancementCompleteEmailData
+): { subject: string; html: string } => {
   const {
-    userName = 'there',
+    userName = "there",
     documentName,
     enhancementId,
     improvements,
     processingTime,
     downloadUrl,
-    appUrl
+    appUrl,
   } = data
 
-  const improvementPercentage = Math.round(((improvements.after - improvements.before) / improvements.before) * 100)
+  const improvementPercentage = Math.round(
+    ((improvements.after - improvements.before) / improvements.before) * 100
+  )
 
   const subject = `✨ Your enhanced document is ready!`
 

@@ -5,15 +5,17 @@ This system automatically captures and organizes Claude conversations by monitor
 ## Setup
 
 1. **Install dependencies:**
+
    ```bash
    brew install fswatch jq
    ```
 
 2. **Start monitoring:**
+
    ```bash
    # Basic start
    ./.claude/conversation-monitor.sh
-   
+
    # With restart handling
    ./.claude/start-monitor.sh
    ```
@@ -21,10 +23,12 @@ This system automatically captures and organizes Claude conversations by monitor
 ## How It Works
 
 1. **Instance Detection**: The system identifies conversations based on:
+
    - `[Instance Name]` tags at the start of conversations
    - Context file references (e.g., "Please read context file: /path/to/SERVICE.md")
 
 2. **File Mapping**: Conversations are saved to specific markdown files based on the detected instance:
+
    - Main Instance → `docs/MAIN_INSTANCE.md`
    - AI Service → `docs/AI_SERVICE.md`
    - Enhancement Service → `docs/ENHANCE_SERVICE.md`
@@ -45,11 +49,13 @@ Start conversations with proper identification:
 ```
 
 Or reference a context file:
+
 ```
 Please read the context file: /path/to/AI_SERVICE.md
 ```
 
 The system will automatically:
+
 - Detect the conversation instance
 - Append the conversation to the appropriate markdown file
 - Track processing state to avoid duplicates

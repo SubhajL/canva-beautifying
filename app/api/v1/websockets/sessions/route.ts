@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { checkAuthentication } from '@/lib/api/middleware'
-import { createResponse } from '@/lib/api/response'
-import { sessionStore } from '@/lib/redis/session-store'
-import { getWebSocketServer } from '@/lib/websocket/server'
+import { NextRequest, NextResponse } from "next/server"
+import { checkAuthentication } from "@/lib/api/middleware"
+import { createResponse } from "@/lib/api/response"
+import { sessionStore } from "@/lib/redis/session-store"
+import { getWebSocketServer } from "@/lib/websocket/server"
 
 // GET /api/v1/websockets/sessions - List all sessions or sessions for a user
 export async function GET(request: NextRequest) {
@@ -11,24 +11,23 @@ export async function GET(request: NextRequest) {
     const authResult = await checkAuthentication(request)
     if (!authResult.authenticated) {
       return NextResponse.json(
-        createResponse(null, 'Authentication required'),
+        createResponse(null, "Authentication required"),
         { status: 401 }
       )
     }
 
     const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('userId')
-    const includeStats = searchParams.get('includeStats') === 'true'
+    const userId = searchParams.get("userId")
+    const includeStats = searchParams.get("includeStats") === "true"
 
     // Check if requesting sessions for another user (admin only)
     if (userId && userId !== authResult.userId) {
       // Check if user is admin
-      const isAdmin = authResult.user?.user_metadata?.role === 'admin'
+      const isAdmin = authResult.user?.user_metadata?.role === "admin"
       if (!isAdmin) {
-        return NextResponse.json(
-          createResponse(null, 'Unauthorized'),
-          { status: 403 }
-        )
+        return NextResponse.json(createResponse(null, "Unauthorized"), {
+          status: 403,
+        })
       }
     }
 
@@ -39,20 +38,23 @@ export async function GET(request: NextRequest) {
         createResponse({
           userId,
           sessions,
-          count: sessions.length
+          count: sessions.length,
         })
       )
     }
 
     // Get all session counts
     const sessionCounts = await sessionStore.getSessionCounts()
-    const totalSessions = Object.values(sessionCounts).reduce((a, b) => a + b, 0)
+    const totalSessions = Object.values(sessionCounts).reduce(
+      (a, b) => a + b,
+      0
+    )
     const totalUsers = Object.keys(sessionCounts).length
 
     const response: any = {
       totalSessions,
       totalUsers,
-      sessionCounts
+      sessionCounts,
     }
 
     // Include detailed stats if requested
@@ -60,15 +62,15 @@ export async function GET(request: NextRequest) {
       const wsServer = getWebSocketServer()
       response.serverStats = {
         connectedClients: wsServer.getConnectedUsersCount(),
-        rooms: wsServer.getRoomsInfo()
+        rooms: wsServer.getRoomsInfo(),
       }
     }
 
     return NextResponse.json(createResponse(response))
   } catch (error) {
-    console.error('Failed to get sessions:', error)
+    console.error("Failed to get sessions:", error)
     return NextResponse.json(
-      createResponse(null, 'Failed to retrieve sessions'),
+      createResponse(null, "Failed to retrieve sessions"),
       { status: 500 }
     )
   }

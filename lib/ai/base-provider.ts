@@ -1,10 +1,10 @@
-import { 
-  AIModel, 
-  AIModelConfig, 
-  DocumentAnalysis, 
-  EnhancementRequest, 
-  AIProviderResponse 
-} from './types'
+import {
+  AIModel,
+  AIModelConfig,
+  DocumentAnalysis,
+  EnhancementRequest,
+  AIProviderResponse,
+} from "./types"
 
 export abstract class BaseAIProvider {
   protected config: AIModelConfig
@@ -18,7 +18,7 @@ export abstract class BaseAIProvider {
   abstract get model(): AIModel
 
   abstract analyzeDocument(
-    imageUrl: string, 
+    imageUrl: string,
     request: EnhancementRequest
   ): Promise<AIProviderResponse<DocumentAnalysis>>
 
@@ -39,8 +39,8 @@ export abstract class BaseAIProvider {
       }
 
       const delay = this.retryDelay * Math.pow(2, attempt - 1)
-      await new Promise(resolve => setTimeout(resolve, delay))
-      
+      await new Promise((resolve) => setTimeout(resolve, delay))
+
       return this.retryWithBackoff(operation, attempt + 1)
     }
   }
@@ -55,7 +55,7 @@ export abstract class BaseAIProvider {
 
   protected buildAnalysisPrompt(request: EnhancementRequest): string {
     const { documentType, preferences } = request
-    
+
     return `Analyze this ${documentType} document and provide a detailed assessment:
 
 1. Layout Analysis:
@@ -78,7 +78,7 @@ export abstract class BaseAIProvider {
 4. Engagement Analysis:
    - Assess visual appeal and interest
    - Evaluate readability score
-   - Consider target audience: ${preferences?.targetAudience || 'general'}
+   - Consider target audience: ${preferences?.targetAudience || "general"}
    - Score from 0-100
 
 Provide specific issues and actionable suggestions for each category.
@@ -90,15 +90,15 @@ Format the response as a JSON object matching the DocumentAnalysis interface.`
     request: EnhancementRequest
   ): string {
     const { preferences } = request
-    
+
     return `Based on the following document analysis, generate specific enhancement recommendations:
 
 Analysis Results:
 ${JSON.stringify(analysis, null, 2)}
 
-Style Preference: ${preferences?.style || 'modern'}
-Color Scheme: ${preferences?.colorScheme || 'vibrant'}
-Target Audience: ${preferences?.targetAudience || 'general'}
+Style Preference: ${preferences?.style || "modern"}
+Color Scheme: ${preferences?.colorScheme || "vibrant"}
+Target Audience: ${preferences?.targetAudience || "general"}
 
 Generate a detailed prompt for enhancing this document that addresses:
 1. All identified issues in the analysis
@@ -117,10 +117,10 @@ The prompt should be suitable for image generation AI models.`
 
   protected handleError<T = unknown>(error: unknown): AIProviderResponse<T> {
     console.error(`Error in ${this.model} provider:`, error)
-    
+
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred',
+      error: error instanceof Error ? error.message : "Unknown error occurred",
     }
   }
 }

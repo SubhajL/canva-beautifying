@@ -33,12 +33,12 @@ export interface EmailPreferences {
   updatedAt: Date
 }
 
-export type EmailTemplateType = 
-  | 'enhancement-completed'
-  | 'welcome'
-  | 'password-reset'
-  | 'subscription-created'
-  | 'subscription-cancelled'
-  | 'subscription-renewed'
-  | 'usage-limit-warning'
-  | 'weekly-digest'
+export type EmailTemplateType =
+  | "enhancement-completed"
+  | "welcome"
+  | "password-reset"
+  | "subscription-created"
+  | "subscription-cancelled"
+  | "subscription-renewed"
+  | "usage-limit-warning"
+  | "weekly-digest"

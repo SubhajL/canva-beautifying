@@ -31,19 +31,23 @@ This is an AI-powered document enhancement platform that analyzes and improves v
 ### Key Architectural Patterns
 
 #### Multi-Model AI Strategy
+
 The AI integration uses a sophisticated abstraction layer:
+
 - `BaseAIProvider` abstract class defines the interface
 - Model-specific providers inherit and implement (Gemini, OpenAI, Claude)
 - `AIService` orchestrates model selection with automatic fallbacks
 - `ModelSelector` routes based on user tier, document complexity, and failures
 
 Model selection by tier:
+
 - Free: Gemini 2.0 Flash only
-- Basic: Gemini + GPT-4o Mini  
+- Basic: Gemini + GPT-4o Mini
 - Pro: All models with intelligent selection
 - Premium: Ensemble approach
 
 #### File Storage Pattern
+
 ```
 R2 Bucket Structure:
 original/{userId}/{documentId}    # User uploads
@@ -53,18 +57,21 @@ assets/{enhancementId}/           # Generated assets
 ```
 
 #### Database Design
+
 - Custom PostgreSQL types for type safety (subscription_tier_enum, etc.)
 - Row Level Security (RLS) for user data isolation
 - Trigger-based user creation from Supabase auth
 - AI usage tracking table for cost management
 
 #### Authentication Flow
+
 - Supabase handles auth with Google/Microsoft OAuth
-- Middleware protects app routes (/(app)/*)
+- Middleware protects app routes (/(app)/\*)
 - Auth context provides hooks for components
 - Automatic user record creation on first sign-in
 
 #### Real-time Updates (WebSocket)
+
 - Socket.io server runs on port 5001 (configurable)
 - Authentication via Supabase JWT tokens
 - Room-based updates for document progress
@@ -72,6 +79,7 @@ assets/{enhancementId}/           # Generated assets
 - Progress tracking for enhancement pipeline stages
 
 #### API Architecture (v1)
+
 - RESTful endpoints under `/api/v1/enhance`
 - Bearer token authentication (Supabase JWT)
 - Rate limiting: 100 req/min globally, per-tier limits for enhancements
@@ -95,6 +103,7 @@ assets/{enhancementId}/           # Generated assets
 ### Current Implementation Status
 
 **Completed:**
+
 - Project setup (Next.js, Tailwind, Shadcn/ui)
 - Database schema and migrations
 - R2 storage integration
@@ -108,11 +117,13 @@ assets/{enhancementId}/           # Generated assets
 - RESTful API v1 endpoints with authentication and rate limiting
 
 **In Progress:**
+
 - Document analysis engine
 - Enhancement generation
 - Export functionality
 
 **Not Started:**
+
 - Payment integration
 - Subscription management
 - Usage tracking and limits
@@ -120,6 +131,7 @@ assets/{enhancementId}/           # Generated assets
 ### Important Context
 
 The project follows a phased approach defined in the PRD:
+
 - Phase 1 (MVP): Basic enhancement capability
 - Phase 2: Batch processing and optimizations
 - Phase 3: Advanced AI features
@@ -130,17 +142,20 @@ Development is tracked using TaskMaster AI with 40 defined tasks. Current focus 
 ## Testing Principles
 
 ### Core Testing Philosophy
+
 1. **Use real services for integration tests** - Always run actual Redis, PostgreSQL, and other services during tests. Never mock external services as it doesn't reflect production behavior.
 2. **Tests should mirror production behavior** - Write tests that exercise the actual code paths and service interactions that occur in production.
 3. **Prefer integration tests over unit tests** - Focus on testing the integrated behavior of components working together rather than isolated unit tests with mocks.
 
 ### Test Environment Setup
+
 - Redis should be running locally on port 6379 for tests
 - PostgreSQL/Supabase should be accessible for database tests
 - WebSocket server should run on its configured port
 - Use `.env.test` for test-specific configuration
 
 ### What NOT to Mock
+
 - Redis connections
 - Database connections
 - External API calls (use test endpoints or sandbox environments)
@@ -148,6 +163,7 @@ Development is tracked using TaskMaster AI with 40 defined tasks. Current focus 
 - WebSocket connections
 
 ### What CAN be Mocked
+
 - Time-based operations (use Jest fake timers)
 - Random number generation
 - External services that don't have test endpoints (but prefer real services when possible)
@@ -155,12 +171,15 @@ Development is tracked using TaskMaster AI with 40 defined tasks. Current focus 
 ## Visual Development
 
 ### Design Principles
+
 - Comprehensive design checklist in `/docs/COMPREHENSIVE_UX_UI_GUIDELINES.md`
 - Brand style guide in `/docs/style-guide.md`
 - When making visual (front-end, UI/UX) changes, always refer to these files for guidance
 
 ### Quick Visual Check
+
 IMMEDIATELY after implementing any front-end change:
+
 1. **Identify what changed** - Review the modified components/pages
 2. **Navigate to affected pages** - Use `mcp__playwright__browser_navigate` to visit each changed view
 3. **Verify design compliance** - Compare against `/docs/COMPREHENSIVE_UX_UI_GUIDELINES.md` and `/context/style-guide.md`
@@ -172,58 +191,62 @@ IMMEDIATELY after implementing any front-end change:
 This verification ensures changes meet design standards and user requirements.
 
 ### Comprehensive Design Review
+
 Invoke the `@agent-design-review` subagent for thorough design validation when:
+
 - Completing significant UI/UX features
 - Before finalizing PRs with visual changes
 - Needing comprehensive accessibility and responsiveness testing
 
 ## Task Master AI Instructions
+
 **Import Task Master's development workflow commands and guidelines, treat as if import is in the main CLAUDE.md file.**
 @./.taskmaster/CLAUDE.md
+
 - Start Claude with a descriptive first message that will show in /resume
-(
-    echo "[$INSTANCE_NAME] $FIRST_LINE"
-    echo "Context: $CONTEXT_FILE"
-    sleep 2
-) | claude\
-\
-Above used to work for piping, but then give error:\
-subhajlimanond@Subhajs-MacBook-Pro munbon2-backend % .vscode/c
-laude-scripts/start-claude.sh /Users/subhajlimanond/dev/munbon
-2-backend/docs/CLAUDE_INSTANCES_MASTER.md 'Claude Main'
-Error: Raw mode is not supported on the current process.stdin, which Ink uses as input stream by default.
-Read about how to prevent this error on https://github.com/vadimdemedes/ink/#israwmodesupported
-    at handleSetRawMode (file:///opt/homebrew/lib/node_modules/@anthropic-ai/claude-code/cli.js:838:3853)
-    at file:///opt/homebrew/lib/node_modules/@anthropic-ai/claude-code/cli.js:847:259
-    at vY (file:///opt/homebrew/lib/node_modules/@anthropic-ai/claude-code/cli.js:332:21536)
-    at AK (file:///opt/homebrew/lib/node_modules/@anthropic-ai/claude-code/cli.js:332:41119)
-    at file:///opt/homebrew/lib/node_modules/@anthropic-ai/claude-code/cli.js:332:39310
-    at YI0 (file:///opt/homebrew/lib/node_modules/@anthropic-ai/claude-code/cli.js:326:35903)
-    at Immediate.tY0 [as _onImmediate] (file:///opt/homebrew/lib/node_modules/@anthropic-ai/claude-code/cli.js:326:36322)
-    at process.processImmediate (node:internal/timers:505:21)
+  (
+  echo "[$INSTANCE_NAME] $FIRST_LINE"
+  echo "Context: $CONTEXT_FILE"
+  sleep 2
+  ) | claude\
+  \
+  Above used to work for piping, but then give error:\
+  subhajlimanond@Subhajs-MacBook-Pro munbon2-backend % .vscode/c
+  laude-scripts/start-claude.sh /Users/subhajlimanond/dev/munbon
+  2-backend/docs/CLAUDE_INSTANCES_MASTER.md 'Claude Main'
+  Error: Raw mode is not supported on the current process.stdin, which Ink uses as input stream by default.
+  Read about how to prevent this error on https://github.com/vadimdemedes/ink/#israwmodesupported
+  at handleSetRawMode (file:///opt/homebrew/lib/node_modules/@anthropic-ai/claude-code/cli.js:838:3853)
+  at file:///opt/homebrew/lib/node_modules/@anthropic-ai/claude-code/cli.js:847:259
+  at vY (file:///opt/homebrew/lib/node_modules/@anthropic-ai/claude-code/cli.js:332:21536)
+  at AK (file:///opt/homebrew/lib/node_modules/@anthropic-ai/claude-code/cli.js:332:41119)
+  at file:///opt/homebrew/lib/node_modules/@anthropic-ai/claude-code/cli.js:332:39310
+  at YI0 (file:///opt/homebrew/lib/node_modules/@anthropic-ai/claude-code/cli.js:326:35903)
+  at Immediate.tY0 [as _onImmediate] (file:///opt/homebrew/lib/node_modules/@anthropic-ai/claude-code/cli.js:326:36322)
+  at process.processImmediate (node:internal/timers:505:21)
 
   ERROR Raw mode is not supported on the current
-       process.stdin, which Ink uses as input stream by
-       default.
-       Read about how to prevent this error on https://github
-       .com/vadimdemedes/ink/#israwmodesupported
+  process.stdin, which Ink uses as input stream by
+  default.
+  Read about how to prevent this error on https://github
+  .com/vadimdemedes/ink/#israwmodesupported
 
- - Read about how to prevent this error on 
-   https://github.com/vadimdemedes/ink/#israwmodesupported
- -handleSetRaw (file:///opt/homebrew/lib/node_modules/@anthro
-  ode         pic-ai/claude-code/cli.js:838:3853)
- - (file:///opt/homebrew/lib/node_modules/@anthropic-ai/claud
+- Read about how to prevent this error on
+  https://github.com/vadimdemedes/ink/#israwmodesupported
+  -handleSetRaw (file:///opt/homebrew/lib/node_modules/@anthro
+  ode pic-ai/claude-code/cli.js:838:3853)
+- (file:///opt/homebrew/lib/node_modules/@anthropic-ai/claud
   e-code/cli.js:847:259)
- -vY (file:///opt/homebrew/lib/node_modules/@anthropic-ai/cla
-    ude-code/cli.js:332:21536)
- -AK (file:///opt/homebrew/lib/node_modules/@anthropic-ai/cla
-    ude-code/cli.js:332:41119)
- - (file:///opt/homebrew/lib/node_modules/@anthropic-ai/claud
+  -vY (file:///opt/homebrew/lib/node_modules/@anthropic-ai/cla
+  ude-code/cli.js:332:21536)
+  -AK (file:///opt/homebrew/lib/node_modules/@anthropic-ai/cla
+  ude-code/cli.js:332:41119)
+- (file:///opt/homebrew/lib/node_modules/@anthropic-ai/claud
   e-code/cli.js:332:39310)
- -YI0 (file:///opt/homebrew/lib/node_modules/@anthropic-ai/cl
-     aude-code/cli.js:326:35903)
- -Immediate.t (file:///opt/homebrew/lib/node_modules/@anthrop
-  Y0         ic-ai/claude-code/cli.js:326:36322)
- - process.processImmediate (node:internal/timers:505:21)\
-\
-ULtrathink to analyze.
+  -YI0 (file:///opt/homebrew/lib/node_modules/@anthropic-ai/cl
+  aude-code/cli.js:326:35903)
+  -Immediate.t (file:///opt/homebrew/lib/node_modules/@anthrop
+  Y0 ic-ai/claude-code/cli.js:326:36322)
+- process.processImmediate (node:internal/timers:505:21)\
+  \
+  ULtrathink to analyze.

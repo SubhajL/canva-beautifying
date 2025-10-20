@@ -19,19 +19,21 @@ export function useFileUpload() {
 
   const uploadFile = useCallback(async (file: File) => {
     const uploadId = `${file.name}-${Date.now()}`
-    
-    setUploads(prev => new Map(prev).set(uploadId, {
-      file,
-      progress: 0,
-      status: "pending"
-    }))
+
+    setUploads((prev) =>
+      new Map(prev).set(uploadId, {
+        file,
+        progress: 0,
+        status: "pending",
+      })
+    )
 
     setIsUploading(true)
 
     try {
       const formData = new FormData()
       formData.append("file", file)
-      
+
       // Only include userId if user is authenticated
       if (user?.id) {
         formData.append("userId", user.id)
@@ -42,7 +44,7 @@ export function useFileUpload() {
       xhr.upload.addEventListener("progress", (event) => {
         if (event.lengthComputable) {
           const progress = Math.round((event.loaded / event.total) * 100)
-          setUploads(prev => {
+          setUploads((prev) => {
             const newMap = new Map(prev)
             const upload = newMap.get(uploadId)
             if (upload) {
@@ -62,12 +64,12 @@ export function useFileUpload() {
           }
         }
         xhr.onerror = () => reject(new Error("Network error"))
-        
+
         xhr.open("POST", "/api/upload")
         xhr.send(formData)
       })
 
-      setUploads(prev => {
+      setUploads((prev) => {
         const newMap = new Map(prev)
         const upload = newMap.get(uploadId)
         if (upload) {
@@ -77,8 +79,8 @@ export function useFileUpload() {
             status: "success",
             result: {
               key: response.key,
-              url: response.url
-            }
+              url: response.url,
+            },
           })
         }
         return newMap
@@ -86,14 +88,14 @@ export function useFileUpload() {
 
       return response
     } catch (error) {
-      setUploads(prev => {
+      setUploads((prev) => {
         const newMap = new Map(prev)
         const upload = newMap.get(uploadId)
         if (upload) {
           newMap.set(uploadId, {
             ...upload,
             status: "error",
-            error: error instanceof Error ? error.message : "Upload failed"
+            error: error instanceof Error ? error.message : "Upload failed",
           })
         }
         return newMap
@@ -104,12 +106,15 @@ export function useFileUpload() {
     }
   }, [])
 
-  const uploadFiles = useCallback(async (files: File[]) => {
-    const results = await Promise.allSettled(
-      files.map(file => uploadFile(file))
-    )
-    return results
-  }, [uploadFile])
+  const uploadFiles = useCallback(
+    async (files: File[]) => {
+      const results = await Promise.allSettled(
+        files.map((file) => uploadFile(file))
+      )
+      return results
+    },
+    [uploadFile]
+  )
 
   const clearUploads = useCallback(() => {
     setUploads(new Map())

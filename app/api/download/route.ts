@@ -6,8 +6,11 @@ export async function GET(request: NextRequest) {
   try {
     // Check authentication
     const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
+
     if (authError || !user) {
       return NextResponse.json(
         { error: "Authentication required" },
@@ -29,10 +32,7 @@ export async function GET(request: NextRequest) {
     // Verify user has access to this file
     // Check if the key contains the user's ID
     if (!key.includes(user.id)) {
-      return NextResponse.json(
-        { error: "Access denied" },
-        { status: 403 }
-      )
+      return NextResponse.json({ error: "Access denied" }, { status: 403 })
     }
 
     const url = await getDownloadUrl(key, 3600, filename || undefined)

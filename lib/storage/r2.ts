@@ -1,12 +1,12 @@
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3'
+import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3"
 
 /**
  * Custom error thrown when R2 storage is not properly configured
  */
 export class R2NotConfiguredError extends Error {
   constructor() {
-    super('R2 storage is not configured')
-    this.name = 'R2NotConfiguredError'
+    super("R2 storage is not configured")
+    this.name = "R2NotConfiguredError"
   }
 }
 
@@ -24,8 +24,7 @@ function resolveR2Config() {
     secretAccessKey:
       process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY ||
       process.env.CLOUDFLARE_SECRET_ACCESS_KEY,
-    bucketName:
-      process.env.CLOUDFLARE_R2_BUCKET_NAME || process.env.R2_BUCKET,
+    bucketName: process.env.CLOUDFLARE_R2_BUCKET_NAME || process.env.R2_BUCKET,
   }
 }
 
@@ -47,13 +46,13 @@ function isConfigured(): boolean {
  */
 const config = resolveR2Config()
 export const r2Client = new S3Client({
-  region: 'auto',
+  region: "auto",
   endpoint: config.accountId
     ? `https://${config.accountId}.r2.cloudflarestorage.com`
     : undefined,
   credentials: {
-    accessKeyId: config.accessKeyId || '',
-    secretAccessKey: config.secretAccessKey || '',
+    accessKeyId: config.accessKeyId || "",
+    secretAccessKey: config.secretAccessKey || "",
   },
 })
 
@@ -74,7 +73,9 @@ export interface R2FileResponse {
  * @throws R2NotConfiguredError if R2 credentials are not configured
  * @throws Error for other storage errors
  */
-export async function getFileFromR2(key: string): Promise<R2FileResponse | null> {
+export async function getFileFromR2(
+  key: string
+): Promise<R2FileResponse | null> {
   // Check if R2 is configured
   if (!isConfigured()) {
     throw new R2NotConfiguredError()
@@ -105,7 +106,10 @@ export async function getFileFromR2(key: string): Promise<R2FileResponse | null>
     }
   } catch (error) {
     // Handle 404/NotFound errors
-    if (error instanceof Error && (error.name === 'NoSuchKey' || error.name === 'NotFound')) {
+    if (
+      error instanceof Error &&
+      (error.name === "NoSuchKey" || error.name === "NotFound")
+    ) {
       return null
     }
 

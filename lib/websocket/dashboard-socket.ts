@@ -1,10 +1,10 @@
-import { io, Socket } from 'socket.io-client'
-import { createWebSocketHandlers } from '../store/middleware/websocket-middleware'
-import { useDashboardStore } from '../store/dashboard-store'
-import type { 
-  ClientToServerEvents, 
-  ServerToClientEvents 
-} from './socket-events'
+import { io, Socket } from "socket.io-client"
+import { createWebSocketHandlers } from "../store/middleware/websocket-middleware"
+import { useDashboardStore } from "../store/dashboard-store"
+import type {
+  ClientToServerEvents,
+  ServerToClientEvents,
+} from "./socket-events"
 
 type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>
 
@@ -28,14 +28,17 @@ class DashboardSocket {
     store.setConnecting(true)
 
     // Create socket connection
-    this.socket = io(process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'http://localhost:5001', {
-      auth: { token },
-      transports: ['websocket'],
-      reconnection: true,
-      reconnectionDelay: this.baseReconnectDelay,
-      reconnectionDelayMax: this.maxReconnectDelay,
-      reconnectionAttempts: Infinity
-    }) as TypedSocket
+    this.socket = io(
+      process.env.NEXT_PUBLIC_WEBSOCKET_URL || "http://localhost:5001",
+      {
+        auth: { token },
+        transports: ["websocket"],
+        reconnection: true,
+        reconnectionDelay: this.baseReconnectDelay,
+        reconnectionDelayMax: this.maxReconnectDelay,
+        reconnectionAttempts: Infinity,
+      }
+    ) as TypedSocket
 
     // Create and attach handlers
     this.handlers = createWebSocketHandlers(useDashboardStore)
@@ -48,30 +51,36 @@ class DashboardSocket {
     if (!this.socket || !this.handlers) return
 
     // Connection events
-    this.socket.on('connect', this.handlers.connect)
-    this.socket.on('disconnect', this.handlers.disconnect)
-    this.socket.on('connect_error', this.handlers.connect_error)
+    this.socket.on("connect", this.handlers.connect)
+    this.socket.on("disconnect", this.handlers.disconnect)
+    this.socket.on("connect_error", this.handlers.connect_error)
 
     // Document events
-    this.socket.on('document:update', this.handlers['document:update'])
-    this.socket.on('document:created', this.handlers['document:created'])
-    this.socket.on('document:deleted', this.handlers['document:deleted'])
+    this.socket.on("document:update", this.handlers["document:update"])
+    this.socket.on("document:created", this.handlers["document:created"])
+    this.socket.on("document:deleted", this.handlers["document:deleted"])
 
     // Enhancement events
-    this.socket.on('enhancement:progress', this.handlers['enhancement:progress'])
-    this.socket.on('enhancement:complete', this.handlers['enhancement:complete'])
-    this.socket.on('enhancement:failed', this.handlers['enhancement:failed'])
+    this.socket.on(
+      "enhancement:progress",
+      this.handlers["enhancement:progress"]
+    )
+    this.socket.on(
+      "enhancement:complete",
+      this.handlers["enhancement:complete"]
+    )
+    this.socket.on("enhancement:failed", this.handlers["enhancement:failed"])
 
     // User events
-    this.socket.on('user:update', this.handlers['user:update'])
-    this.socket.on('user:usage', this.handlers['user:usage'])
+    this.socket.on("user:update", this.handlers["user:update"])
+    this.socket.on("user:usage", this.handlers["user:usage"])
 
     // Optimistic update events
-    this.socket.on('optimistic:confirm', this.handlers['optimistic:confirm'])
-    this.socket.on('optimistic:reject', this.handlers['optimistic:reject'])
+    this.socket.on("optimistic:confirm", this.handlers["optimistic:confirm"])
+    this.socket.on("optimistic:reject", this.handlers["optimistic:reject"])
 
     // Custom reconnection handling
-    this.socket.io.on('reconnect', (attempt) => {
+    this.socket.io.on("reconnect", (attempt) => {
       console.log(`Reconnected after ${attempt} attempts`)
       this.syncStateAfterReconnect()
     })
@@ -79,22 +88,22 @@ class DashboardSocket {
 
   private syncStateAfterReconnect() {
     const store = useDashboardStore.getState()
-    
+
     // Re-subscribe to all channels
     const subscriptions = Array.from(store.socketState.subscriptions)
-    subscriptions.forEach(channel => {
+    subscriptions.forEach((channel) => {
       this.subscribe(channel)
     })
 
     // Request latest state for active documents
-    store.documents.forEach(doc => {
-      if (doc.status === 'processing') {
-        this.socket?.emit('enhancement:subscribe', doc.id)
+    store.documents.forEach((doc) => {
+      if (doc.status === "processing") {
+        this.socket?.emit("enhancement:subscribe", doc.id)
       }
     })
 
     // Subscribe to dashboard updates
-    this.socket?.emit('dashboard:subscribe')
+    this.socket?.emit("dashboard:subscribe")
   }
 
   disconnect() {
@@ -112,17 +121,17 @@ class DashboardSocket {
 
   subscribe(channel: string) {
     const store = useDashboardStore.getState()
-    
+
     if (this.socket?.connected) {
       // Subscribe based on channel type
-      if (channel.startsWith('document:')) {
-        const documentId = channel.split(':')[1]
-        this.socket.emit('document:subscribe', documentId)
-      } else if (channel.startsWith('enhancement:')) {
-        const documentId = channel.split(':')[1]
-        this.socket.emit('enhancement:subscribe', documentId)
-      } else if (channel === 'dashboard') {
-        this.socket.emit('dashboard:subscribe')
+      if (channel.startsWith("document:")) {
+        const documentId = channel.split(":")[1]
+        this.socket.emit("document:subscribe", documentId)
+      } else if (channel.startsWith("enhancement:")) {
+        const documentId = channel.split(":")[1]
+        this.socket.emit("enhancement:subscribe", documentId)
+      } else if (channel === "dashboard") {
+        this.socket.emit("dashboard:subscribe")
       }
     }
 
@@ -131,17 +140,17 @@ class DashboardSocket {
 
   unsubscribe(channel: string) {
     const store = useDashboardStore.getState()
-    
+
     if (this.socket?.connected) {
       // Unsubscribe based on channel type
-      if (channel.startsWith('document:')) {
-        const documentId = channel.split(':')[1]
-        this.socket.emit('document:unsubscribe', documentId)
-      } else if (channel.startsWith('enhancement:')) {
-        const documentId = channel.split(':')[1]
-        this.socket.emit('enhancement:unsubscribe', documentId)
-      } else if (channel === 'dashboard') {
-        this.socket.emit('dashboard:unsubscribe')
+      if (channel.startsWith("document:")) {
+        const documentId = channel.split(":")[1]
+        this.socket.emit("document:unsubscribe", documentId)
+      } else if (channel.startsWith("enhancement:")) {
+        const documentId = channel.split(":")[1]
+        this.socket.emit("enhancement:unsubscribe", documentId)
+      } else if (channel === "dashboard") {
+        this.socket.emit("dashboard:unsubscribe")
       }
     }
 
@@ -151,20 +160,20 @@ class DashboardSocket {
   // Enhancement operations
   startEnhancement(documentId: string, settings: any) {
     if (this.socket?.connected) {
-      this.socket.emit('enhancement:start', { documentId, settings })
+      this.socket.emit("enhancement:start", { documentId, settings })
     }
   }
 
   cancelEnhancement(documentId: string) {
     if (this.socket?.connected) {
-      this.socket.emit('enhancement:cancel', documentId)
+      this.socket.emit("enhancement:cancel", documentId)
     }
   }
 
   // User operations
   updatePreferences(preferences: any) {
     if (this.socket?.connected) {
-      this.socket.emit('user:preferences', preferences)
+      this.socket.emit("user:preferences", preferences)
     }
   }
 
@@ -181,7 +190,10 @@ class DashboardSocket {
 export const dashboardSocket = new DashboardSocket()
 
 // Export convenience functions
-export const connectDashboardSocket = (token: string) => dashboardSocket.connect(token)
+export const connectDashboardSocket = (token: string) =>
+  dashboardSocket.connect(token)
 export const disconnectDashboardSocket = () => dashboardSocket.disconnect()
-export const subscribeToDashboard = (channel: string) => dashboardSocket.subscribe(channel)
-export const unsubscribeFromDashboard = (channel: string) => dashboardSocket.unsubscribe(channel)
+export const subscribeToDashboard = (channel: string) =>
+  dashboardSocket.subscribe(channel)
+export const unsubscribeFromDashboard = (channel: string) =>
+  dashboardSocket.unsubscribe(channel)

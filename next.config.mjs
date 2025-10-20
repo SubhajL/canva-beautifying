@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
+  output: "standalone",
   eslint: {
     // During development, we'll fix these errors. For now, ignore during builds.
     ignoreDuringBuilds: false,
@@ -12,15 +12,15 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: '**',
+        protocol: "https",
+        hostname: "**",
       },
     ],
   },
   webpack: (config, { isServer }) => {
     // Suppress critical dependency warnings from third-party packages
-    config.module.exprContextCritical = false;
-    
+    config.module.exprContextCritical = false
+
     // Ignore specific warnings from Sentry and BullMQ
     config.ignoreWarnings = [
       {
@@ -35,10 +35,10 @@ const nextConfig = {
         module: /node_modules\/require-in-the-middle/,
         message: /Critical dependency/,
       },
-    ];
-    
-    return config;
-  },
-};
+    ]
 
-export default nextConfig;
+    return config
+  },
+}
+
+export default nextConfig

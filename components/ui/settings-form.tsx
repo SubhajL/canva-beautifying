@@ -9,7 +9,11 @@ interface SettingItemProps {
   children: React.ReactNode
 }
 
-const SettingItem: React.FC<SettingItemProps> = ({ label, description, children }) => {
+const SettingItem: React.FC<SettingItemProps> = ({
+  label,
+  description,
+  children,
+}) => {
   return (
     <div className="flex items-center justify-between space-x-4">
       <div className="flex-1 space-y-0.5">

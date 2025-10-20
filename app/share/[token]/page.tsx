@@ -1,11 +1,17 @@
-import { notFound } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { FileText, Calendar, TrendingUp, Download, ExternalLink } from 'lucide-react'
-import Link from 'next/link'
-import Image from 'next/image'
+import { notFound } from "next/navigation"
+import { createClient } from "@/lib/supabase/server"
+import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import {
+  FileText,
+  Calendar,
+  TrendingUp,
+  Download,
+  ExternalLink,
+} from "lucide-react"
+import Link from "next/link"
+import Image from "next/image"
 
 interface SharePageProps {
   params: Promise<{ token: string }>
@@ -17,8 +23,9 @@ export default async function SharePage({ params }: SharePageProps) {
 
   // Fetch share link details
   const { data: shareLink, error: shareLinkError } = await supabase
-    .from('share_links')
-    .select(`
+    .from("share_links")
+    .select(
+      `
       id,
       enhancement_id,
       is_public,
@@ -39,8 +46,9 @@ export default async function SharePage({ params }: SharePageProps) {
           original_url
         )
       )
-    `)
-    .eq('id', token)
+    `
+    )
+    .eq("id", token)
     .single()
 
   if (shareLinkError || !shareLink) {
@@ -50,11 +58,11 @@ export default async function SharePage({ params }: SharePageProps) {
   // Check if link is expired
   if (new Date(shareLink.expires_at) < new Date()) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <Card className="w-full max-w-md">
           <CardContent className="py-8 text-center">
-            <h2 className="text-xl font-semibold mb-2">Link Expired</h2>
-            <p className="text-muted-foreground mb-4">
+            <h2 className="mb-2 text-xl font-semibold">Link Expired</h2>
+            <p className="mb-4 text-muted-foreground">
               This share link has expired and is no longer accessible.
             </p>
             <Link href="/">
@@ -68,14 +76,17 @@ export default async function SharePage({ params }: SharePageProps) {
 
   // Check if enhancement is complete
   const enhancement = shareLink.enhancements?.[0]
-  if (!enhancement || enhancement.status !== 'completed') {
+  if (!enhancement || enhancement.status !== "completed") {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <Card className="w-full max-w-md">
           <CardContent className="py-8 text-center">
-            <h2 className="text-xl font-semibold mb-2">Enhancement Not Ready</h2>
-            <p className="text-muted-foreground mb-4">
-              This enhancement is still being processed. Please check back later.
+            <h2 className="mb-2 text-xl font-semibold">
+              Enhancement Not Ready
+            </h2>
+            <p className="mb-4 text-muted-foreground">
+              This enhancement is still being processed. Please check back
+              later.
             </p>
             <Link href="/">
               <Button>Go to Homepage</Button>
@@ -88,14 +99,18 @@ export default async function SharePage({ params }: SharePageProps) {
 
   const _document = enhancement.documents
   const improvements = enhancement.improvements || { before: 0, after: 0 }
-  const improvementPercentage = improvements.before > 0 
-    ? Math.round(((improvements.after - improvements.before) / improvements.before) * 100)
-    : 0
+  const improvementPercentage =
+    improvements.before > 0
+      ? Math.round(
+          ((improvements.after - improvements.before) / improvements.before) *
+            100
+        )
+      : 0
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b">
+      <div className="border-b bg-white">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="text-2xl font-bold text-primary">
@@ -109,8 +124,8 @@ export default async function SharePage({ params }: SharePageProps) {
       </div>
 
       {/* Content */}
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="container mx-auto max-w-6xl px-4 py-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
           {/* Preview */}
           <div>
             <Card className="overflow-hidden">
@@ -118,12 +133,14 @@ export default async function SharePage({ params }: SharePageProps) {
                 {enhancement.enhanced_url ? (
                   <Image
                     src={enhancement.enhanced_url}
-                    alt={enhancement.documents?.[0]?.name || 'Enhanced document'}
+                    alt={
+                      enhancement.documents?.[0]?.name || "Enhanced document"
+                    }
                     fill
                     className="object-contain"
                   />
                 ) : (
-                  <div className="flex items-center justify-center h-full">
+                  <div className="flex h-full items-center justify-center">
                     <FileText className="h-24 w-24 text-gray-400" />
                   </div>
                 )}
@@ -134,16 +151,22 @@ export default async function SharePage({ params }: SharePageProps) {
           {/* Details */}
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-bold mb-2">{enhancement.documents?.[0]?.name || 'Enhanced Document'}</h1>
+              <h1 className="mb-2 text-3xl font-bold">
+                {enhancement.documents?.[0]?.name || "Enhanced Document"}
+              </h1>
               <div className="flex items-center gap-4 text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <Calendar className="h-4 w-4" />
                   <span className="text-sm">
-                    Enhanced on {new Date(enhancement.completed_at).toLocaleDateString()}
+                    Enhanced on{" "}
+                    {new Date(enhancement.completed_at).toLocaleDateString()}
                   </span>
                 </div>
                 <Badge variant="secondary">
-                  {enhancement.documents?.[0]?.type.split('/').pop()?.toUpperCase() || 'DOCUMENT'}
+                  {enhancement.documents?.[0]?.type
+                    .split("/")
+                    .pop()
+                    ?.toUpperCase() || "DOCUMENT"}
                 </Badge>
               </div>
             </div>
@@ -168,7 +191,9 @@ export default async function SharePage({ params }: SharePageProps) {
                         {improvements.after}
                       </span>
                     </div>
-                    <p className="text-sm text-muted-foreground">Quality Score</p>
+                    <p className="text-sm text-muted-foreground">
+                      Quality Score
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -177,16 +202,24 @@ export default async function SharePage({ params }: SharePageProps) {
             {/* Actions */}
             <div className="space-y-3">
               <Button className="w-full" size="lg" asChild>
-                <a href={enhancement.enhanced_url} download={enhancement.documents?.[0]?.name || 'enhanced-document'}>
-                  <Download className="h-5 w-5 mr-2" />
+                <a
+                  href={enhancement.enhanced_url}
+                  download={
+                    enhancement.documents?.[0]?.name || "enhanced-document"
+                  }
+                >
+                  <Download className="mr-2 h-5 w-5" />
                   Download Enhanced Version
                 </a>
               </Button>
-              
+
               {shareLink.is_public && (
                 <Button variant="outline" className="w-full" size="lg" asChild>
-                  <a href={enhancement.documents?.[0]?.original_url} download={`original_${enhancement.documents?.[0]?.name || 'document'}`}>
-                    <Download className="h-5 w-5 mr-2" />
+                  <a
+                    href={enhancement.documents?.[0]?.original_url}
+                    download={`original_${enhancement.documents?.[0]?.name || "document"}`}
+                  >
+                    <Download className="mr-2 h-5 w-5" />
                     Download Original
                   </a>
                 </Button>
@@ -196,16 +229,17 @@ export default async function SharePage({ params }: SharePageProps) {
             {/* CTA */}
             <Card className="bg-primary text-primary-foreground">
               <CardContent className="py-6 text-center">
-                <h3 className="text-xl font-semibold mb-2">
+                <h3 className="mb-2 text-xl font-semibold">
                   Want to enhance your own documents?
                 </h3>
                 <p className="mb-4 opacity-90">
-                  Join BeautifyAI and transform your documents with AI-powered enhancements.
+                  Join BeautifyAI and transform your documents with AI-powered
+                  enhancements.
                 </p>
                 <Link href="/signup">
                   <Button variant="secondary" size="lg">
                     Get Started Free
-                    <ExternalLink className="h-4 w-4 ml-2" />
+                    <ExternalLink className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
               </CardContent>
@@ -213,7 +247,10 @@ export default async function SharePage({ params }: SharePageProps) {
 
             {/* Share Info */}
             <div className="text-center text-sm text-muted-foreground">
-              <p>This link expires on {new Date(shareLink.expires_at).toLocaleDateString()}</p>
+              <p>
+                This link expires on{" "}
+                {new Date(shareLink.expires_at).toLocaleDateString()}
+              </p>
             </div>
           </div>
         </div>

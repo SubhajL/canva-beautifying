@@ -1,44 +1,44 @@
-'use client';
+"use client"
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/auth-context';
-import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { UsageStats } from '@/components/dashboard/usage-stats';
-import { RecentEnhancements } from '@/components/dashboard/recent-enhancements';
-import { EnhancementHistory } from '@/components/dashboard/enhancement-history';
-import { QuickActions } from '@/components/dashboard/quick-actions';
-import { FeatureErrorBoundary } from '@/components/error-boundaries/FeatureErrorBoundary';
-import { AsyncErrorBoundary } from '@/components/error-boundaries/AsyncErrorBoundary';
-import { Loading } from '@/components/ui/loading';
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/auth-context"
+import { DashboardHeader } from "@/components/dashboard/dashboard-header"
+import { UsageStats } from "@/components/dashboard/usage-stats"
+import { RecentEnhancements } from "@/components/dashboard/recent-enhancements"
+import { EnhancementHistory } from "@/components/dashboard/enhancement-history"
+import { QuickActions } from "@/components/dashboard/quick-actions"
+import { FeatureErrorBoundary } from "@/components/error-boundaries/FeatureErrorBoundary"
+import { AsyncErrorBoundary } from "@/components/error-boundaries/AsyncErrorBoundary"
+import { Loading } from "@/components/ui/loading"
 
 export default function DashboardPage() {
-  const router = useRouter();
-  const { user, loading } = useAuth();
+  const router = useRouter()
+  const { user, loading } = useAuth()
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/login');
+      router.push("/login")
     }
-  }, [user, loading, router]);
+  }, [user, loading, router])
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <Loading size="xl" text="Loading dashboard..." />
           <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (!user) {
-    return null;
+    return null
   }
 
   return (
-    <div className="container max-w-7xl mx-auto py-8 px-4 space-y-8">
+    <div className="container mx-auto max-w-7xl space-y-8 px-4 py-8">
       {/* Dashboard Header */}
       <DashboardHeader />
 
@@ -73,5 +73,5 @@ export default function DashboardPage() {
         </AsyncErrorBoundary>
       </FeatureErrorBoundary>
     </div>
-  );
+  )
 }

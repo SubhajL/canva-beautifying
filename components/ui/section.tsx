@@ -9,14 +9,17 @@ interface SectionProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 const Section = React.forwardRef<HTMLElement, SectionProps>(
-  ({ 
-    className, 
-    containerSize = "lg",
-    spacing = "default",
-    background = "default",
-    children,
-    ...props 
-  }, ref) => {
+  (
+    {
+      className,
+      containerSize = "lg",
+      spacing = "default",
+      background = "default",
+      children,
+      ...props
+    },
+    ref
+  ) => {
     const spacingClasses = {
       none: "py-0",
       sm: "py-8 md:py-12",
@@ -24,7 +27,7 @@ const Section = React.forwardRef<HTMLElement, SectionProps>(
       lg: "py-16 md:py-20 lg:py-24",
       xl: "py-20 md:py-24 lg:py-32",
     }
-    
+
     const backgroundClasses = {
       default: "",
       muted: "bg-muted",
@@ -32,7 +35,7 @@ const Section = React.forwardRef<HTMLElement, SectionProps>(
       primary: "bg-primary text-primary-foreground",
       secondary: "bg-secondary text-secondary-foreground",
     }
-    
+
     return (
       <section
         ref={ref}
@@ -43,9 +46,7 @@ const Section = React.forwardRef<HTMLElement, SectionProps>(
         )}
         {...props}
       >
-        <Container size={containerSize}>
-          {children}
-        </Container>
+        <Container size={containerSize}>{children}</Container>
       </section>
     )
   }

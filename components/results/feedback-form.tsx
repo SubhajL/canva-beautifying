@@ -1,14 +1,20 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Star, ThumbsUp, Send } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
-import { createClient } from '@/lib/supabase/client'
+import { useState } from "react"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Star, ThumbsUp, Send } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import { createClient } from "@/lib/supabase/client"
 
 interface FeedbackFormProps {
   enhancementId: string
@@ -19,17 +25,17 @@ export function FeedbackForm({ enhancementId, userId }: FeedbackFormProps) {
   const { toast } = useToast()
   const [rating, setRating] = useState(0)
   const [hoveredRating, setHoveredRating] = useState(0)
-  const [satisfaction, setSatisfaction] = useState('')
-  const [comments, setComments] = useState('')
+  const [satisfaction, setSatisfaction] = useState("")
+  const [comments, setComments] = useState("")
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
   const handleSubmit = async () => {
     if (rating === 0) {
       toast({
-        title: 'Rating Required',
-        description: 'Please provide a rating before submitting.',
-        variant: 'destructive',
+        title: "Rating Required",
+        description: "Please provide a rating before submitting.",
+        variant: "destructive",
       })
       return
     }
@@ -38,29 +44,27 @@ export function FeedbackForm({ enhancementId, userId }: FeedbackFormProps) {
       setSubmitting(true)
       const supabase = createClient()
 
-      const { error } = await supabase
-        .from('enhancement_feedback')
-        .insert({
-          enhancement_id: enhancementId,
-          user_id: userId,
-          rating,
-          satisfaction,
-          comments,
-        })
+      const { error } = await supabase.from("enhancement_feedback").insert({
+        enhancement_id: enhancementId,
+        user_id: userId,
+        rating,
+        satisfaction,
+        comments,
+      })
 
       if (error) throw error
 
       setSubmitted(true)
       toast({
-        title: 'Thank You!',
-        description: 'Your feedback has been submitted successfully.',
+        title: "Thank You!",
+        description: "Your feedback has been submitted successfully.",
       })
     } catch (error) {
-      console.error('Error submitting feedback:', error)
+      console.error("Error submitting feedback:", error)
       toast({
-        title: 'Error',
-        description: 'Failed to submit feedback. Please try again.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to submit feedback. Please try again.",
+        variant: "destructive",
       })
     } finally {
       setSubmitting(false)
@@ -71,10 +75,12 @@ export function FeedbackForm({ enhancementId, userId }: FeedbackFormProps) {
     return (
       <Card>
         <CardContent className="py-8 text-center">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-100 mb-4">
+          <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
             <ThumbsUp className="h-6 w-6 text-green-600" />
           </div>
-          <h3 className="text-lg font-semibold mb-2">Thank You for Your Feedback!</h3>
+          <h3 className="mb-2 text-lg font-semibold">
+            Thank You for Your Feedback!
+          </h3>
           <p className="text-muted-foreground">
             Your input helps us improve our enhancement algorithms.
           </p>
@@ -95,7 +101,7 @@ export function FeedbackForm({ enhancementId, userId }: FeedbackFormProps) {
         {/* Star Rating */}
         <div>
           <Label className="text-base">Overall Rating</Label>
-          <div className="flex gap-1 mt-2">
+          <div className="mt-2 flex gap-1">
             {[1, 2, 3, 4, 5].map((star) => (
               <button
                 key={star}
@@ -108,26 +114,28 @@ export function FeedbackForm({ enhancementId, userId }: FeedbackFormProps) {
                 <Star
                   className={`h-8 w-8 ${
                     star <= (hoveredRating || rating)
-                      ? 'fill-yellow-400 text-yellow-400'
-                      : 'text-gray-300'
+                      ? "fill-yellow-400 text-yellow-400"
+                      : "text-gray-300"
                   }`}
                 />
               </button>
             ))}
           </div>
-          <p className="text-sm text-muted-foreground mt-1">
-            {rating === 0 && 'Click to rate'}
-            {rating === 1 && 'Poor'}
-            {rating === 2 && 'Fair'}
-            {rating === 3 && 'Good'}
-            {rating === 4 && 'Very Good'}
-            {rating === 5 && 'Excellent'}
+          <p className="mt-1 text-sm text-muted-foreground">
+            {rating === 0 && "Click to rate"}
+            {rating === 1 && "Poor"}
+            {rating === 2 && "Fair"}
+            {rating === 3 && "Good"}
+            {rating === 4 && "Very Good"}
+            {rating === 5 && "Excellent"}
           </p>
         </div>
 
         {/* Satisfaction Level */}
         <div className="space-y-3">
-          <Label className="text-base">How satisfied are you with the results?</Label>
+          <Label className="text-base">
+            How satisfied are you with the results?
+          </Label>
           <RadioGroup value={satisfaction} onValueChange={setSatisfaction}>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="very-satisfied" id="very-satisfied" />
@@ -154,7 +162,10 @@ export function FeedbackForm({ enhancementId, userId }: FeedbackFormProps) {
               </Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="very-dissatisfied" id="very-dissatisfied" />
+              <RadioGroupItem
+                value="very-dissatisfied"
+                id="very-dissatisfied"
+              />
               <Label htmlFor="very-dissatisfied" className="cursor-pointer">
                 Very Dissatisfied
               </Label>
@@ -178,23 +189,25 @@ export function FeedbackForm({ enhancementId, userId }: FeedbackFormProps) {
 
         {/* Quick Feedback Options */}
         <div>
-          <Label className="text-base mb-2 block">Quick Feedback</Label>
+          <Label className="mb-2 block text-base">Quick Feedback</Label>
           <div className="flex flex-wrap gap-2">
             {[
-              'Colors are perfect',
-              'Layout is cleaner',
-              'More professional',
-              'Easy to read',
-              'Love the design',
-              'Needs more contrast',
-              'Too many changes',
-              'Lost some content',
+              "Colors are perfect",
+              "Layout is cleaner",
+              "More professional",
+              "Easy to read",
+              "Love the design",
+              "Needs more contrast",
+              "Too many changes",
+              "Lost some content",
             ].map((option) => (
               <Button
                 key={option}
                 variant="outline"
                 size="sm"
-                onClick={() => setComments((prev) => prev + (prev ? ', ' : '') + option)}
+                onClick={() =>
+                  setComments((prev) => prev + (prev ? ", " : "") + option)
+                }
               >
                 {option}
               </Button>
@@ -209,9 +222,9 @@ export function FeedbackForm({ enhancementId, userId }: FeedbackFormProps) {
           className="w-full"
         >
           {submitting ? (
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+            <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white" />
           ) : (
-            <Send className="h-4 w-4 mr-2" />
+            <Send className="mr-2 h-4 w-4" />
           )}
           Submit Feedback
         </Button>

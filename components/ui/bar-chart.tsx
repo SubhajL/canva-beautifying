@@ -15,16 +15,19 @@ interface BarChartProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const BarChart = React.forwardRef<HTMLDivElement, BarChartProps>(
-  ({ 
-    className, 
-    data, 
-    height = 200, 
-    showValues = true,
-    orientation = "vertical",
-    ...props 
-  }, ref) => {
-    const maxValue = Math.max(...data.map(d => d.value))
-    
+  (
+    {
+      className,
+      data,
+      height = 200,
+      showValues = true,
+      orientation = "vertical",
+      ...props
+    },
+    ref
+  ) => {
+    const maxValue = Math.max(...data.map((d) => d.value))
+
     if (orientation === "horizontal") {
       return (
         <div ref={ref} className={cn("space-y-3", className)} {...props}>
@@ -34,7 +37,9 @@ const BarChart = React.forwardRef<HTMLDivElement, BarChartProps>(
               <div key={index} className="space-y-1">
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium">{item.label}</span>
-                  {showValues && <span className="text-muted-foreground">{item.value}</span>}
+                  {showValues && (
+                    <span className="text-muted-foreground">{item.value}</span>
+                  )}
                 </div>
                 <div className="h-6 w-full rounded-full bg-secondary/20">
                   <div
@@ -54,7 +59,7 @@ const BarChart = React.forwardRef<HTMLDivElement, BarChartProps>(
         </div>
       )
     }
-    
+
     return (
       <div
         ref={ref}
@@ -68,12 +73,10 @@ const BarChart = React.forwardRef<HTMLDivElement, BarChartProps>(
             return (
               <div
                 key={index}
-                className="relative flex-1 flex flex-col items-center justify-end"
+                className="relative flex flex-1 flex-col items-center justify-end"
               >
                 {showValues && (
-                  <span className="mb-2 text-sm font-medium">
-                    {item.value}
-                  </span>
+                  <span className="mb-2 text-sm font-medium">{item.value}</span>
                 )}
                 <div
                   className={cn(
@@ -85,7 +88,7 @@ const BarChart = React.forwardRef<HTMLDivElement, BarChartProps>(
                     backgroundColor: item.color,
                   }}
                 />
-                <span className="mt-2 text-xs text-muted-foreground truncate max-w-full">
+                <span className="mt-2 max-w-full truncate text-xs text-muted-foreground">
                   {item.label}
                 </span>
               </div>

@@ -1,19 +1,23 @@
 "use client"
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
-import { User, Session } from '@supabase/supabase-js'
-import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
-import type { Database } from '@/lib/supabase/database.types'
+import React, { createContext, useContext, useEffect, useState } from "react"
+import { User, Session } from "@supabase/supabase-js"
+import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
+import type { Database } from "@/lib/supabase/database.types"
 
-type UserDetails = Database['public']['Tables']['users']['Row']
+type UserDetails = Database["public"]["Tables"]["users"]["Row"]
 
 interface AuthContextType {
   user: User | null
   session: Session | null
   userDetails: UserDetails | null
   loading: boolean
-  signUp: (email: string, password: string, metadata?: { name?: string }) => Promise<void>
+  signUp: (
+    email: string,
+    password: string,
+    metadata?: { name?: string }
+  ) => Promise<void>
   signIn: (email: string, password: string) => Promise<void>
   signInWithGoogle: () => Promise<void>
   signInWithMicrosoft: () => Promise<void>
@@ -35,11 +39,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchUserDetails = async (userId: string) => {
     const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
+      .from("users")
+      .select("*")
+      .eq("id", userId)
       .single()
-    
+
     if (data && !error) {
       setUserDetails(data)
     }
@@ -62,26 +66,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
-      
+
       if (session?.user) {
         await fetchUserDetails(session.user.id)
       } else {
         setUserDetails(null)
       }
-      
-      if (event === 'SIGNED_IN') {
-        router.push('/dashboard')
+
+      if (event === "SIGNED_IN") {
+        router.push("/dashboard")
       }
-      
-      if (event === 'SIGNED_OUT') {
-        router.push('/')
+
+      if (event === "SIGNED_OUT") {
+        router.push("/")
       }
     })
 
     return () => subscription.unsubscribe()
   }, [router, supabase])
 
-  const signUp = async (email: string, password: string, metadata?: { name?: string }) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    metadata?: { name?: string }
+  ) => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -90,7 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     })
-    
+
     if (error) throw error
   }
 
@@ -99,30 +107,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email,
       password,
     })
-    
+
     if (error) throw error
   }
 
   const signInWithGoogle = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
+      provider: "google",
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
       },
     })
-    
+
     if (error) throw error
   }
 
   const signInWithMicrosoft = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'azure',
+      provider: "azure",
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
-        scopes: 'email',
+        scopes: "email",
       },
     })
-    
+
     if (error) throw error
   }
 
@@ -135,7 +143,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/reset-password`,
     })
-    
+
     if (error) throw error
   }
 
@@ -143,7 +151,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { error } = await supabase.auth.updateUser({
       password: newPassword,
     })
-    
+
     if (error) throw error
   }
 
@@ -174,7 +182,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext)
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
+    throw new Error("useAuth must be used within an AuthProvider")
   }
   return context
 }

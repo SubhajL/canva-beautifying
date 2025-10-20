@@ -1,7 +1,7 @@
-import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3"
+import { PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { r2Client, R2_BUCKET_NAME, getR2Key, R2_FOLDERS } from "./client"
-import { uploadFileLocal, deleteFileLocal, deleteFilesLocal } from "./local-storage"
+import { getR2Config } from "./config"
 
 interface UploadFileOptions {
   file: File | Buffer
@@ -20,25 +20,16 @@ export async function uploadFile({
   contentType,
   metadata = {},
 }: UploadFileOptions): Promise<{ key: string; url: string }> {
-  // Use local storage in test mode
-  if (process.env.NODE_ENV === 'test') {
-    return uploadFileLocal({
-      file,
-      userId,
-      filename,
-      folder,
-      contentType,
-      metadata,
-    })
-  }
-  
   const key = getR2Key(folder, userId, filename)
-  
+  const body = file instanceof File ? Buffer.from(await file.arrayBuffer()) : file
+
   const command = new PutObjectCommand({
     Bucket: R2_BUCKET_NAME,
     Key: key,
-    Body: file instanceof File ? Buffer.from(await file.arrayBuffer()) : file,
-    ContentType: contentType || (file instanceof File ? file.type : "application/octet-stream"),
+    Body: body,
+    ContentType:
+      contentType ||
+      (file instanceof File ? file.type : "application/octet-stream"),
     Metadata: {
       userId,
       originalFilename: filename,
@@ -49,30 +40,47 @@ export async function uploadFile({
 
   await r2Client.send(command)
 
-  const publicUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL
-  const url = publicUrl ? `${publicUrl}/${key}` : await generateSignedUrl(key)
+  const { publicUrl } = getR2Config()
+  const url = publicUrl ? `${publicUrl}/${key}` : await getSignedDownloadUrl(key)
 
   return { key, url }
 }
 
-export async function generateSignedUrl(
-  key: string,
-  expiresIn: number = 3600
-): Promise<string> {
+export async function uploadBufferToKey({
+  buffer,
+  key,
+  contentType,
+  metadata = {},
+}: {
+  buffer: Buffer
+  key: string
+  contentType?: string
+  metadata?: Record<string, string>
+}): Promise<{ key: string; url: string }> {
   const command = new PutObjectCommand({
     Bucket: R2_BUCKET_NAME,
     Key: key,
+    Body: buffer,
+    ContentType: contentType || "application/octet-stream",
+    Metadata: {
+      uploadedAt: new Date().toISOString(),
+      ...metadata,
+    },
   })
 
+  await r2Client.send(command)
+
+  const { publicUrl } = getR2Config()
+  const url = publicUrl ? `${publicUrl}/${key}` : await getSignedDownloadUrl(key)
+  return { key, url }
+}
+
+async function getSignedDownloadUrl(key: string, expiresIn: number = 3600) {
+  const command = new GetObjectCommand({ Bucket: R2_BUCKET_NAME, Key: key })
   return getSignedUrl(r2Client, command, { expiresIn })
 }
 
 export async function deleteFile(key: string): Promise<void> {
-  // Use local storage in test mode
-  if (process.env.NODE_ENV === 'test') {
-    return deleteFileLocal(key)
-  }
-  
   const command = new DeleteObjectCommand({
     Bucket: R2_BUCKET_NAME,
     Key: key,
@@ -82,10 +90,5 @@ export async function deleteFile(key: string): Promise<void> {
 }
 
 export async function deleteFiles(keys: string[]): Promise<void> {
-  // Use local storage in test mode
-  if (process.env.NODE_ENV === 'test') {
-    return deleteFilesLocal(keys)
-  }
-  
-  await Promise.all(keys.map(key => deleteFile(key)))
+  await Promise.all(keys.map((key) => deleteFile(key)))
 }

@@ -1,9 +1,12 @@
-import { DocumentAnalysis } from '@/lib/ai/types'
-import { AnalysisCache } from './types'
-import { createClient } from '@/lib/supabase/client'
+import { DocumentAnalysis } from "@/lib/ai/types"
+import { AnalysisCache } from "./types"
+import { createClient } from "@/lib/supabase/client"
 
 export class SupabaseAnalysisCache implements AnalysisCache {
-  private memoryCache: Map<string, { analysis: DocumentAnalysis; timestamp: number }>
+  private memoryCache: Map<
+    string,
+    { analysis: DocumentAnalysis; timestamp: number }
+  >
   private readonly CACHE_DURATION = 60 * 60 * 1000 // 1 hour
 
   constructor() {
@@ -21,9 +24,9 @@ export class SupabaseAnalysisCache implements AnalysisCache {
     try {
       const supabase = createClient()
       const { data, error } = await supabase
-        .from('enhancements')
-        .select('analysis_data')
-        .eq('document_id', documentId)
+        .from("enhancements")
+        .select("analysis_data")
+        .eq("document_id", documentId)
         .single()
 
       if (error || !data?.analysis_data) {
@@ -31,16 +34,16 @@ export class SupabaseAnalysisCache implements AnalysisCache {
       }
 
       const analysis = data.analysis_data as DocumentAnalysis
-      
+
       // Update memory cache
       this.memoryCache.set(documentId, {
         analysis,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
 
       return analysis
     } catch (error) {
-      console.error('Error fetching cached analysis:', error)
+      console.error("Error fetching cached analysis:", error)
       return null
     }
   }
@@ -49,25 +52,25 @@ export class SupabaseAnalysisCache implements AnalysisCache {
     // Update memory cache
     this.memoryCache.set(documentId, {
       analysis,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
 
     // Update database cache
     try {
       const supabase = createClient()
       const { error } = await supabase
-        .from('enhancements')
-        .update({ 
+        .from("enhancements")
+        .update({
           analysis_data: analysis,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
-        .eq('document_id', documentId)
+        .eq("document_id", documentId)
 
       if (error) {
-        console.error('Error caching analysis:', error)
+        console.error("Error caching analysis:", error)
       }
     } catch (error) {
-      console.error('Error caching analysis:', error)
+      console.error("Error caching analysis:", error)
     }
   }
 
@@ -79,18 +82,18 @@ export class SupabaseAnalysisCache implements AnalysisCache {
     try {
       const supabase = createClient()
       const { error } = await supabase
-        .from('enhancements')
-        .update({ 
+        .from("enhancements")
+        .update({
           analysis_data: null,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
-        .eq('document_id', documentId)
+        .eq("document_id", documentId)
 
       if (error) {
-        console.error('Error invalidating cache:', error)
+        console.error("Error invalidating cache:", error)
       }
     } catch (error) {
-      console.error('Error invalidating cache:', error)
+      console.error("Error invalidating cache:", error)
     }
   }
 

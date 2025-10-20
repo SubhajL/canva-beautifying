@@ -1,22 +1,29 @@
-'use client'
+"use client"
 
-import { useState, useEffect } from 'react'
-import { 
-  Search,
-  Bell,
-  BarChart3,
-  ChevronDown
-} from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { useRouter } from 'next/navigation'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { format, formatDistanceToNow } from 'date-fns'
+import { useState, useEffect } from "react"
+import { Search, Bell, BarChart3, ChevronDown } from "lucide-react"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useRouter } from "next/navigation"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { format, formatDistanceToNow } from "date-fns"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,14 +31,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from "@/components/ui/dropdown-menu"
 
 interface SupportTicket {
   id: string
   subject: string
   description: string
-  status: 'open' | 'in_progress' | 'resolved' | 'closed'
-  priority: 'low' | 'medium' | 'high' | 'urgent'
+  status: "open" | "in_progress" | "resolved" | "closed"
+  priority: "low" | "medium" | "high" | "urgent"
   category: string
   created_at: string
   updated_at: string
@@ -72,10 +79,10 @@ export default function AdminSupportDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [agentStats, setAgentStats] = useState<AgentStats[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState('all')
-  const [priority, setPriority] = useState('all')
-  const [assignedTo, setAssignedTo] = useState('all')
-  const [searchQuery, setSearchQuery] = useState('')
+  const [filter, setFilter] = useState("all")
+  const [priority, setPriority] = useState("all")
+  const [assignedTo, setAssignedTo] = useState("all")
+  const [searchQuery, setSearchQuery] = useState("")
   const router = useRouter()
   const supabase = createClientComponentClient()
 
@@ -83,8 +90,10 @@ export default function AdminSupportDashboard() {
     fetchData()
     // Set up real-time subscription
     const subscription = supabase
-      .channel('support_tickets')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'support_tickets' }, 
+      .channel("support_tickets")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "support_tickets" },
         () => fetchData()
       )
       .subscribe()
@@ -98,26 +107,26 @@ export default function AdminSupportDashboard() {
   const fetchData = async () => {
     try {
       setLoading(true)
-      
+
       // Check if user is an agent
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user) return
 
       const { data: agent, error: agentError } = await supabase
-        .from('support_agents')
-        .select('*')
-        .eq('user_id', user.id)
+        .from("support_agents")
+        .select("*")
+        .eq("user_id", user.id)
         .single()
 
       if (agentError || !agent) {
-        router.push('/unauthorized')
+        router.push("/unauthorized")
         return
       }
 
       // Fetch tickets
-      let query = supabase
-        .from('support_tickets')
-        .select(`
+      let query = supabase.from("support_tickets").select(`
           *,
           user:user_id(
             id,
@@ -131,32 +140,35 @@ export default function AdminSupportDashboard() {
           )
         `)
 
-      if (filter !== 'all') {
-        query = query.eq('status', filter)
+      if (filter !== "all") {
+        query = query.eq("status", filter)
       }
-      if (priority !== 'all') {
-        query = query.eq('priority', priority)
+      if (priority !== "all") {
+        query = query.eq("priority", priority)
       }
-      if (assignedTo === 'me') {
-        query = query.eq('assigned_to', agent.id)
-      } else if (assignedTo === 'unassigned') {
-        query = query.is('assigned_to', null)
+      if (assignedTo === "me") {
+        query = query.eq("assigned_to", agent.id)
+      } else if (assignedTo === "unassigned") {
+        query = query.is("assigned_to", null)
       }
 
-      const { data: ticketsData, error: ticketsError } = await query
-        .order('created_at', { ascending: false })
+      const { data: ticketsData, error: ticketsError } = await query.order(
+        "created_at",
+        { ascending: false }
+      )
 
       if (ticketsError) throw ticketsError
 
       // Fetch dashboard stats
-      const { data: statsData, error: statsError } = await supabase
-        .rpc('get_support_dashboard_stats')
+      const { data: statsData, error: statsError } = await supabase.rpc(
+        "get_support_dashboard_stats"
+      )
 
       if (statsError) throw statsError
 
       // Fetch agent stats
-      const { data: agentStatsData, error: agentStatsError } = await supabase
-        .rpc('get_agent_performance_stats')
+      const { data: agentStatsData, error: agentStatsError } =
+        await supabase.rpc("get_agent_performance_stats")
 
       if (agentStatsError) throw agentStatsError
 
@@ -164,7 +176,7 @@ export default function AdminSupportDashboard() {
       setStats(statsData?.[0] || null)
       setAgentStats(agentStatsData || [])
     } catch (error) {
-      console.error('Error fetching support data:', error)
+      console.error("Error fetching support data:", error)
     } finally {
       setLoading(false)
     }
@@ -173,60 +185,69 @@ export default function AdminSupportDashboard() {
   const assignTicket = async (ticketId: string, agentId: string | null) => {
     try {
       const { error } = await supabase
-        .from('support_tickets')
-        .update({ 
+        .from("support_tickets")
+        .update({
           assigned_to: agentId,
-          status: agentId ? 'in_progress' : 'open',
-          updated_at: new Date().toISOString()
+          status: agentId ? "in_progress" : "open",
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', ticketId)
+        .eq("id", ticketId)
 
       if (error) throw error
       fetchData()
     } catch (error) {
-      console.error('Error assigning ticket:', error)
+      console.error("Error assigning ticket:", error)
     }
   }
 
   const updateTicketStatus = async (ticketId: string, status: string) => {
     try {
       const updateData: {
-        status: string;
-        updated_at: string;
-        resolved_at?: string;
+        status: string
+        updated_at: string
+        resolved_at?: string
       } = {
         status,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       }
 
-      if (status === 'resolved') {
+      if (status === "resolved") {
         updateData.resolved_at = new Date().toISOString()
       }
 
       const { error } = await supabase
-        .from('support_tickets')
+        .from("support_tickets")
         .update(updateData)
-        .eq('id', ticketId)
+        .eq("id", ticketId)
 
       if (error) throw error
       fetchData()
     } catch (error) {
-      console.error('Error updating ticket status:', error)
+      console.error("Error updating ticket status:", error)
     }
   }
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'destructive'
-      case 'high': return 'default'
-      case 'medium': return 'secondary'
-      case 'low': return 'outline'
-      default: return 'secondary'
+      case "urgent":
+        return "destructive"
+      case "high":
+        return "default"
+      case "medium":
+        return "secondary"
+      case "low":
+        return "outline"
+      default:
+        return "secondary"
     }
   }
 
   const isSlaDanger = (ticket: SupportTicket) => {
-    if (!ticket.sla_deadline || ticket.status === 'resolved' || ticket.status === 'closed') {
+    if (
+      !ticket.sla_deadline ||
+      ticket.status === "resolved" ||
+      ticket.status === "closed"
+    ) {
       return false
     }
     const deadline = new Date(ticket.sla_deadline)
@@ -235,10 +256,11 @@ export default function AdminSupportDashboard() {
     return hoursLeft < 1
   }
 
-  const filteredTickets = tickets.filter(ticket =>
-    ticket.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    ticket.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    ticket.user.email.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredTickets = tickets.filter(
+    (ticket) =>
+      ticket.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      ticket.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      ticket.user.email.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   if (loading) {
@@ -246,12 +268,14 @@ export default function AdminSupportDashboard() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Support Admin Dashboard</h1>
-          <p className="text-muted-foreground">Manage customer support tickets</p>
+          <p className="text-muted-foreground">
+            Manage customer support tickets
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="icon">
@@ -266,10 +290,12 @@ export default function AdminSupportDashboard() {
 
       {/* Stats Overview */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
           <Card className="bg-orange-50 dark:bg-orange-950">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Open Tickets</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Open Tickets
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
@@ -305,7 +331,9 @@ export default function AdminSupportDashboard() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Avg Wait Time</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Avg Wait Time
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.avg_wait_time}</div>
@@ -315,7 +343,9 @@ export default function AdminSupportDashboard() {
 
           <Card className="bg-green-50 dark:bg-green-950">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Agents Online</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Agents Online
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600 dark:text-green-400">
@@ -327,7 +357,9 @@ export default function AdminSupportDashboard() {
 
           <Card className="bg-blue-50 dark:bg-blue-950">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Resolved Today</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Resolved Today
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
@@ -360,7 +392,7 @@ export default function AdminSupportDashboard() {
                       placeholder="Search tickets..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-8 w-64"
+                      className="w-64 pl-8"
                     />
                   </div>
                   <Select value={filter} onValueChange={setFilter}>
@@ -405,10 +437,12 @@ export default function AdminSupportDashboard() {
                 {filteredTickets.map((ticket) => (
                   <div
                     key={ticket.id}
-                    className={`p-4 border rounded-lg hover:bg-accent cursor-pointer transition-colors ${
-                      isSlaDanger(ticket) ? 'border-red-500' : ''
+                    className={`cursor-pointer rounded-lg border p-4 transition-colors hover:bg-accent ${
+                      isSlaDanger(ticket) ? "border-red-500" : ""
                     }`}
-                    onClick={() => router.push(`/admin/support/ticket/${ticket.id}`)}
+                    onClick={() =>
+                      router.push(`/admin/support/ticket/${ticket.id}`)
+                    }
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -422,26 +456,37 @@ export default function AdminSupportDashboard() {
                             <Badge variant="destructive">SLA Risk</Badge>
                           )}
                         </div>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {ticket.user.email} • Created {formatDistanceToNow(new Date(ticket.created_at))} ago
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {ticket.user.email} • Created{" "}
+                          {formatDistanceToNow(new Date(ticket.created_at))} ago
                         </p>
-                        <p className="text-sm line-clamp-2 mt-2">{ticket.description}</p>
+                        <p className="mt-2 line-clamp-2 text-sm">
+                          {ticket.description}
+                        </p>
                         {ticket.sla_deadline && (
-                          <p className="text-xs text-muted-foreground mt-2">
-                            SLA: {format(new Date(ticket.sla_deadline), 'MMM d, h:mm a')}
+                          <p className="mt-2 text-xs text-muted-foreground">
+                            SLA:{" "}
+                            {format(
+                              new Date(ticket.sla_deadline),
+                              "MMM d, h:mm a"
+                            )}
                           </p>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 ml-4">
+                      <div className="ml-4 flex items-center gap-2">
                         {ticket.assigned_agent ? (
                           <div className="flex items-center gap-2">
                             <Avatar className="h-8 w-8">
-                              <AvatarImage src={ticket.assigned_agent.avatar_url} />
+                              <AvatarImage
+                                src={ticket.assigned_agent.avatar_url}
+                              />
                               <AvatarFallback>
                                 {ticket.assigned_agent.full_name.charAt(0)}
                               </AvatarFallback>
                             </Avatar>
-                            <span className="text-sm">{ticket.assigned_agent.full_name}</span>
+                            <span className="text-sm">
+                              {ticket.assigned_agent.full_name}
+                            </span>
                           </div>
                         ) : (
                           <Badge variant="secondary">Unassigned</Badge>
@@ -455,22 +500,28 @@ export default function AdminSupportDashboard() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={(e) => {
-                              e.stopPropagation()
-                              assignTicket(ticket.id, null)
-                            }}>
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                assignTicket(ticket.id, null)
+                              }}
+                            >
                               Unassign
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={(e) => {
-                              e.stopPropagation()
-                              updateTicketStatus(ticket.id, 'resolved')
-                            }}>
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                updateTicketStatus(ticket.id, "resolved")
+                              }}
+                            >
                               Mark as Resolved
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={(e) => {
-                              e.stopPropagation()
-                              updateTicketStatus(ticket.id, 'closed')
-                            }}>
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                updateTicketStatus(ticket.id, "closed")
+                              }}
+                            >
                               Close Ticket
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -494,10 +545,15 @@ export default function AdminSupportDashboard() {
             <CardContent>
               <div className="space-y-4">
                 {agentStats.map((agent) => (
-                  <div key={agent.agent_id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div
+                    key={agent.agent_id}
+                    className="flex items-center justify-between rounded-lg border p-4"
+                  >
                     <div className="flex items-center gap-4">
                       <Avatar className="h-10 w-10">
-                        <AvatarFallback>{agent.agent_name.charAt(0)}</AvatarFallback>
+                        <AvatarFallback>
+                          {agent.agent_name.charAt(0)}
+                        </AvatarFallback>
                       </Avatar>
                       <div>
                         <h4 className="font-semibold">{agent.agent_name}</h4>
@@ -508,19 +564,31 @@ export default function AdminSupportDashboard() {
                     </div>
                     <div className="flex items-center gap-8">
                       <div className="text-center">
-                        <p className="text-2xl font-bold">{agent.resolved_today}</p>
-                        <p className="text-xs text-muted-foreground">Resolved Today</p>
+                        <p className="text-2xl font-bold">
+                          {agent.resolved_today}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Resolved Today
+                        </p>
                       </div>
                       <div className="text-center">
-                        <p className="text-2xl font-bold">{agent.avg_response_time}</p>
-                        <p className="text-xs text-muted-foreground">Avg Response</p>
+                        <p className="text-2xl font-bold">
+                          {agent.avg_response_time}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Avg Response
+                        </p>
                       </div>
                       <div className="text-center">
                         <div className="flex items-center gap-1">
-                          <p className="text-2xl font-bold">{agent.satisfaction_rating}</p>
+                          <p className="text-2xl font-bold">
+                            {agent.satisfaction_rating}
+                          </p>
                           <span className="text-yellow-500">★</span>
                         </div>
-                        <p className="text-xs text-muted-foreground">Satisfaction</p>
+                        <p className="text-xs text-muted-foreground">
+                          Satisfaction
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -543,7 +611,7 @@ export default function AdminSupportDashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-center text-muted-foreground py-8">
+              <p className="py-8 text-center text-muted-foreground">
                 Knowledge base management coming soon...
               </p>
             </CardContent>

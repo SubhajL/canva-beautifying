@@ -1,5 +1,5 @@
 // This file configures the initialization of Sentry on the server side
-import * as Sentry from "@sentry/nextjs";
+import * as Sentry from "@sentry/nextjs"
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -16,22 +16,25 @@ Sentry.init({
   // Filter transactions
   beforeSendTransaction(event) {
     // Filter out health check endpoints
-    if (event.transaction === 'GET /api/health') {
-      return null;
+    if (event.transaction === "GET /api/health") {
+      return null
     }
-    
-    return event;
+
+    return event
   },
 
   // Filter out certain errors
   beforeSend(event, hint) {
     // Don't send events in development unless explicitly enabled
-    if (process.env.NODE_ENV === 'development' && !process.env.NEXT_PUBLIC_SENTRY_ENABLED) {
-      console.error('Sentry Event (not sent in dev):', event);
-      return null;
+    if (
+      process.env.NODE_ENV === "development" &&
+      !process.env.NEXT_PUBLIC_SENTRY_ENABLED
+    ) {
+      console.error("Sentry Event (not sent in dev):", event)
+      return null
     }
 
-    return event;
+    return event
   },
 
   // Set environment
@@ -40,7 +43,7 @@ Sentry.init({
   // Identify server-side errors
   initialScope: {
     tags: {
-      component: 'server',
+      component: "server",
     },
   },
-});
+})

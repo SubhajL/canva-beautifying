@@ -4,7 +4,13 @@
 
 // Generic object types
 export type AnyObject = Record<string, unknown>
-export type JsonValue = string | number | boolean | null | JsonObject | JsonArray
+export type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonObject
+  | JsonArray
 export type JsonObject = { [key: string]: JsonValue }
 export type JsonArray = JsonValue[]
 
@@ -79,7 +85,9 @@ export type AsyncFunction<T = unknown> = (...args: unknown[]) => Promise<T>
 
 // Event handler types
 export type ClickHandler = (event: React.MouseEvent) => void
-export type ChangeHandler<T = HTMLInputElement> = (event: React.ChangeEvent<T>) => void
+export type ChangeHandler<T = HTMLInputElement> = (
+  event: React.ChangeEvent<T>
+) => void
 export type SubmitHandler = (event: React.FormEvent) => void | Promise<void>
 
 // Utility types

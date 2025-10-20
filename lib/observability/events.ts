@@ -1,13 +1,13 @@
 // This module is for server-side use only
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   throw new Error(
-    'Server-only module: @/lib/observability/events cannot be imported in client-side code. ' +
-    'Use @/lib/observability/client instead.'
-  );
+    "Server-only module: @/lib/observability/events cannot be imported in client-side code. " +
+      "Use @/lib/observability/client instead."
+  )
 }
 
-import { logger } from './logger'
-import { metrics } from './metrics'
+import { logger } from "./logger"
+import { metrics } from "./metrics"
 
 export interface TelemetryEvent {
   name: string
@@ -26,7 +26,7 @@ export function createTelemetryEvent(
   }
 
   // Log the event
-  logger.info('Telemetry event', {
+  logger.info("Telemetry event", {
     event: name,
     ...properties,
   })
@@ -35,7 +35,7 @@ export function createTelemetryEvent(
   metrics.increment(`events.${name}`, 1, properties)
 
   // In production, you might also send to analytics service
-  if (typeof window !== 'undefined' && window.analytics) {
+  if (typeof window !== "undefined" && window.analytics) {
     window.analytics.track(name, properties)
   }
 }

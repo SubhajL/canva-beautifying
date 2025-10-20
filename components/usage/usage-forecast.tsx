@@ -1,70 +1,84 @@
-'use client';
+"use client"
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { TrendingUp, AlertTriangle, Lightbulb } from 'lucide-react';
-import { useAuth } from '@/contexts/auth-context';
-import { createUsageAnalytics } from '@/lib/usage/analytics';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+import { useEffect, useState } from "react"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Badge } from "@/components/ui/badge"
+import { TrendingUp, AlertTriangle, Lightbulb } from "lucide-react"
+import { useAuth } from "@/contexts/auth-context"
+import { createUsageAnalytics } from "@/lib/usage/analytics"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 interface ForecastData {
-  projectedMonthlyUsage: number;
-  projectedEndDate: Date | null;
-  recommendedTier: string;
-  confidence: number;
-  basedOnDays: number;
+  projectedMonthlyUsage: number
+  projectedEndDate: Date | null
+  recommendedTier: string
+  confidence: number
+  basedOnDays: number
 }
 
 interface AnomalyData {
-  hasAnomaly: boolean;
-  type?: 'spike' | 'unusual_time' | 'rapid_depletion';
-  description?: string;
+  hasAnomaly: boolean
+  type?: "spike" | "unusual_time" | "rapid_depletion"
+  description?: string
 }
 
 export function UsageForecast() {
-  const { user } = useAuth();
-  const [forecast, setForecast] = useState<ForecastData | null>(null);
-  const [anomaly, setAnomaly] = useState<AnomalyData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth()
+  const [forecast, setForecast] = useState<ForecastData | null>(null)
+  const [anomaly, setAnomaly] = useState<AnomalyData | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (user) {
-      loadAnalytics();
+      loadAnalytics()
     }
-  }, [user]);
+  }, [user])
 
   const loadAnalytics = async () => {
-    if (!user) return;
+    if (!user) return
 
     try {
-      const analytics = await createUsageAnalytics();
-      
+      const analytics = await createUsageAnalytics()
+
       // Load forecast
-      const forecastData = await analytics.forecastUsage(user.id);
-      setForecast(forecastData);
+      const forecastData = await analytics.forecastUsage(user.id)
+      setForecast(forecastData)
 
       // Check for anomalies
-      const anomalyData = await analytics.detectAnomalies(user.id);
-      setAnomaly(anomalyData);
+      const anomalyData = await analytics.detectAnomalies(user.id)
+      setAnomaly(anomalyData)
     } catch (error) {
-      console.error('Failed to load analytics:', error);
+      console.error("Failed to load analytics:", error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
-
-  if (loading || !forecast) {
-    return null;
   }
 
-  const confidenceLevel = forecast.confidence >= 0.8 ? 'High' : 
-                         forecast.confidence >= 0.5 ? 'Medium' : 'Low';
+  if (loading || !forecast) {
+    return null
+  }
 
-  const confidenceColor = forecast.confidence >= 0.8 ? 'green' : 
-                         forecast.confidence >= 0.5 ? 'yellow' : 'red';
+  const confidenceLevel =
+    forecast.confidence >= 0.8
+      ? "High"
+      : forecast.confidence >= 0.5
+        ? "Medium"
+        : "Low"
+
+  const confidenceColor =
+    forecast.confidence >= 0.8
+      ? "green"
+      : forecast.confidence >= 0.5
+        ? "yellow"
+        : "red"
 
   return (
     <div className="space-y-4">
@@ -97,33 +111,45 @@ export function UsageForecast() {
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <p className="text-sm text-muted-foreground">Projected Monthly Usage</p>
-              <p className="text-2xl font-bold">{forecast.projectedMonthlyUsage}</p>
+              <p className="text-sm text-muted-foreground">
+                Projected Monthly Usage
+              </p>
+              <p className="text-2xl font-bold">
+                {forecast.projectedMonthlyUsage}
+              </p>
               <p className="text-xs text-muted-foreground">credits</p>
             </div>
 
             {forecast.projectedEndDate && (
               <div>
-                <p className="text-sm text-muted-foreground">Credits Will Run Out</p>
+                <p className="text-sm text-muted-foreground">
+                  Credits Will Run Out
+                </p>
                 <p className="text-2xl font-bold">
                   {new Date(forecast.projectedEndDate).toLocaleDateString()}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  in {Math.ceil((forecast.projectedEndDate.getTime() - Date.now()) / (24 * 60 * 60 * 1000))} days
+                  in{" "}
+                  {Math.ceil(
+                    (forecast.projectedEndDate.getTime() - Date.now()) /
+                      (24 * 60 * 60 * 1000)
+                  )}{" "}
+                  days
                 </p>
               </div>
             )}
           </div>
 
-          {forecast.recommendedTier !== 'free' && (
-            <div className="pt-4 border-t">
-              <div className="flex items-center gap-2 mb-2">
+          {forecast.recommendedTier !== "free" && (
+            <div className="border-t pt-4">
+              <div className="mb-2 flex items-center gap-2">
                 <Lightbulb className="h-4 w-4 text-amber-500" />
                 <p className="text-sm font-medium">Recommendation</p>
               </div>
-              <p className="text-sm text-muted-foreground mb-3">
-                Based on your usage pattern, the <strong>{forecast.recommendedTier}</strong> plan 
-                would better suit your needs.
+              <p className="mb-3 text-sm text-muted-foreground">
+                Based on your usage pattern, the{" "}
+                <strong>{forecast.recommendedTier}</strong> plan would better
+                suit your needs.
               </p>
               <Link href="/app/settings/billing">
                 <Button size="sm" variant="outline">
@@ -135,5 +161,5 @@ export function UsageForecast() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

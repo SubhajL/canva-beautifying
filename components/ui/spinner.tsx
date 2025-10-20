@@ -2,32 +2,31 @@ import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
-const spinnerVariants = cva(
-  "animate-spin",
-  {
-    variants: {
-      size: {
-        sm: "h-4 w-4",
-        default: "h-6 w-6",
-        lg: "h-8 w-8",
-        xl: "h-10 w-10",
-      },
-      color: {
-        default: "text-primary",
-        secondary: "text-secondary",
-        muted: "text-muted-foreground",
-        white: "text-white",
-        current: "text-current",
-      },
+const spinnerVariants = cva("animate-spin", {
+  variants: {
+    size: {
+      sm: "h-4 w-4",
+      default: "h-6 w-6",
+      lg: "h-8 w-8",
+      xl: "h-10 w-10",
     },
-    defaultVariants: {
-      size: "default",
-      color: "default",
+    color: {
+      default: "text-primary",
+      secondary: "text-secondary",
+      muted: "text-muted-foreground",
+      white: "text-white",
+      current: "text-current",
     },
-  }
-)
+  },
+  defaultVariants: {
+    size: "default",
+    color: "default",
+  },
+})
 
-interface SpinnerProps extends Omit<React.HTMLAttributes<SVGElement>, 'color'>, VariantProps<typeof spinnerVariants> {}
+interface SpinnerProps
+  extends Omit<React.HTMLAttributes<SVGElement>, "color">,
+    VariantProps<typeof spinnerVariants> {}
 
 const Spinner = React.forwardRef<SVGSVGElement, SpinnerProps>(
   ({ className, size, color, ...props }, ref) => {

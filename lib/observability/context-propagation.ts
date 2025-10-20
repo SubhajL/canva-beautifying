@@ -1,4 +1,4 @@
-import { 
+import {
   context,
   trace,
   Context,
@@ -7,17 +7,17 @@ import {
   TraceFlags,
   TextMapGetter,
   TextMapSetter,
-} from '@opentelemetry/api';
-import { W3CTraceContextPropagator } from '@opentelemetry/core';
+} from "@opentelemetry/api"
+import { W3CTraceContextPropagator } from "@opentelemetry/core"
 
 // Initialize W3C Trace Context propagator (singleton)
-let w3cPropagator: W3CTraceContextPropagator;
+let w3cPropagator: W3CTraceContextPropagator
 
 function getPropagator(): W3CTraceContextPropagator {
   if (!w3cPropagator) {
-    w3cPropagator = new W3CTraceContextPropagator();
+    w3cPropagator = new W3CTraceContextPropagator()
   }
-  return w3cPropagator;
+  return w3cPropagator
 }
 
 /**
@@ -26,63 +26,67 @@ function getPropagator(): W3CTraceContextPropagator {
 const headersGetter: TextMapGetter<Record<string, string>> = {
   keys: (carrier) => Object.keys(carrier),
   get: (carrier, key) => carrier[key],
-};
+}
 
 /**
  * Headers setter for injecting context
  */
 const headersSetter: TextMapSetter<Record<string, string>> = {
   set: (carrier, key, value) => {
-    carrier[key] = value;
+    carrier[key] = value
   },
-};
+}
 
 /**
  * Extract trace context from incoming headers
  */
-export function extractContext(headers: Headers | Record<string, string>): Context {
+export function extractContext(
+  headers: Headers | Record<string, string>
+): Context {
   // Convert Headers to plain object if needed
-  const carrier: Record<string, string> = {};
-  
+  const carrier: Record<string, string> = {}
+
   if (headers instanceof Headers) {
     headers.forEach((value, key) => {
-      carrier[key.toLowerCase()] = value;
-    });
+      carrier[key.toLowerCase()] = value
+    })
   } else {
     Object.entries(headers).forEach(([key, value]) => {
-      carrier[key.toLowerCase()] = value;
-    });
+      carrier[key.toLowerCase()] = value
+    })
   }
 
   // Extract context using W3C propagator
-  return getPropagator().extract(context.active(), carrier, headersGetter);
+  return getPropagator().extract(context.active(), carrier, headersGetter)
 }
 
 /**
  * Inject current trace context into outgoing headers
  */
-export function propagateContext(headers: Headers | Record<string, string>): void {
-  const activeContext = context.active();
-  const span = trace.getActiveSpan();
-  
+export function propagateContext(
+  headers: Headers | Record<string, string>
+): void {
+  const activeContext = context.active()
+  const span = trace.getActiveSpan()
+
   if (!span) {
-    return;
+    return
   }
 
   // Convert Headers to plain object if needed
-  let carrier: Record<string, string>;
-  
+  let carrier: Record<string, string>
+
   if (headers instanceof Headers) {
-    carrier = {};
-    getPropagator().inject(activeContext, carrier, headersSetter);
-    
+    carrier = {}
+    getPropagator().inject(activeContext, carrier, headersSetter)
+
     // Add headers to Headers object
     Object.entries(carrier).forEach(([key, value]) => {
-      headers.set(key, value);
-    });
+      headers.set(key, value)
+    })
   } else {
     // Inject directly into object
-    getPropagator().inject(activeContext, headers, headersSetter);
+    getPropagator().inject(activeContext, headers, headersSetter)
   }
 }
 
@@ -90,54 +94,54 @@ export function propagateContext(headers: Headers | Record<string, string>): voi
  * Execute a function within a span context
  */
 export function withSpan<T>(span: Span, fn: () => T): T {
-  return context.with(trace.setSpan(context.active(), span), fn);
+  return context.with(trace.setSpan(context.active(), span), fn)
 }
 
 /**
  * Execute an async function within a span context
  */
 export async function withSpanAsync<T>(
-  span: Span, 
+  span: Span,
   fn: () => Promise<T>
 ): Promise<T> {
-  return context.with(trace.setSpan(context.active(), span), fn);
+  return context.with(trace.setSpan(context.active(), span), fn)
 }
 
 /**
  * Get the currently active span
  */
 export function getCurrentSpan(): Span | undefined {
-  return trace.getActiveSpan();
+  return trace.getActiveSpan()
 }
 
 /**
  * Create a child span from the current context
  */
 export function createChildSpan(name: string, parentSpan?: Span): Span {
-  const tracer = trace.getTracer('default');
-  const parent = parentSpan || getCurrentSpan();
-  
+  const tracer = trace.getTracer("default")
+  const parent = parentSpan || getCurrentSpan()
+
   if (parent) {
-    const ctx = trace.setSpan(context.active(), parent);
-    return tracer.startSpan(name, undefined, ctx);
+    const ctx = trace.setSpan(context.active(), parent)
+    return tracer.startSpan(name, undefined, ctx)
   }
-  
-  return tracer.startSpan(name);
+
+  return tracer.startSpan(name)
 }
 
 /**
  * Get trace headers from current context
  */
 export function getTraceHeaders(): Record<string, string> {
-  const headers: Record<string, string> = {};
-  const activeContext = context.active();
-  const span = trace.getActiveSpan();
-  
+  const headers: Record<string, string> = {}
+  const activeContext = context.active()
+  const span = trace.getActiveSpan()
+
   if (span) {
-    getPropagator().inject(activeContext, headers, headersSetter);
+    getPropagator().inject(activeContext, headers, headersSetter)
   }
-  
-  return headers;
+
+  return headers
 }
 
 /**
@@ -153,97 +157,136 @@ export function createDetachedContext(
     spanId,
     traceFlags,
     isRemote: true,
-  };
+  }
 
   // Create a non-recording span with the context
-  const span = trace.wrapSpanContext(spanContext);
-  return trace.setSpan(context.active(), span);
+  const span = trace.wrapSpanContext(spanContext)
+  return trace.setSpan(context.active(), span)
 }
 
 /**
  * Enhanced fetch with automatic trace propagation
  */
 export async function tracedFetch(
-  url: string, 
+  url: string,
   options?: RequestInit
 ): Promise<Response> {
-  const headers = new Headers(options?.headers);
-  
+  const headers = new Headers(options?.headers)
+
   // Propagate trace context
-  propagateContext(headers);
-  
+  propagateContext(headers)
+
   return fetch(url, {
     ...options,
     headers,
-  });
+  })
 }
 
 /**
  * Create a trace context carrier for async jobs
  */
 export function createTraceCarrier(): Record<string, string> {
-  const carrier: Record<string, string> = {};
-  const activeContext = context.active();
-  const span = trace.getActiveSpan();
-  
+  const carrier: Record<string, string> = {}
+  const activeContext = context.active()
+  const span = trace.getActiveSpan()
+
   if (span) {
-    getPropagator().inject(activeContext, carrier, headersSetter);
+    getPropagator().inject(activeContext, carrier, headersSetter)
   }
-  
-  return carrier;
+
+  return carrier
 }
 
 /**
- * Restore context from a trace carrier
+ * Restore context from a trace carrier (with callback)
  */
-export function restoreFromCarrier(
-  carrier: Record<string, string>, 
+export function restoreFromCarrierWithCallback(
+  carrier: Record<string, string>,
   fn: () => void
 ): void {
   const restoredContext = getPropagator().extract(
-    context.active(), 
-    carrier, 
+    context.active(),
+    carrier,
     headersGetter
-  );
-  
-  context.with(restoredContext, fn);
+  )
+
+  context.with(restoredContext, fn)
+}
+
+/**
+ * Restore OpenTelemetry context from carrier without executing callback
+ *
+ * Extracts trace context from a plain object containing traceparent/tracestate
+ * headers and reconstructs an OpenTelemetry Context suitable for span creation.
+ *
+ * @param carrier - Object containing W3C trace context headers
+ * @returns OpenTelemetry Context with restored trace data
+ */
+export function restoreFromCarrier(carrier: Record<string, string>): Context {
+  try {
+    return getPropagator().extract(context.active(), carrier, headersGetter)
+  } catch (error) {
+    console.warn("Failed to restore trace context from carrier:", error)
+    return context.active()
+  }
+}
+
+/**
+ * Serialize current trace context into a carrier object
+ *
+ * Injects W3C trace context from the provided OpenTelemetry Context into
+ * a plain object suitable for JSON serialization and queue transmission.
+ *
+ * @param ctx - OpenTelemetry Context to serialize
+ * @returns Plain object with traceparent/tracestate headers
+ */
+export function getCarrierFromContext(ctx: Context): Record<string, string> {
+  const carrier: Record<string, string> = {}
+
+  try {
+    getPropagator().inject(ctx, carrier, headersSetter)
+  } catch (error) {
+    console.warn("Failed to serialize trace context to carrier:", error)
+  }
+
+  return carrier
 }
 
 /**
  * Format trace parent header manually
  */
 export function formatTraceParent(spanContext: SpanContext): string {
-  const version = '00';
-  const traceFlags = spanContext.traceFlags.toString(16).padStart(2, '0');
-  return `${version}-${spanContext.traceId}-${spanContext.spanId}-${traceFlags}`;
+  const version = "00"
+  const traceFlags = spanContext.traceFlags.toString(16).padStart(2, "0")
+  return `${version}-${spanContext.traceId}-${spanContext.spanId}-${traceFlags}`
 }
 
 /**
  * Parse trace parent header
  */
 export function parseTraceParent(traceParent: string): SpanContext | null {
-  const parts = traceParent.split('-');
-  
+  const parts = traceParent.split("-")
+
   if (parts.length !== 4) {
-    return null;
+    return null
   }
-  
-  const [version, traceId, spanId, traceFlagsHex] = parts;
-  
-  if (version !== '00') {
-    return null;
+
+  const [version, traceId, spanId, traceFlagsHex] = parts
+
+  if (version !== "00") {
+    return null
   }
-  
+
   // Validate trace flags is a valid hex string
-  const traceFlags = parseInt(traceFlagsHex, 16);
+  const traceFlags = parseInt(traceFlagsHex, 16)
   if (isNaN(traceFlags)) {
-    return null;
+    return null
   }
-  
+
   return {
     traceId,
     spanId,
     traceFlags,
     isRemote: true,
-  };
+  }
 }

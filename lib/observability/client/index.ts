@@ -1,6 +1,6 @@
 /**
  * Client-safe observability utilities for browser and Edge Runtime environments
- * 
+ *
  * These utilities do not depend on any Node.js-specific modules and can be safely
  * imported in client components, pages, and middleware.
  */
@@ -12,7 +12,7 @@ export {
   logger,
   type LogLevel,
   type LogMetadata,
-} from './logger'
+} from "./logger"
 
 // Tracing exports
 export {
@@ -25,7 +25,7 @@ export {
   createEnhancementTrace,
   recordPipelineEvent,
   type ClientSpan,
-} from './tracing'
+} from "./tracing"
 
 // Events exports
 export {
@@ -38,7 +38,7 @@ export {
   trackFeatureUsage,
   trackApiCall,
   type TelemetryEvent,
-} from './events'
+} from "./events"
 
 // Error reporter exports
 export {
@@ -48,7 +48,7 @@ export {
   sanitizeErrorForLogging,
   createErrorId,
   type ErrorContext,
-} from './error-reporter'
+} from "./error-reporter"
 
 // Re-export commonly used functions at the top level for convenience
-export { logger as default } from './logger'
+export { logger as default } from "./logger"

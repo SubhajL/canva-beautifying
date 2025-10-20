@@ -1,15 +1,21 @@
-'use client'
+"use client"
 
-import { useEffect, useState } from 'react'
-import { useReports } from '@/hooks/use-reports'
-import { EnhancementReport } from '@/lib/reports/types'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Badge } from '@/components/ui/badge'
-import { Download, Share2, Eye, Calendar, BarChart3 } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
-import Link from 'next/link'
+import { useEffect, useState } from "react"
+import { useReports } from "@/hooks/use-reports"
+import { EnhancementReport } from "@/lib/reports/types"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Badge } from "@/components/ui/badge"
+import { Download, Share2, Eye, Calendar, BarChart3 } from "lucide-react"
+import { formatDistanceToNow } from "date-fns"
+import Link from "next/link"
 
 export function ReportHistory() {
   const { getUserReports, loading, error } = useReports()
@@ -31,7 +37,7 @@ export function ReportHistory() {
           <Card key={i}>
             <CardHeader>
               <Skeleton className="h-6 w-48" />
-              <Skeleton className="h-4 w-32 mt-2" />
+              <Skeleton className="mt-2 h-4 w-32" />
             </CardHeader>
             <CardContent>
               <Skeleton className="h-20 w-full" />
@@ -59,9 +65,9 @@ export function ReportHistory() {
     return (
       <Card>
         <CardContent className="py-8 text-center">
-          <BarChart3 className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+          <BarChart3 className="mx-auto mb-4 h-12 w-12 text-gray-400" />
           <p className="text-gray-500">No reports generated yet</p>
-          <p className="text-sm text-gray-400 mt-2">
+          <p className="mt-2 text-sm text-gray-400">
             Reports will appear here after you enhance documents
           </p>
         </CardContent>
@@ -72,18 +78,28 @@ export function ReportHistory() {
   return (
     <div className="space-y-4">
       {reports.map((report) => (
-        <Card key={report.id} className="hover:shadow-lg transition-shadow">
+        <Card key={report.id} className="transition-shadow hover:shadow-lg">
           <CardHeader>
             <div className="flex items-start justify-between">
               <div>
-                <CardTitle className="text-lg">{report.documentInfo.name}</CardTitle>
-                <CardDescription className="flex items-center gap-2 mt-1">
-                  <Calendar className="w-3 h-3" />
-                  {formatDistanceToNow(new Date(report.generatedAt), { addSuffix: true })}
+                <CardTitle className="text-lg">
+                  {report.documentInfo.name}
+                </CardTitle>
+                <CardDescription className="mt-1 flex items-center gap-2">
+                  <Calendar className="h-3 w-3" />
+                  {formatDistanceToNow(new Date(report.generatedAt), {
+                    addSuffix: true,
+                  })}
                 </CardDescription>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant={report.engagement.predictedScore > 80 ? 'default' : 'secondary'}>
+                <Badge
+                  variant={
+                    report.engagement.predictedScore > 80
+                      ? "default"
+                      : "secondary"
+                  }
+                >
                   {report.engagement.predictedScore}% Engagement
                 </Badge>
                 <Badge variant="outline">
@@ -103,7 +119,7 @@ export function ReportHistory() {
               <div className="flex items-center gap-2">
                 <Link href={`/app/reports/${report.id}`}>
                   <Button variant="ghost" size="sm">
-                    <Eye className="w-4 h-4 mr-2" />
+                    <Eye className="mr-2 h-4 w-4" />
                     View
                   </Button>
                 </Link>
@@ -126,7 +142,7 @@ function ReportActions({ reportId }: { reportId: string }) {
     setExporting(true)
     const pdfUrl = await exportReportAsPDF(reportId)
     if (pdfUrl) {
-      window.open(pdfUrl, '_blank')
+      window.open(pdfUrl, "_blank")
     }
     setExporting(false)
   }
@@ -149,7 +165,7 @@ function ReportActions({ reportId }: { reportId: string }) {
         onClick={handleExport}
         disabled={exporting}
       >
-        <Download className="w-4 h-4 mr-2" />
+        <Download className="mr-2 h-4 w-4" />
         Export
       </Button>
       <Button
@@ -158,7 +174,7 @@ function ReportActions({ reportId }: { reportId: string }) {
         onClick={handleShare}
         disabled={sharing}
       >
-        <Share2 className="w-4 h-4 mr-2" />
+        <Share2 className="mr-2 h-4 w-4" />
         Share
       </Button>
     </>

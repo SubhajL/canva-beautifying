@@ -1,17 +1,19 @@
-import { BaseAIProvider } from '../base-provider'
-import { 
-  AIModel, 
-  DocumentAnalysis, 
-  EnhancementRequest, 
-  AIProviderResponse 
-} from '../types'
-import { SecureAPIClient } from '../utils/secure-client'
+import { BaseAIProvider } from "../base-provider"
+import {
+  AIModel,
+  DocumentAnalysis,
+  EnhancementRequest,
+  AIProviderResponse,
+} from "../types"
+import { SecureAPIClient } from "../utils/secure-client"
 
 export class GeminiProvider extends BaseAIProvider {
-  private baseUrl = process.env.GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta'
-  
+  private baseUrl =
+    process.env.GEMINI_BASE_URL ||
+    "https://generativelanguage.googleapis.com/v1beta"
+
   get model(): AIModel {
-    return 'gemini-2.0-flash'
+    return "gemini-2.0-flash"
   }
 
   protected getCostPer1kTokens(): number {
@@ -29,31 +31,33 @@ export class GeminiProvider extends BaseAIProvider {
       const response = await this.retryWithBackoff(async () => {
         const res = await SecureAPIClient.request({
           url: `${this.baseUrl}/models/gemini-2.0-flash-latest:generateContent`,
-          method: 'POST',
+          method: "POST",
           apiKey: this.config.apiKey,
-          provider: 'gemini',
+          provider: "gemini",
           body: {
-            contents: [{
-              parts: [
-                {
-                  text: this.buildAnalysisPrompt(request)
-                },
-                {
-                  inline_data: {
-                    mime_type: 'image/jpeg',
-                    data: await this.fetchImageAsBase64(imageUrl)
-                  }
-                }
-              ]
-            }],
+            contents: [
+              {
+                parts: [
+                  {
+                    text: this.buildAnalysisPrompt(request),
+                  },
+                  {
+                    inline_data: {
+                      mime_type: "image/jpeg",
+                      data: await this.fetchImageAsBase64(imageUrl),
+                    },
+                  },
+                ],
+              },
+            ],
             generationConfig: {
               temperature: this.config.temperature || 0.7,
               maxOutputTokens: this.config.maxTokens || 2048,
-              responseMimeType: "application/json"
-            }
+              responseMimeType: "application/json",
+            },
           },
           timeout: this.config.timeout || 30000,
-          maxRetries: this.config.maxRetries || 3
+          maxRetries: this.config.maxRetries || 3,
         })
 
         if (!res.ok) {
@@ -66,11 +70,11 @@ export class GeminiProvider extends BaseAIProvider {
 
       const content = response.candidates?.[0]?.content?.parts?.[0]?.text
       if (!content) {
-        throw new Error('No content in response')
+        throw new Error("No content in response")
       }
 
       const analysis = JSON.parse(content) as DocumentAnalysis
-      
+
       // Calculate token usage (approximate)
       const totalTokens = Math.ceil(content.length / 4) // rough estimate
       const cost = this.calculateCost(totalTokens)
@@ -82,8 +86,8 @@ export class GeminiProvider extends BaseAIProvider {
           promptTokens: Math.ceil(totalTokens * 0.3),
           completionTokens: Math.ceil(totalTokens * 0.7),
           totalTokens,
-          cost
-        }
+          cost,
+        },
       }
     } catch (error) {
       return this.handleError(error)
@@ -100,22 +104,26 @@ export class GeminiProvider extends BaseAIProvider {
       const response = await this.retryWithBackoff(async () => {
         const res = await SecureAPIClient.request({
           url: `${this.baseUrl}/models/gemini-2.0-flash-latest:generateContent`,
-          method: 'POST',
+          method: "POST",
           apiKey: this.config.apiKey,
-          provider: 'gemini',
+          provider: "gemini",
           body: {
-            contents: [{
-              parts: [{
-                text: this.buildEnhancementPrompt(analysis, request)
-              }]
-            }],
+            contents: [
+              {
+                parts: [
+                  {
+                    text: this.buildEnhancementPrompt(analysis, request),
+                  },
+                ],
+              },
+            ],
             generationConfig: {
               temperature: this.config.temperature || 0.8,
               maxOutputTokens: this.config.maxTokens || 1024,
-            }
+            },
           },
           timeout: this.config.timeout || 30000,
-          maxRetries: this.config.maxRetries || 3
+          maxRetries: this.config.maxRetries || 3,
         })
 
         if (!res.ok) {
@@ -128,7 +136,7 @@ export class GeminiProvider extends BaseAIProvider {
 
       const content = response.candidates?.[0]?.content?.parts?.[0]?.text
       if (!content) {
-        throw new Error('No content in response')
+        throw new Error("No content in response")
       }
 
       // Calculate token usage (approximate)
@@ -142,8 +150,8 @@ export class GeminiProvider extends BaseAIProvider {
           promptTokens: Math.ceil(totalTokens * 0.3),
           completionTokens: Math.ceil(totalTokens * 0.7),
           totalTokens,
-          cost
-        }
+          cost,
+        },
       }
     } catch (error) {
       return this.handleError(error)
@@ -154,7 +162,7 @@ export class GeminiProvider extends BaseAIProvider {
     const response = await fetch(imageUrl)
     const blob = await response.blob()
     const buffer = await blob.arrayBuffer()
-    const base64 = Buffer.from(buffer).toString('base64')
+    const base64 = Buffer.from(buffer).toString("base64")
     return base64
   }
 }

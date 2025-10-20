@@ -1,40 +1,46 @@
-'use client';
+"use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { 
-  LinkIcon, 
-  CheckCircle2, 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Badge } from "@/components/ui/badge"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import {
+  LinkIcon,
+  CheckCircle2,
   XCircle,
   AlertCircle,
   Zap,
   ExternalLink,
-  Info
-} from 'lucide-react';
-import { useCanvaAuth } from '@/hooks/use-canva-auth';
-import { isCanvaAPIConfigured } from '@/lib/canva/api-config';
-import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
+  Info,
+} from "lucide-react"
+import { useCanvaAuth } from "@/hooks/use-canva-auth"
+import { isCanvaAPIConfigured } from "@/lib/canva/api-config"
+import { useState } from "react"
+import { useToast } from "@/hooks/use-toast"
 
 export function CanvaSettings() {
-  const { isConnected, isLoading, connect, disconnect } = useCanvaAuth();
-  const apiConfigured = isCanvaAPIConfigured();
-  const [autoImport, setAutoImport] = useState(true);
-  const { toast } = useToast();
+  const { isConnected, isLoading, connect, disconnect } = useCanvaAuth()
+  const apiConfigured = isCanvaAPIConfigured()
+  const [autoImport, setAutoImport] = useState(true)
+  const { toast } = useToast()
 
   const handleAutoImportChange = (checked: boolean) => {
-    setAutoImport(checked);
+    setAutoImport(checked)
     toast({
-      title: checked ? 'Auto Import Enabled' : 'Auto Import Disabled',
-      description: checked 
-        ? 'Canva API will be used automatically when available'
-        : 'You will need to select API mode manually',
-    });
-  };
+      title: checked ? "Auto Import Enabled" : "Auto Import Disabled",
+      description: checked
+        ? "Canva API will be used automatically when available"
+        : "You will need to select API mode manually",
+    })
+  }
 
   if (!apiConfigured) {
     return (
@@ -49,13 +55,13 @@ export function CanvaSettings() {
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              Canva API integration is not configured for this instance. 
-              Contact your administrator to enable this feature.
+              Canva API integration is not configured for this instance. Contact
+              your administrator to enable this feature.
             </AlertDescription>
           </Alert>
         </CardContent>
       </Card>
-    );
+    )
   }
 
   return (
@@ -68,8 +74,8 @@ export function CanvaSettings() {
               Connect your Canva account for seamless design imports
             </CardDescription>
           </div>
-          <Badge variant={isConnected ? 'default' : 'secondary'}>
-            {isConnected ? 'Connected' : 'Not Connected'}
+          <Badge variant={isConnected ? "default" : "secondary"}>
+            {isConnected ? "Connected" : "Not Connected"}
           </Badge>
         </div>
       </CardHeader>
@@ -77,7 +83,7 @@ export function CanvaSettings() {
         {/* Connection Status */}
         <div className="space-y-4">
           {isConnected ? (
-            <div className="flex items-center justify-between p-4 rounded-lg bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800">
+            <div className="flex items-center justify-between rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950">
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
                 <div>
@@ -97,7 +103,7 @@ export function CanvaSettings() {
               </Button>
             </div>
           ) : (
-            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50 border">
+            <div className="flex items-center justify-between rounded-lg border bg-muted/50 p-4">
               <div className="flex items-center gap-3">
                 <XCircle className="h-5 w-5 text-muted-foreground" />
                 <div>
@@ -107,11 +113,7 @@ export function CanvaSettings() {
                   </p>
                 </div>
               </div>
-              <Button
-                size="sm"
-                onClick={connect}
-                disabled={isLoading}
-              >
+              <Button size="sm" onClick={connect} disabled={isLoading}>
                 <LinkIcon className="mr-2 h-4 w-4" />
                 Connect
               </Button>
@@ -165,18 +167,18 @@ export function CanvaSettings() {
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            Your Canva connection is secure and can be revoked at any time. 
-            We only access designs you explicitly choose to import.
+            Your Canva connection is secure and can be revoked at any time. We
+            only access designs you explicitly choose to import.
           </AlertDescription>
         </Alert>
 
         {/* Help Link */}
-        <div className="pt-4 border-t">
+        <div className="border-t pt-4">
           <a
             href="https://www.canva.com/developers/docs/connect-api/getting-started/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-primary hover:underline inline-flex items-center gap-1"
+            className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
           >
             Learn more about Canva Connect
             <ExternalLink className="h-3 w-3" />
@@ -184,5 +186,5 @@ export function CanvaSettings() {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

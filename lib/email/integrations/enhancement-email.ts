@@ -1,5 +1,5 @@
-import { EmailService } from '../email-service'
-import { createClient } from '@/lib/supabase/client'
+import { EmailService } from "../email-service"
+import { createClient } from "@/lib/supabase/client"
 
 export async function sendEnhancementCompletedNotification(
   enhancementId: string
@@ -8,24 +8,26 @@ export async function sendEnhancementCompletedNotification(
     // Fetch enhancement details
     const supabase = createClient()
     const { data: enhancement, error: enhancementError } = await supabase
-      .from('enhancements')
-      .select(`
+      .from("enhancements")
+      .select(
+        `
         *,
         users (
           id,
           name,
           email
         )
-      `)
-      .eq('id', enhancementId)
+      `
+      )
+      .eq("id", enhancementId)
       .single()
 
     if (enhancementError || !enhancement) {
-      console.error('Failed to fetch enhancement:', enhancementError)
+      console.error("Failed to fetch enhancement:", enhancementError)
       return
     }
 
-    if (!enhancement.users || enhancement.status !== 'completed') {
+    if (!enhancement.users || enhancement.status !== "completed") {
       return
     }
 
@@ -38,21 +40,18 @@ export async function sendEnhancementCompletedNotification(
     const enhancedPreviewUrl = enhancement.enhanced_url
 
     // Send email
-    await EmailService.sendEnhancementCompletedEmail(
-      enhancement.users.id,
-      {
-        userName: enhancement.users.name || 'User',
-        userEmail: enhancement.users.email,
-        documentName: analysisData?.documentName || 'Your document',
-        enhancementUrl: `/app/enhancements/${enhancementId}`,
-        originalPreviewUrl,
-        enhancedPreviewUrl,
-        processingTime: enhancement.processing_time || 0,
-        improvementScore: Math.round(improvementScore),
-      }
-    )
+    await EmailService.sendEnhancementCompletedEmail(enhancement.users.id, {
+      userName: enhancement.users.name || "User",
+      userEmail: enhancement.users.email,
+      documentName: analysisData?.documentName || "Your document",
+      enhancementUrl: `/app/enhancements/${enhancementId}`,
+      originalPreviewUrl,
+      enhancedPreviewUrl,
+      processingTime: enhancement.processing_time || 0,
+      improvementScore: Math.round(improvementScore),
+    })
   } catch (error) {
-    console.error('Error sending enhancement completed email:', error)
+    console.error("Error sending enhancement completed email:", error)
   }
 }
 
@@ -64,29 +63,33 @@ export async function sendEnhancementFailedNotification(
     // Fetch enhancement details
     const supabase = createClient()
     const { data: enhancement, error: enhancementError } = await supabase
-      .from('enhancements')
-      .select(`
+      .from("enhancements")
+      .select(
+        `
         *,
         users (
           id,
           name,
           email
         )
-      `)
-      .eq('id', enhancementId)
+      `
+      )
+      .eq("id", enhancementId)
       .single()
 
     if (enhancementError || !enhancement || !enhancement.users) {
-      console.error('Failed to fetch enhancement:', enhancementError)
+      console.error("Failed to fetch enhancement:", enhancementError)
       return
     }
 
     // For now, we'll just log the failure
     // In a full implementation, we'd have a failure email template
-    console.log(`Enhancement ${enhancementId} failed for user ${enhancement.users.email}: ${errorMessage}`)
-    
+    console.log(
+      `Enhancement ${enhancementId} failed for user ${enhancement.users.email}: ${errorMessage}`
+    )
+
     // TODO: Implement failure email template
   } catch (error) {
-    console.error('Error sending enhancement failed email:', error)
+    console.error("Error sending enhancement failed email:", error)
   }
 }

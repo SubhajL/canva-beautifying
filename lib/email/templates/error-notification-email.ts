@@ -2,7 +2,7 @@ export interface ErrorNotificationEmailData {
   userName?: string
   documentName: string
   enhancementId: string
-  errorType: 'processing' | 'ai_failure' | 'storage' | 'timeout' | 'unknown'
+  errorType: "processing" | "ai_failure" | "storage" | "timeout" | "unknown"
   errorDetails?: string
   attemptNumber: number
   willRetry: boolean
@@ -10,9 +10,11 @@ export interface ErrorNotificationEmailData {
   appUrl: string
 }
 
-export const errorNotificationEmailTemplate = (data: ErrorNotificationEmailData): { subject: string; html: string } => {
+export const errorNotificationEmailTemplate = (
+  data: ErrorNotificationEmailData
+): { subject: string; html: string } => {
   const {
-    userName = 'there',
+    userName = "there",
     documentName,
     enhancementId,
     errorType,
@@ -20,35 +22,35 @@ export const errorNotificationEmailTemplate = (data: ErrorNotificationEmailData)
     attemptNumber,
     willRetry,
     supportTicketUrl,
-    appUrl
+    appUrl,
   } = data
 
   const errorMessages = {
     processing: {
-      title: 'Processing Error',
-      description: 'We encountered an issue while enhancing your document.',
-      icon: '⚙️'
+      title: "Processing Error",
+      description: "We encountered an issue while enhancing your document.",
+      icon: "⚙️",
     },
     ai_failure: {
-      title: 'AI Service Temporary Issue',
-      description: 'Our AI service is temporarily unavailable.',
-      icon: '🤖'
+      title: "AI Service Temporary Issue",
+      description: "Our AI service is temporarily unavailable.",
+      icon: "🤖",
     },
     storage: {
-      title: 'Storage Issue',
-      description: 'We had trouble saving your enhanced document.',
-      icon: '💾'
+      title: "Storage Issue",
+      description: "We had trouble saving your enhanced document.",
+      icon: "💾",
     },
     timeout: {
-      title: 'Processing Timeout',
-      description: 'Your document is taking longer than expected to process.',
-      icon: '⏱️'
+      title: "Processing Timeout",
+      description: "Your document is taking longer than expected to process.",
+      icon: "⏱️",
     },
     unknown: {
-      title: 'Unexpected Error',
-      description: 'An unexpected error occurred during enhancement.',
-      icon: '❓'
-    }
+      title: "Unexpected Error",
+      description: "An unexpected error occurred during enhancement.",
+      icon: "❓",
+    },
   }
 
   const error = errorMessages[errorType]
@@ -108,7 +110,9 @@ export const errorNotificationEmailTemplate = (data: ErrorNotificationEmailData)
                 ${attemptNumber} of 3
               </td>
             </tr>
-            ${errorDetails ? `
+            ${
+              errorDetails
+                ? `
             <tr>
               <td colspan="2" style="padding: 12px 0 0 0;">
                 <div style="background-color: white; padding: 12px; border-radius: 4px; border: 1px solid #FCA5A5;">
@@ -118,11 +122,15 @@ export const errorNotificationEmailTemplate = (data: ErrorNotificationEmailData)
                 </div>
               </td>
             </tr>
-            ` : ''}
+            `
+                : ""
+            }
           </table>
         </div>
 
-        ${willRetry ? `
+        ${
+          willRetry
+            ? `
         <!-- Retry Notice -->
         <div style="background-color: #FEF3C7; padding: 20px; border-radius: 8px; margin-bottom: 24px; text-align: center;">
           <p style="color: #92400E; font-size: 16px; margin: 0;">
@@ -132,7 +140,8 @@ export const errorNotificationEmailTemplate = (data: ErrorNotificationEmailData)
             No action needed from your side. We'll email you once it's complete.
           </p>
         </div>
-        ` : `
+        `
+            : `
         <!-- Action Required -->
         <div style="background-color: #DBEAFE; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
           <h4 style="color: #1E40AF; margin: 0 0 12px 0; font-size: 16px;">
@@ -150,7 +159,8 @@ export const errorNotificationEmailTemplate = (data: ErrorNotificationEmailData)
             </li>
           </ol>
         </div>
-        `}
+        `
+        }
 
         <!-- Support -->
         <div style="border: 1px solid #E5E7EB; padding: 20px; border-radius: 8px; text-align: center;">
@@ -160,17 +170,21 @@ export const errorNotificationEmailTemplate = (data: ErrorNotificationEmailData)
           <p style="color: #6B7280; font-size: 14px; margin: 0 0 16px 0;">
             Our support team is ready to assist you.
           </p>
-          ${supportTicketUrl ? `
+          ${
+            supportTicketUrl
+              ? `
             <a href="${supportTicketUrl}" 
                style="display: inline-block; background-color: #7C3AED; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: bold;">
               View Support Ticket
             </a>
-          ` : `
+          `
+              : `
             <a href="${appUrl}/support?enhancement=${enhancementId}" 
                style="display: inline-block; background-color: #7C3AED; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: bold;">
               Contact Support
             </a>
-          `}
+          `
+          }
           <p style="color: #9CA3AF; font-size: 12px; margin: 12px 0 0 0;">
             Or reply to this email with any questions
           </p>

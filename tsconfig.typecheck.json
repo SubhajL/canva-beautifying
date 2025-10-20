@@ -1,0 +1,34 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": [
+    "next-env.d.ts",
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "components/**/*.ts",
+    "components/**/*.tsx",
+    "contexts/**/*.ts",
+    "contexts/**/*.tsx",
+    "hooks/**/*.ts",
+    "hooks/**/*.tsx",
+    "lib/**/*.ts",
+    "lib/**/*.tsx",
+    "scripts/**/*.ts",
+    "scripts/**/*.tsx"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "__tests__/**",
+    "__mocks__/**",
+    "e2e/**",
+    "playwright.*.config.*",
+    "jest*.config.*",
+    "node_modules",
+    ".next",
+    "coverage",
+    "test-results",
+    "dist"
+  ]
+}

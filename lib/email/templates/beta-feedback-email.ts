@@ -7,14 +7,16 @@ export interface BetaFeedbackEmailData {
   appUrl: string
 }
 
-export const betaFeedbackEmailTemplate = (data: BetaFeedbackEmailData): { subject: string; html: string } => {
+export const betaFeedbackEmailTemplate = (
+  data: BetaFeedbackEmailData
+): { subject: string; html: string } => {
   const {
-    userName = 'Beta Tester',
+    userName = "Beta Tester",
     daysInBeta,
     enhancementsCount,
     topFeature,
     surveyUrl,
-    appUrl
+    appUrl,
   } = data
 
   const subject = `🚀 How's your BeautifyAI beta experience going?`
@@ -106,14 +108,18 @@ export const betaFeedbackEmailTemplate = (data: BetaFeedbackEmailData): { subjec
               How likely are you to recommend BeautifyAI?
             </p>
             <div style="display: inline-flex; gap: 8px;">
-              ${[1,2,3,4,5,6,7,8,9,10].map(score => `
+              ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                .map(
+                  (score) => `
                 <a href="${appUrl}/quick-feedback?score=${score}" 
-                   style="display: inline-block; background-color: ${score >= 9 ? '#10B981' : score >= 7 ? '#F59E0B' : '#EF4444'}; 
+                   style="display: inline-block; background-color: ${score >= 9 ? "#10B981" : score >= 7 ? "#F59E0B" : "#EF4444"}; 
                           color: white; width: 32px; height: 32px; line-height: 32px; text-align: center; 
                           border-radius: 4px; text-decoration: none; font-size: 14px;">
                   ${score}
                 </a>
-              `).join('')}
+              `
+                )
+                .join("")}
             </div>
             <p style="color: #9CA3AF; font-size: 12px; margin: 8px 0 0 0;">
               Not likely ← → Very likely

@@ -1,10 +1,10 @@
-import { DocumentAnalysis } from '@/lib/ai/types'
+import { DocumentAnalysis } from "@/lib/ai/types"
 
 export interface LayoutMetrics {
   whitespace: number // Percentage of whitespace
   alignment: {
-    horizontal: 'left' | 'center' | 'right' | 'mixed'
-    vertical: 'top' | 'middle' | 'bottom' | 'mixed'
+    horizontal: "left" | "center" | "right" | "mixed"
+    vertical: "top" | "middle" | "bottom" | "mixed"
     consistency: number // 0-100
   }
   hierarchy: {
@@ -31,7 +31,7 @@ export interface ColorMetrics {
     accent: string[]
   }
   harmony: {
-    type: 'monochromatic' | 'analogous' | 'complementary' | 'triadic' | 'custom'
+    type: "monochromatic" | "analogous" | "complementary" | "triadic" | "custom"
     score: number // 0-100
   }
   contrast: {
@@ -68,7 +68,7 @@ export interface TypographyMetrics {
 }
 
 export interface AgeAppropriateness {
-  detectedAge: 'children' | 'teens' | 'adults' | 'all-ages'
+  detectedAge: "children" | "teens" | "adults" | "all-ages"
   confidence: number // 0-100
   factors: {
     complexity: number
@@ -89,7 +89,7 @@ export interface EngagementMetrics {
   interestElements: string[]
   attentionAnchors: number
   flowScore: number // 0-100
-  emotionalTone: 'positive' | 'neutral' | 'negative' | 'mixed'
+  emotionalTone: "positive" | "neutral" | "negative" | "mixed"
 }
 
 export interface DocumentContext {
@@ -100,11 +100,11 @@ export interface DocumentContext {
     format: string
     size: number
   }
-  type: 'worksheet' | 'presentation' | 'marketing'
+  type: "worksheet" | "presentation" | "marketing"
   userPreferences?: {
-    style?: 'modern' | 'classic' | 'playful' | 'professional'
-    colorScheme?: 'vibrant' | 'muted' | 'monochrome'
-    targetAudience?: 'children' | 'teens' | 'adults' | 'business'
+    style?: "modern" | "classic" | "playful" | "professional"
+    colorScheme?: "vibrant" | "muted" | "monochrome"
+    targetAudience?: "children" | "teens" | "adults" | "business"
   }
 }
 
@@ -112,7 +112,9 @@ export interface AnalysisEngine {
   analyzeLayout(context: DocumentContext): Promise<LayoutMetrics>
   analyzeColors(context: DocumentContext): Promise<ColorMetrics>
   analyzeTypography(context: DocumentContext): Promise<TypographyMetrics>
-  analyzeAgeAppropriateness(context: DocumentContext): Promise<AgeAppropriateness>
+  analyzeAgeAppropriateness(
+    context: DocumentContext
+  ): Promise<AgeAppropriateness>
   identifySubjectMatter(context: DocumentContext): Promise<SubjectMatter>
   calculateEngagement(context: DocumentContext): Promise<EngagementMetrics>
   generateCompleteAnalysis(context: DocumentContext): Promise<DocumentAnalysis>

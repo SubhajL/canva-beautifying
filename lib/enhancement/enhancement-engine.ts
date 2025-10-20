@@ -1,8 +1,8 @@
-import { EnhancementPipeline } from './pipeline/enhancement-pipeline'
-import { PipelineContext, CompositionResult } from './pipeline/types'
+import { EnhancementPipeline } from "./pipeline/enhancement-pipeline"
+import { PipelineContext, CompositionResult } from "./pipeline/types"
 
 export interface EnhancementEngineConfig {
-  subscriptionTier: 'free' | 'basic' | 'pro' | 'premium'
+  subscriptionTier: "free" | "basic" | "pro" | "premium"
   aiModel?: string
 }
 
@@ -50,10 +50,12 @@ export class EnhancementEngine {
     return {}
   }
 
-  async combineEnhancements(_components: any): Promise<{ buffer: Buffer; qualityImprovement: number }> {
+  async combineEnhancements(
+    _components: any
+  ): Promise<{ buffer: Buffer; qualityImprovement: number }> {
     // This would be handled by the final composition stage
     return {
-      buffer: Buffer.from('enhanced'),
+      buffer: Buffer.from("enhanced"),
       qualityImprovement: 30,
     }
   }
@@ -84,14 +86,14 @@ export class EnhancementEngine {
     }
 
     const pipeline = new EnhancementPipeline(context)
-    
+
     // Subscribe to progress events if needed
-    pipeline.on('pipeline-event', (event) => {
-      console.log('Pipeline event:', event.type)
+    pipeline.on("pipeline-event", (event) => {
+      console.log("Pipeline event:", event.type)
     })
 
     const result = await pipeline.execute()
-    
+
     // Track tokens used (simplified)
     this.tokensUsed += 1000 // Estimate
 

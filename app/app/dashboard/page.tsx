@@ -1,14 +1,20 @@
-'use client'
+"use client"
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/contexts/auth-context'
-import { useUser } from '@/hooks/use-user'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Icons } from '@/components/ui/icons'
-import { Skeleton } from '@/components/ui/skeleton'
-import { createClient } from '@/lib/supabase/client'
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/auth-context"
+import { useUser } from "@/hooks/use-user"
+import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Icons } from "@/components/ui/icons"
+import { Skeleton } from "@/components/ui/skeleton"
+import { createClient } from "@/lib/supabase/client"
 
 interface UserProfile {
   id: string
@@ -26,7 +32,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!authUser && !loading) {
-      router.replace('/login')
+      router.replace("/login")
     }
   }, [authUser, loading, router])
 
@@ -35,9 +41,9 @@ export default function DashboardPage() {
       if (!authUser) return
 
       const { data, error } = await supabase
-        .from('users')
-        .select('id, email, name, subscription_tier')
-        .eq('id', authUser.id)
+        .from("users")
+        .select("id, email, name, subscription_tier")
+        .eq("id", authUser.id)
         .single()
 
       if (data && !error) {
@@ -50,7 +56,7 @@ export default function DashboardPage() {
 
   const handleSignOut = async () => {
     await signOut()
-    router.push('/')
+    router.push("/")
   }
 
   if (loading) {
@@ -101,12 +107,14 @@ export default function DashboardPage() {
             </div>
             <div>
               <p className="text-sm font-medium">Name</p>
-              <p className="text-sm text-muted-foreground">{userProfile?.name || 'Not set'}</p>
+              <p className="text-sm text-muted-foreground">
+                {userProfile?.name || "Not set"}
+              </p>
             </div>
             <div>
               <p className="text-sm font-medium">Subscription</p>
-              <p className="text-sm text-muted-foreground capitalize">
-                {userProfile?.subscription_tier || 'free'} tier
+              <p className="text-sm capitalize text-muted-foreground">
+                {userProfile?.subscription_tier || "free"} tier
               </p>
             </div>
           </CardContent>
@@ -119,7 +127,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">No documents yet</p>
-            <Button className="mt-4" onClick={() => router.push('/app/upload')}>
+            <Button className="mt-4" onClick={() => router.push("/app/upload")}>
               <Icons.upload className="mr-2 h-4 w-4" />
               Upload Document
             </Button>

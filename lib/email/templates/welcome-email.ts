@@ -1,33 +1,54 @@
 export interface WelcomeEmailData {
   userName?: string
-  subscriptionTier: 'free' | 'basic' | 'pro' | 'premium'
+  subscriptionTier: "free" | "basic" | "pro" | "premium"
   appUrl: string
 }
 
-export const welcomeEmailTemplate = (data: WelcomeEmailData): { subject: string; html: string } => {
-  const { userName = 'there', subscriptionTier = 'free', appUrl } = data
+export const welcomeEmailTemplate = (
+  data: WelcomeEmailData
+): { subject: string; html: string } => {
+  const { userName = "there", subscriptionTier = "free", appUrl } = data
 
   const tierDetails = {
     free: {
-      name: 'Free',
-      features: ['5 enhancements per month', 'Basic AI models', 'Standard export formats'],
-      color: '#6B7280'
+      name: "Free",
+      features: [
+        "5 enhancements per month",
+        "Basic AI models",
+        "Standard export formats",
+      ],
+      color: "#6B7280",
     },
     basic: {
-      name: 'Basic',
-      features: ['50 enhancements per month', 'Advanced AI models', 'Priority processing', 'No watermarks'],
-      color: '#3B82F6'
+      name: "Basic",
+      features: [
+        "50 enhancements per month",
+        "Advanced AI models",
+        "Priority processing",
+        "No watermarks",
+      ],
+      color: "#3B82F6",
     },
     pro: {
-      name: 'Pro',
-      features: ['200 enhancements per month', 'All AI models', 'Batch processing', 'API access'],
-      color: '#8B5CF6'
+      name: "Pro",
+      features: [
+        "200 enhancements per month",
+        "All AI models",
+        "Batch processing",
+        "API access",
+      ],
+      color: "#8B5CF6",
     },
     premium: {
-      name: 'Premium',
-      features: ['Unlimited enhancements', 'Ensemble AI processing', 'White-label options', 'Dedicated support'],
-      color: '#EC4899'
-    }
+      name: "Premium",
+      features: [
+        "Unlimited enhancements",
+        "Ensemble AI processing",
+        "White-label options",
+        "Dedicated support",
+      ],
+      color: "#EC4899",
+    },
   }
 
   const tier = tierDetails[subscriptionTier]
@@ -69,9 +90,13 @@ export const welcomeEmailTemplate = (data: WelcomeEmailData): { subject: string;
             Your ${tier.name} Plan Includes:
           </h3>
           <ul style="margin: 0; padding-left: 20px;">
-            ${tier.features.map(feature => `
+            ${tier.features
+              .map(
+                (feature) => `
               <li style="color: #374151; margin-bottom: 8px;">${feature}</li>
-            `).join('')}
+            `
+              )
+              .join("")}
           </ul>
         </div>
 

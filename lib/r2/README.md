@@ -31,7 +31,7 @@ Copy `.env.example` to `.env.local` and fill in your R2 credentials:
 
 ```env
 CLOUDFLARE_ACCOUNT_ID=your_account_id
-CLOUDFLARE_ACCESS_KEY_ID=your_access_key_id  
+CLOUDFLARE_ACCESS_KEY_ID=your_access_key_id
 CLOUDFLARE_SECRET_ACCESS_KEY=your_secret_access_key
 CLOUDFLARE_R2_BUCKET_NAME=beautifyai-storage
 CLOUDFLARE_R2_PUBLIC_URL=https://your-custom-domain.com # Optional

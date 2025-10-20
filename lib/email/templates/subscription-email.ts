@@ -1,18 +1,20 @@
 export interface SubscriptionEmailData {
   userName?: string
-  action: 'created' | 'upgraded' | 'downgraded' | 'cancelled' | 'renewed'
-  planName: 'Basic' | 'Pro' | 'Premium'
+  action: "created" | "upgraded" | "downgraded" | "cancelled" | "renewed"
+  planName: "Basic" | "Pro" | "Premium"
   previousPlanName?: string
   amount: string
-  interval: 'month' | 'year'
+  interval: "month" | "year"
   nextBillingDate?: string
   features: string[]
   appUrl: string
 }
 
-export const subscriptionEmailTemplate = (data: SubscriptionEmailData): { subject: string; html: string } => {
+export const subscriptionEmailTemplate = (
+  data: SubscriptionEmailData
+): { subject: string; html: string } => {
   const {
-    userName = 'there',
+    userName = "there",
     action,
     planName,
     previousPlanName,
@@ -20,35 +22,35 @@ export const subscriptionEmailTemplate = (data: SubscriptionEmailData): { subjec
     interval,
     nextBillingDate,
     features,
-    appUrl
+    appUrl,
   } = data
 
   const actionMessages = {
     created: {
       subject: `Welcome to BeautifyAI ${planName}! 🎉`,
-      title: 'Subscription Confirmed!',
-      message: `Your ${planName} subscription is now active.`
+      title: "Subscription Confirmed!",
+      message: `Your ${planName} subscription is now active.`,
     },
     upgraded: {
       subject: `You've been upgraded to ${planName}! 🚀`,
-      title: 'Upgrade Successful!',
-      message: `You've successfully upgraded from ${previousPlanName} to ${planName}.`
+      title: "Upgrade Successful!",
+      message: `You've successfully upgraded from ${previousPlanName} to ${planName}.`,
     },
     downgraded: {
       subject: `Your plan has been changed to ${planName}`,
-      title: 'Plan Change Confirmed',
-      message: `Your plan has been changed from ${previousPlanName} to ${planName}.`
+      title: "Plan Change Confirmed",
+      message: `Your plan has been changed from ${previousPlanName} to ${planName}.`,
     },
     cancelled: {
-      subject: 'Your BeautifyAI subscription has been cancelled',
-      title: 'Subscription Cancelled',
-      message: `Your ${planName} subscription has been cancelled. You'll continue to have access until the end of your billing period.`
+      subject: "Your BeautifyAI subscription has been cancelled",
+      title: "Subscription Cancelled",
+      message: `Your ${planName} subscription has been cancelled. You'll continue to have access until the end of your billing period.`,
     },
     renewed: {
       subject: `Your BeautifyAI ${planName} subscription renewed`,
-      title: 'Subscription Renewed',
-      message: `Your ${planName} subscription has been successfully renewed.`
-    }
+      title: "Subscription Renewed",
+      message: `Your ${planName} subscription has been successfully renewed.`,
+    },
   }
 
   const { subject, title, message } = actionMessages[action]
@@ -81,7 +83,9 @@ export const subscriptionEmailTemplate = (data: SubscriptionEmailData): { subjec
           ${message}
         </p>
 
-        ${action !== 'cancelled' ? `
+        ${
+          action !== "cancelled"
+            ? `
         <!-- Billing Details -->
         <div style="background-color: #F3F4F6; padding: 24px; border-radius: 8px; margin-bottom: 32px;">
           <h3 style="color: #1F2937; margin: 0 0 16px 0; font-size: 20px;">
@@ -97,12 +101,16 @@ export const subscriptionEmailTemplate = (data: SubscriptionEmailData): { subjec
               <td style="padding: 8px 0; color: #6B7280;">Amount:</td>
               <td style="padding: 8px 0; color: #1F2937; font-weight: bold; text-align: right;">${amount}/${interval}</td>
             </tr>
-            ${nextBillingDate ? `
+            ${
+              nextBillingDate
+                ? `
             <tr>
               <td style="padding: 8px 0; color: #6B7280;">Next billing date:</td>
               <td style="padding: 8px 0; color: #1F2937; font-weight: bold; text-align: right;">${nextBillingDate}</td>
             </tr>
-            ` : ''}
+            `
+                : ""
+            }
           </table>
         </div>
 
@@ -112,28 +120,38 @@ export const subscriptionEmailTemplate = (data: SubscriptionEmailData): { subjec
             Your ${planName} Features:
           </h3>
           <ul style="margin: 0; padding-left: 20px;">
-            ${features.map(feature => `
+            ${features
+              .map(
+                (feature) => `
               <li style="color: #4B5563; margin-bottom: 8px;">
                 ✓ ${feature}
               </li>
-            `).join('')}
+            `
+              )
+              .join("")}
           </ul>
         </div>
-        ` : ''}
+        `
+            : ""
+        }
 
         <!-- Actions -->
         <div style="text-align: center; margin-bottom: 24px;">
-          ${action === 'cancelled' ? `
+          ${
+            action === "cancelled"
+              ? `
             <a href="${appUrl}/pricing" 
                style="display: inline-block; background-color: #7C3AED; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-size: 16px; font-weight: bold;">
               Reactivate Subscription
             </a>
-          ` : `
+          `
+              : `
             <a href="${appUrl}/app/dashboard" 
                style="display: inline-block; background-color: #7C3AED; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-size: 16px; font-weight: bold;">
               Go to Dashboard
             </a>
-          `}
+          `
+          }
         </div>
 
         <!-- Quick Links -->

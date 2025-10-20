@@ -1,8 +1,8 @@
-import { NextRequest } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { apiErrors, ApiError } from './response'
-import { User } from '@supabase/supabase-js'
-import { pdfAnalyzer } from '@/lib/utils/pdf-analyzer'
+import { NextRequest } from "next/server"
+import { createClient } from "@/lib/supabase/server"
+import { apiErrors, ApiError } from "./response"
+import { User } from "@supabase/supabase-js"
+import { pdfAnalyzer } from "@/lib/utils/pdf-analyzer"
 
 export interface AuthenticatedRequest extends NextRequest {
   user?: User
@@ -18,34 +18,44 @@ export async function authenticateRequest(request: NextRequest): Promise<{
   userId: string
 }> {
   const supabase = await createClient()
-  
+
   // First try to get user from cookie-based session (browser requests)
-  const { data: { user: sessionUser }, error: sessionError } = await supabase.auth.getUser()
-  
+  const {
+    data: { user: sessionUser },
+    error: sessionError,
+  } = await supabase.auth.getUser()
+
   if (sessionUser && !sessionError) {
     return { user: sessionUser, userId: sessionUser.id }
   }
-  
+
   // Fall back to Bearer token authentication (API requests)
-  const authorization = request.headers.get('authorization')
-  
+  const authorization = request.headers.get("authorization")
+
   if (!authorization) {
     throw apiErrors.UNAUTHORIZED
   }
-  
-  const [type, token] = authorization.split(' ')
-  
-  if (type !== 'Bearer' || !token) {
-    throw new ApiError('INVALID_AUTH_HEADER', 'Invalid authorization header format', 401)
+
+  const [type, token] = authorization.split(" ")
+
+  if (type !== "Bearer" || !token) {
+    throw new ApiError(
+      "INVALID_AUTH_HEADER",
+      "Invalid authorization header format",
+      401
+    )
   }
-  
+
   // Verify the token
-  const { data: { user }, error } = await supabase.auth.getUser(token)
-  
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser(token)
+
   if (error || !user) {
     throw apiErrors.INVALID_TOKEN
   }
-  
+
   return { user, userId: user.id }
 }
 
@@ -56,11 +66,11 @@ export async function authenticateRequest(request: NextRequest): Promise<{
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>()
 
 export interface RateLimitConfig {
-  windowMs: number  // Time window in milliseconds
-  maxRequests: number  // Max requests per window
-  keyGenerator?: (request: NextRequest) => string  // Custom key generator
-  skipSuccessfulRequests?: boolean  // Don't count successful requests
-  skipFailedRequests?: boolean  // Don't count failed requests
+  windowMs: number // Time window in milliseconds
+  maxRequests: number // Max requests per window
+  keyGenerator?: (request: NextRequest) => string // Custom key generator
+  skipSuccessfulRequests?: boolean // Don't count successful requests
+  skipFailedRequests?: boolean // Don't count failed requests
 }
 
 export async function checkRateLimit(
@@ -70,23 +80,24 @@ export async function checkRateLimit(
   const {
     windowMs,
     maxRequests,
-    keyGenerator = (req) => req.headers.get('x-forwarded-for') || req.ip || 'anonymous',
+    keyGenerator = (req) =>
+      req.headers.get("x-forwarded-for") || req.ip || "anonymous",
     _skipSuccessfulRequests = false,
     _skipFailedRequests = false,
   } = config
-  
+
   const key = keyGenerator(request)
   const now = Date.now()
-  
+
   // Clean up expired entries
   for (const [k, v] of rateLimitStore.entries()) {
     if (v.resetTime < now) {
       rateLimitStore.delete(k)
     }
   }
-  
+
   const rateLimitInfo = rateLimitStore.get(key)
-  
+
   if (!rateLimitInfo || rateLimitInfo.resetTime < now) {
     // Create new rate limit window
     rateLimitStore.set(key, {
@@ -95,17 +106,17 @@ export async function checkRateLimit(
     })
     return
   }
-  
+
   if (rateLimitInfo.count >= maxRequests) {
     const retryAfter = Math.ceil((rateLimitInfo.resetTime - now) / 1000)
     throw new ApiError(
-      'RATE_LIMIT_EXCEEDED',
+      "RATE_LIMIT_EXCEEDED",
       `Too many requests. Please try again in ${retryAfter} seconds`,
       429,
       { retryAfter }
     )
   }
-  
+
   // Increment counter
   rateLimitInfo.count++
 }
@@ -118,16 +129,16 @@ export async function checkUserRateLimit(
   endpoint: string
 ): Promise<void> {
   const supabase = await createClient()
-  
+
   // Get user's subscription tier
   const { data: userProfile } = await supabase
-    .from('user_profiles')
-    .select('subscription_tier')
-    .eq('id', userId)
+    .from("user_profiles")
+    .select("subscription_tier")
+    .eq("id", userId)
     .single()
-  
-  const tier = userProfile?.subscription_tier || 'free'
-  
+
+  const tier = userProfile?.subscription_tier || "free"
+
   // Define rate limits per tier
   const rateLimits: Record<string, RateLimitConfig> = {
     free: { windowMs: 60 * 60 * 1000, maxRequests: 10 }, // 10 per hour
@@ -135,13 +146,13 @@ export async function checkUserRateLimit(
     pro: { windowMs: 60 * 60 * 1000, maxRequests: 200 }, // 200 per hour
     premium: { windowMs: 60 * 60 * 1000, maxRequests: 1000 }, // 1000 per hour
   }
-  
+
   const config = rateLimits[tier]
   const key = `${userId}:${endpoint}`
-  
+
   const now = Date.now()
   const rateLimitInfo = rateLimitStore.get(key)
-  
+
   if (!rateLimitInfo || rateLimitInfo.resetTime < now) {
     rateLimitStore.set(key, {
       count: 1,
@@ -149,17 +160,17 @@ export async function checkUserRateLimit(
     })
     return
   }
-  
+
   if (rateLimitInfo.count >= config.maxRequests) {
     const retryAfter = Math.ceil((rateLimitInfo.resetTime - now) / 1000)
     throw new ApiError(
-      'USER_RATE_LIMIT_EXCEEDED',
+      "USER_RATE_LIMIT_EXCEEDED",
       `Rate limit exceeded for your subscription tier (${tier}). Please try again in ${retryAfter} seconds`,
       429,
       { retryAfter, tier, limit: config.maxRequests }
     )
   }
-  
+
   rateLimitInfo.count++
 }
 
@@ -168,68 +179,64 @@ export async function checkUserRateLimit(
  */
 export async function validateFileUpload(file: File | null): Promise<void> {
   if (!file) {
-    throw new ApiError('NO_FILE', 'No file provided', 400)
+    throw new ApiError("NO_FILE", "No file provided", 400)
   }
-  
+
   // Check file size (max 50MB)
   const maxSize = 50 * 1024 * 1024
   if (file.size > maxSize) {
     throw new ApiError(
-      'FILE_TOO_LARGE',
+      "FILE_TOO_LARGE",
       `File size exceeds limit of ${maxSize / 1024 / 1024}MB`,
       400,
       { maxSize, fileSize: file.size }
     )
   }
-  
+
   // Check file type
   const allowedTypes = [
-    'application/pdf',
-    'image/png',
-    'image/jpeg',
-    'image/jpg',
-    'image/webp',
-    'application/vnd.ms-powerpoint',
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    "application/pdf",
+    "image/png",
+    "image/jpeg",
+    "image/jpg",
+    "image/webp",
+    "application/vnd.ms-powerpoint",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
   ]
-  
+
   if (!allowedTypes.includes(file.type)) {
     throw new ApiError(
-      'INVALID_FILE_TYPE',
-      'Invalid file type. Supported types: PDF, PNG, JPG, WEBP, PPT, PPTX',
+      "INVALID_FILE_TYPE",
+      "Invalid file type. Supported types: PDF, PNG, JPG, WEBP, PPT, PPTX",
       400,
       { fileType: file.type, allowedTypes }
     )
   }
-  
+
   // Deep PDF validation
-  if (file.type === 'application/pdf') {
+  if (file.type === "application/pdf") {
     const validation = await pdfAnalyzer.performDeepValidation(file)
-    
+
     if (!validation.valid) {
-      const errorMessage = validation.errors.length > 0 
-        ? validation.errors.join('; ') 
-        : 'PDF validation failed'
-      
-      throw new ApiError(
-        'INVALID_PDF',
-        errorMessage,
-        400,
-        { 
-          fileType: file.type,
-          fileName: file.name,
-          errors: validation.errors,
-          warnings: validation.warnings,
-          canProcess: validation.canProcess
-        }
-      )
+      const errorMessage =
+        validation.errors.length > 0
+          ? validation.errors.join("; ")
+          : "PDF validation failed"
+
+      throw new ApiError("INVALID_PDF", errorMessage, 400, {
+        fileType: file.type,
+        fileName: file.name,
+        errors: validation.errors,
+        warnings: validation.warnings,
+        canProcess: validation.canProcess,
+      })
     }
-    
+
     // Log warnings but don't block upload
     if (validation.warnings.length > 0) {
-      console.warn('PDF validation warnings:', {
+      console.warn("PDF validation warnings:", {
         file: file.name,
-        warnings: validation.warnings
+        warnings: validation.warnings,
       })
     }
   }
@@ -247,12 +254,12 @@ export function generateRequestId(): string {
  */
 export function setCorsHeaders(response: Response): Response {
   const headers = new Headers(response.headers)
-  
-  headers.set('Access-Control-Allow-Origin', '*')
-  headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-  headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-  headers.set('Access-Control-Max-Age', '86400')
-  
+
+  headers.set("Access-Control-Allow-Origin", "*")
+  headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+  headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+  headers.set("Access-Control-Max-Age", "86400")
+
   return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,

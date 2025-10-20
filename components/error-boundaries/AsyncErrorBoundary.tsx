@@ -1,14 +1,14 @@
-'use client'
+"use client"
 
-import React, { Component, ErrorInfo, ReactNode, Suspense } from 'react'
-import { AlertCircle, RefreshCw } from 'lucide-react'
-import { 
-  logger, 
-  captureErrorBoundaryException, 
-  createErrorId, 
-  createTelemetryEvent 
-} from '@/lib/observability/client'
-import { Button } from '@/components/ui/button'
+import React, { Component, ErrorInfo, ReactNode, Suspense } from "react"
+import { AlertCircle, RefreshCw } from "lucide-react"
+import {
+  logger,
+  captureErrorBoundaryException,
+  createErrorId,
+  createTelemetryEvent,
+} from "@/lib/observability/client"
+import { Button } from "@/components/ui/button"
 
 interface Props {
   children: ReactNode
@@ -51,15 +51,15 @@ export class AsyncErrorBoundary extends Component<Props, State> {
     const errorId = createErrorId()
     // Store error ID statically so componentDidCatch can access it
     AsyncErrorBoundary.currentErrorId = errorId
-    
-    // Check if it's an async error
-    const isAsyncError = 
-      error.message.includes('ChunkLoadError') ||
-      error.message.includes('dynamically imported module') ||
-      error.message.includes('Failed to fetch') ||
-      error.name === 'SuspenseError'
 
-    logger.error('AsyncErrorBoundary caught error', {
+    // Check if it's an async error
+    const isAsyncError =
+      error.message.includes("ChunkLoadError") ||
+      error.message.includes("dynamically imported module") ||
+      error.message.includes("Failed to fetch") ||
+      error.name === "SuspenseError"
+
+    logger.error("AsyncErrorBoundary caught error", {
       error: error.message,
       isAsyncError,
       errorId,
@@ -79,12 +79,12 @@ export class AsyncErrorBoundary extends Component<Props, State> {
     AsyncErrorBoundary.currentErrorId = null // Clear it after use
 
     captureErrorBoundaryException(error, errorInfo, {
-      boundary: 'async',
+      boundary: "async",
       errorId,
       retryCount: 0,
     })
 
-    createTelemetryEvent('async_error_boundary_triggered', {
+    createTelemetryEvent("async_error_boundary_triggered", {
       errorId,
       errorMessage: error.message,
       errorType: error.name,
@@ -98,14 +98,14 @@ export class AsyncErrorBoundary extends Component<Props, State> {
     const { retryDelay = 1000 } = this.props
     const { errorId } = this.state
 
-    logger.info('Retrying after async error', {
+    logger.info("Retrying after async error", {
       errorId,
       retryDelay,
     })
 
     this.setState({ isRetrying: true })
 
-    createTelemetryEvent('async_error_boundary_retry', {
+    createTelemetryEvent("async_error_boundary_retry", {
       errorId,
     })
 
@@ -130,16 +130,17 @@ export class AsyncErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="flex flex-col items-center justify-center p-8 space-y-4">
+        <div className="flex flex-col items-center justify-center space-y-4 p-8">
           <div className="flex items-center space-x-2 text-amber-600">
             <AlertCircle className="h-6 w-6" />
             <h3 className="text-lg font-semibold">Loading Error</h3>
           </div>
-          
-          <p className="text-sm text-gray-600 text-center max-w-md">
-            {error.message.includes('ChunkLoadError') || error.message.includes('dynamically imported module')
-              ? 'Failed to load application resources. This might be due to a network issue or an outdated version.'
-              : 'An error occurred while loading this content.'}
+
+          <p className="max-w-md text-center text-sm text-gray-600">
+            {error.message.includes("ChunkLoadError") ||
+            error.message.includes("dynamically imported module")
+              ? "Failed to load application resources. This might be due to a network issue or an outdated version."
+              : "An error occurred while loading this content."}
           </p>
 
           <Button
@@ -148,8 +149,10 @@ export class AsyncErrorBoundary extends Component<Props, State> {
             variant="default"
             size="sm"
           >
-            <RefreshCw className={`h-4 w-4 mr-1 ${isRetrying ? 'animate-spin' : ''}`} />
-            {isRetrying ? 'Retrying...' : 'Retry'}
+            <RefreshCw
+              className={`mr-1 h-4 w-4 ${isRetrying ? "animate-spin" : ""}`}
+            />
+            {isRetrying ? "Retrying..." : "Retry"}
           </Button>
         </div>
       )

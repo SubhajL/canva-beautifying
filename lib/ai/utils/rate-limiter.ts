@@ -1,5 +1,5 @@
-import { aiRateLimiter } from '@/lib/redis/ai-rate-limiter'
-import type { AIModel, UserTier } from '../types'
+import { aiRateLimiter } from "@/lib/redis/ai-rate-limiter"
+import type { AIModel, UserTier } from "../types"
 
 /**
  * Rate limiter for AI model requests
@@ -16,14 +16,19 @@ export class RateLimiter {
   async checkLimit(
     model: AIModel,
     userId: string,
-    userTier: UserTier = 'free',
+    userTier: UserTier = "free",
     estimatedTokens?: number
   ): Promise<{ allowed: boolean; retryAfter?: number }> {
-    const result = await aiRateLimiter.checkLimit(userId, model, userTier, estimatedTokens)
-    
+    const result = await aiRateLimiter.checkLimit(
+      userId,
+      model,
+      userTier,
+      estimatedTokens
+    )
+
     return {
       allowed: result.allowed,
-      retryAfter: result.retryAfter
+      retryAfter: result.retryAfter,
     }
   }
 
@@ -33,27 +38,27 @@ export class RateLimiter {
   async getUsageStats(
     model: AIModel,
     userId: string,
-    userTier: UserTier = 'free'
+    userTier: UserTier = "free"
   ): Promise<{
     minute: { used: number; limit: number }
     hour: { used: number; limit: number }
     day: { used: number; limit: number }
   }> {
     const stats = await aiRateLimiter.getUsageStats(userId, model, userTier)
-    
+
     return {
       minute: {
         used: stats.minute.used,
-        limit: stats.minute.limit
+        limit: stats.minute.limit,
       },
       hour: {
         used: stats.hour.used,
-        limit: stats.hour.limit
+        limit: stats.hour.limit,
       },
       day: {
         used: stats.day.used,
-        limit: stats.day.limit
-      }
+        limit: stats.day.limit,
+      },
     }
   }
 
@@ -74,7 +79,7 @@ export class RateLimiter {
   async getRemainingQuota(
     model: AIModel,
     userId: string,
-    userTier: UserTier = 'free'
+    userTier: UserTier = "free"
   ): Promise<number> {
     return await aiRateLimiter.getRemainingQuota(userId, model, userTier)
   }
@@ -90,7 +95,7 @@ export class RateLimiter {
     model: AIModel,
     userId: string,
     tokensUsed: number,
-    userTier: UserTier = 'free'
+    userTier: UserTier = "free"
   ): Promise<void> {
     await aiRateLimiter.trackTokenUsage(userId, model, tokensUsed, userTier)
   }

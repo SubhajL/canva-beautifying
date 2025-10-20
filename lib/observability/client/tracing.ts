@@ -3,7 +3,7 @@
  * Provides mock implementations of tracing functions without Node.js dependencies
  */
 
-import { logger } from './logger'
+import { logger } from "./logger"
 
 export interface ClientSpan {
   spanId: string
@@ -11,14 +11,18 @@ export interface ClientSpan {
   name: string
   startTime: number
   attributes: Record<string, any>
-  events: Array<{ name: string; timestamp: number; attributes?: Record<string, any> }>
-  status: { code: 'OK' | 'ERROR'; message?: string }
+  events: Array<{
+    name: string
+    timestamp: number
+    attributes?: Record<string, any>
+  }>
+  status: { code: "OK" | "ERROR"; message?: string }
   ended: boolean
 
   setAttributes(attributes: Record<string, any>): void
   setAttribute(key: string, value: any): void
   addEvent(name: string, attributes?: Record<string, any>): void
-  setStatus(status: { code: 'OK' | 'ERROR'; message?: string }): void
+  setStatus(status: { code: "OK" | "ERROR"; message?: string }): void
   recordException(error: Error): void
   end(): void
   spanContext(): { traceId: string; spanId: string; traceFlags: number }
@@ -30,8 +34,12 @@ class MockSpan implements ClientSpan {
   name: string
   startTime: number
   attributes: Record<string, any> = {}
-  events: Array<{ name: string; timestamp: number; attributes?: Record<string, any> }> = []
-  status: { code: 'OK' | 'ERROR'; message?: string } = { code: 'OK' }
+  events: Array<{
+    name: string
+    timestamp: number
+    attributes?: Record<string, any>
+  }> = []
+  status: { code: "OK" | "ERROR"; message?: string } = { code: "OK" }
   ended: boolean = false
 
   constructor(name: string, traceId: string) {
@@ -39,9 +47,12 @@ class MockSpan implements ClientSpan {
     this.spanId = generateId()
     this.traceId = traceId
     this.startTime = performance.now()
-    
-    if (process.env.NODE_ENV === 'development') {
-      logger.debug(`Span started: ${name}`, { spanId: this.spanId, traceId: this.traceId })
+
+    if (process.env.NODE_ENV === "development") {
+      logger.debug(`Span started: ${name}`, {
+        spanId: this.spanId,
+        traceId: this.traceId,
+      })
     }
   }
 
@@ -57,36 +68,36 @@ class MockSpan implements ClientSpan {
     this.events.push({
       name,
       timestamp: performance.now(),
-      attributes
+      attributes,
     })
   }
 
-  setStatus(status: { code: 'OK' | 'ERROR'; message?: string }): void {
+  setStatus(status: { code: "OK" | "ERROR"; message?: string }): void {
     this.status = status
   }
 
   recordException(error: Error): void {
-    this.addEvent('exception', {
-      'exception.type': error.name,
-      'exception.message': error.message,
-      'exception.stacktrace': error.stack
+    this.addEvent("exception", {
+      "exception.type": error.name,
+      "exception.message": error.message,
+      "exception.stacktrace": error.stack,
     })
-    this.setStatus({ code: 'ERROR', message: error.message })
+    this.setStatus({ code: "ERROR", message: error.message })
   }
 
   end(): void {
     if (this.ended) return
-    
+
     this.ended = true
     const duration = performance.now() - this.startTime
-    
-    if (process.env.NODE_ENV === 'development') {
+
+    if (process.env.NODE_ENV === "development") {
       logger.debug(`Span ended: ${this.name}`, {
         spanId: this.spanId,
         traceId: this.traceId,
         duration: Math.round(duration),
         status: this.status,
-        attributes: this.attributes
+        attributes: this.attributes,
       })
     }
   }
@@ -95,7 +106,7 @@ class MockSpan implements ClientSpan {
     return {
       traceId: this.traceId,
       spanId: this.spanId,
-      traceFlags: 1
+      traceFlags: 1,
     }
   }
 }
@@ -110,8 +121,8 @@ function generateId(): string {
 
 function generateTraceId(): string {
   // Generate a 32-character hex string for trace ID
-  const hex = '0123456789abcdef'
-  let traceId = ''
+  const hex = "0123456789abcdef"
+  let traceId = ""
   for (let i = 0; i < 32; i++) {
     traceId += hex[Math.floor(Math.random() * 16)]
   }
@@ -125,11 +136,11 @@ export function createClientSpan(
   }
 ): ClientSpan {
   const span = new MockSpan(name, currentTraceId)
-  
+
   if (options?.attributes) {
     span.setAttributes(options.attributes)
   }
-  
+
   activeSpans.set(span.spanId, span)
   return span
 }
@@ -149,13 +160,13 @@ export function getCurrentTraceId(): string {
 
 export function getCurrentSpanId(): string | undefined {
   const spans = Array.from(activeSpans.values())
-  const activeSpan = spans.find(span => !span.ended)
+  const activeSpan = spans.find((span) => !span.ended)
   return activeSpan?.spanId
 }
 
 export function getActiveSpan(): ClientSpan | undefined {
   const spans = Array.from(activeSpans.values())
-  return spans.find(span => !span.ended)
+  return spans.find((span) => !span.ended)
 }
 
 export async function traceAsync<T>(
@@ -166,10 +177,10 @@ export async function traceAsync<T>(
   }
 ): Promise<T> {
   const span = createClientSpan(name, options)
-  
+
   try {
     const result = await fn(span)
-    span.setStatus({ code: 'OK' })
+    span.setStatus({ code: "OK" })
     return result
   } catch (error) {
     span.recordException(error as Error)
@@ -186,12 +197,12 @@ export function createEnhancementTrace(
   userId: string,
   enhancementSettings?: Record<string, any>
 ): { span: ClientSpan; traceId: string; spanId: string } {
-  const span = createClientSpan('enhancement.pipeline', {
+  const span = createClientSpan("enhancement.pipeline", {
     attributes: {
-      'enhancement.document_id': documentId,
-      'enhancement.user_id': userId,
-      'enhancement.settings': JSON.stringify(enhancementSettings || {}),
-      'enhancement.start_time': new Date().toISOString(),
+      "enhancement.document_id": documentId,
+      "enhancement.user_id": userId,
+      "enhancement.settings": JSON.stringify(enhancementSettings || {}),
+      "enhancement.start_time": new Date().toISOString(),
     },
   })
 
@@ -209,15 +220,15 @@ export function recordPipelineEvent(
   const span = getActiveSpan()
   if (span) {
     span.addEvent(`enhancement.${eventName}`, {
-      'event.timestamp': new Date().toISOString(),
+      "event.timestamp": new Date().toISOString(),
       ...attributes,
     })
   }
 }
 
 // Initialize a new trace for each page load
-if (typeof window !== 'undefined') {
-  window.addEventListener('load', () => {
+if (typeof window !== "undefined") {
+  window.addEventListener("load", () => {
     currentTraceId = generateTraceId()
   })
 }

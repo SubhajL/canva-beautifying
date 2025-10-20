@@ -1,7 +1,7 @@
-'use client'
+"use client"
 
-import { ReactNode, useEffect } from 'react'
-import { useStoreSync } from '@/hooks/use-store-sync'
+import { ReactNode, useEffect } from "react"
+import { useStoreSync } from "@/hooks/use-store-sync"
 
 interface StoreProviderProps {
   children: ReactNode
@@ -20,7 +20,7 @@ export function StoreLoadingGuard({ children }: StoreProviderProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex min-h-screen items-center justify-center">
         <Loading size="xl" />
       </div>
     )
@@ -28,11 +28,11 @@ export function StoreLoadingGuard({ children }: StoreProviderProps) {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <p className="text-red-600 mb-4">Failed to initialize application</p>
-        <button 
-          onClick={() => window.location.reload()} 
-          className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
+      <div className="flex min-h-screen flex-col items-center justify-center">
+        <p className="mb-4 text-red-600">Failed to initialize application</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="rounded bg-primary px-4 py-2 text-white hover:bg-primary/90"
         >
           Retry
         </button>
@@ -48,5 +48,5 @@ export function StoreLoadingGuard({ children }: StoreProviderProps) {
 }
 
 // Import the hook at the top
-import { useStoreSyncGuard } from '@/hooks/use-store-sync'
-import { Loading } from '@/components/ui/loading';
+import { useStoreSyncGuard } from "@/hooks/use-store-sync"
+import { Loading } from "@/components/ui/loading"

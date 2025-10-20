@@ -1,12 +1,12 @@
-'use client'
+"use client"
 
-import { useCallback, useRef } from 'react'
-import { 
-  logger, 
-  createTelemetryEvent, 
-  createErrorId, 
-  sanitizeErrorForLogging 
-} from '@/lib/observability/client'
+import { useCallback, useRef } from "react"
+import {
+  logger,
+  createTelemetryEvent,
+  createErrorId,
+  sanitizeErrorForLogging,
+} from "@/lib/observability/client"
 
 interface ErrorHandlerOptions {
   fallbackValue?: any
@@ -18,7 +18,10 @@ interface ErrorHandlerOptions {
 
 interface ErrorHandlerResult {
   handleError: (error: Error) => void
-  handleAsyncError: <T>(promise: Promise<T>, options?: ErrorHandlerOptions) => Promise<T | undefined>
+  handleAsyncError: <T>(
+    promise: Promise<T>,
+    options?: ErrorHandlerOptions
+  ) => Promise<T | undefined>
   resetError: () => void
   errorCount: number
 }
@@ -30,17 +33,17 @@ export function useErrorHandler(): ErrorHandlerResult {
   const handleError = useCallback((error: Error) => {
     errorCountRef.current += 1
     lastErrorRef.current = error
-    
+
     const errorId = createErrorId()
     const sanitized = sanitizeErrorForLogging(error)
 
-    logger.error('Error caught by useErrorHandler', {
+    logger.error("Error caught by useErrorHandler", {
       ...sanitized,
       errorId,
       errorCount: errorCountRef.current,
     })
 
-    createTelemetryEvent('error_handler_triggered', {
+    createTelemetryEvent("error_handler_triggered", {
       errorId,
       errorMessage: error.message,
       errorCount: errorCountRef.current,
@@ -50,76 +53,81 @@ export function useErrorHandler(): ErrorHandlerResult {
     throw error
   }, [])
 
-  const handleAsyncError = useCallback(async <T,>(
-    promise: Promise<T>,
-    options: ErrorHandlerOptions = {}
-  ): Promise<T | undefined> => {
-    const {
-      fallbackValue,
-      maxRetries = 1,
-      retryDelay = 1000,
-      onError,
-      errorContext,
-    } = options
+  const handleAsyncError = useCallback(
+    async <T>(
+      promise: Promise<T>,
+      options: ErrorHandlerOptions = {}
+    ): Promise<T | undefined> => {
+      const {
+        fallbackValue,
+        maxRetries = 1,
+        retryDelay = 1000,
+        onError,
+        errorContext,
+      } = options
 
-    let attempts = 0
-    let lastError: Error | null = null
+      let attempts = 0
+      let lastError: Error | null = null
 
-    while (attempts <= maxRetries) {
-      try {
-        return await promise
-      } catch (error) {
-        attempts += 1
-        lastError = error as Error
-        errorCountRef.current += 1
-        
-        const errorId = createErrorId()
-        const sanitized = sanitizeErrorForLogging(lastError)
+      while (attempts <= maxRetries) {
+        try {
+          return await promise
+        } catch (error) {
+          attempts += 1
+          lastError = error as Error
+          errorCountRef.current += 1
 
-        logger.error('Async error caught by useErrorHandler', {
-          ...sanitized,
-          errorId,
-          attempt: attempts,
-          maxRetries,
-          errorContext,
-        })
+          const errorId = createErrorId()
+          const sanitized = sanitizeErrorForLogging(lastError)
 
-        createTelemetryEvent('async_error_handler_triggered', {
-          errorId,
-          errorMessage: lastError.message,
-          attempt: attempts,
-          maxRetries,
-        })
+          logger.error("Async error caught by useErrorHandler", {
+            ...sanitized,
+            errorId,
+            attempt: attempts,
+            maxRetries,
+            errorContext,
+          })
 
-        onError?.(lastError)
+          createTelemetryEvent("async_error_handler_triggered", {
+            errorId,
+            errorMessage: lastError.message,
+            attempt: attempts,
+            maxRetries,
+          })
 
-        if (attempts <= maxRetries) {
-          logger.info(`Retrying after ${retryDelay}ms (attempt ${attempts}/${maxRetries})`)
-          await new Promise((resolve) => setTimeout(resolve, retryDelay))
+          onError?.(lastError)
+
+          if (attempts <= maxRetries) {
+            logger.info(
+              `Retrying after ${retryDelay}ms (attempt ${attempts}/${maxRetries})`
+            )
+            await new Promise((resolve) => setTimeout(resolve, retryDelay))
+          }
         }
       }
-    }
 
-    // All retries failed
-    if (fallbackValue !== undefined) {
-      logger.warn('Returning fallback value after all retries failed', {
-        errorMessage: lastError?.message,
-        fallbackValue,
-      })
-      return fallbackValue
-    }
+      // All retries failed
+      if (fallbackValue !== undefined) {
+        logger.warn("Returning fallback value after all retries failed", {
+          errorMessage: lastError?.message,
+          fallbackValue,
+        })
+        return fallbackValue
+      }
 
-    // Re-throw if no fallback
-    throw lastError
-  }, [])
+      // Re-throw if no fallback
+      throw lastError
+    },
+    []
+  )
 
   const resetError = useCallback(() => {
     errorCountRef.current = 0
     lastErrorRef.current = null
-    
-    logger.info('Error handler reset')
-    
-    createTelemetryEvent('error_handler_reset', {
+
+    logger.info("Error handler reset")
+
+    createTelemetryEvent("error_handler_reset", {
       previousErrorCount: errorCountRef.current,
     })
   }, [])

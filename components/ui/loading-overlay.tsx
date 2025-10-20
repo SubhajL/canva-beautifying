@@ -10,9 +10,19 @@ interface LoadingOverlayProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const LoadingOverlay = React.forwardRef<HTMLDivElement, LoadingOverlayProps>(
-  ({ className, visible, message, spinnerSize = "lg", fullScreen = false, ...props }, ref) => {
+  (
+    {
+      className,
+      visible,
+      message,
+      spinnerSize = "lg",
+      fullScreen = false,
+      ...props
+    },
+    ref
+  ) => {
     if (!visible) return null
-    
+
     return (
       <div
         ref={ref}
@@ -26,7 +36,9 @@ const LoadingOverlay = React.forwardRef<HTMLDivElement, LoadingOverlayProps>(
         <div className="flex flex-col items-center gap-4">
           <Spinner size={spinnerSize} />
           {message && (
-            <p className="text-sm font-medium text-muted-foreground">{message}</p>
+            <p className="text-sm font-medium text-muted-foreground">
+              {message}
+            </p>
           )}
         </div>
       </div>

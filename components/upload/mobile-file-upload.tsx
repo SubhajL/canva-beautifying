@@ -1,74 +1,76 @@
-'use client';
+"use client"
 
-import React, { useRef } from 'react';
-import { Upload, Camera, FileText, Image as ImageIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { MobileButton } from '@/components/ui/mobile-button';
-import { cn } from '@/lib/utils';
-import { useIsTouchDevice } from '@/lib/utils/responsive';
-import { toast } from 'sonner';
+import React, { useRef } from "react"
+import { Upload, Camera, FileText, Image as ImageIcon } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { MobileButton } from "@/components/ui/mobile-button"
+import { cn } from "@/lib/utils"
+import { useIsTouchDevice } from "@/lib/utils/responsive"
+import { toast } from "sonner"
 
 interface MobileFileUploadProps {
-  onFilesSelected: (files: File[]) => void;
-  accept?: string;
-  multiple?: boolean;
-  maxFiles?: number;
-  maxSize?: number; // in bytes
-  disabled?: boolean;
-  className?: string;
+  onFilesSelected: (files: File[]) => void
+  accept?: string
+  multiple?: boolean
+  maxFiles?: number
+  maxSize?: number // in bytes
+  disabled?: boolean
+  className?: string
 }
 
 export function MobileFileUpload({
   onFilesSelected,
-  accept = 'image/*,application/pdf',
+  accept = "image/*,application/pdf",
   multiple = true,
   maxFiles = 10,
   maxSize = 50 * 1024 * 1024, // 50MB
   disabled = false,
   className,
 }: MobileFileUploadProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
-  const isTouchDevice = useIsTouchDevice();
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
+  const isTouchDevice = useIsTouchDevice()
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []);
-    
-    if (files.length === 0) return;
+    const files = Array.from(event.target.files || [])
+
+    if (files.length === 0) return
 
     // Validate file count
     if (files.length > maxFiles) {
-      toast.error(`You can only upload up to ${maxFiles} files at once`);
-      return;
+      toast.error(`You can only upload up to ${maxFiles} files at once`)
+      return
     }
 
     // Validate file sizes
-    const oversizedFiles = files.filter(file => file.size > maxSize);
+    const oversizedFiles = files.filter((file) => file.size > maxSize)
     if (oversizedFiles.length > 0) {
-      toast.error(`Some files are too large. Maximum size is ${maxSize / 1024 / 1024}MB`);
-      return;
+      toast.error(
+        `Some files are too large. Maximum size is ${maxSize / 1024 / 1024}MB`
+      )
+      return
     }
 
-    onFilesSelected(files);
-    
+    onFilesSelected(files)
+
     // Reset input
     if (event.target) {
-      event.target.value = '';
+      event.target.value = ""
     }
-  };
+  }
 
   const openFileDialog = () => {
-    fileInputRef.current?.click();
-  };
+    fileInputRef.current?.click()
+  }
 
   const openCamera = () => {
-    cameraInputRef.current?.click();
-  };
+    cameraInputRef.current?.click()
+  }
 
-  const ButtonComponent = isTouchDevice ? MobileButton : Button;
+  const ButtonComponent = isTouchDevice ? MobileButton : Button
 
   return (
-    <div className={cn('space-y-4', className)}>
+    <div className={cn("space-y-4", className)}>
       {/* Hidden file inputs */}
       <input
         ref={fileInputRef}
@@ -79,7 +81,7 @@ export function MobileFileUpload({
         className="hidden"
         disabled={disabled}
       />
-      
+
       <input
         ref={cameraInputRef}
         type="file"
@@ -96,7 +98,7 @@ export function MobileFileUpload({
           <div className="rounded-full bg-primary/10 p-4">
             <Upload className="h-8 w-8 text-primary" />
           </div>
-          
+
           <div className="space-y-2">
             <h3 className="text-lg font-semibold">Upload your documents</h3>
             <p className="text-sm text-muted-foreground">
@@ -105,11 +107,11 @@ export function MobileFileUpload({
           </div>
 
           {/* Action buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
             <ButtonComponent
               onClick={openFileDialog}
               disabled={disabled}
-              size={isTouchDevice ? 'lg' : 'default'}
+              size={isTouchDevice ? "lg" : "default"}
               className="w-full sm:w-auto"
             >
               <FileText className="mr-2 h-4 w-4" />
@@ -165,36 +167,42 @@ export function MobileFileUpload({
         </div>
       )}
     </div>
-  );
+  )
 }
 
 // Simplified upload button for mobile toolbars
 export function MobileUploadButton({
   onFilesSelected,
-  accept = 'image/*,application/pdf',
+  accept = "image/*,application/pdf",
   multiple = true,
   disabled = false,
-  variant = 'default' as any,
-  size = 'default' as any,
+  variant = "default" as any,
+  size = "default" as any,
   className,
   children,
 }: MobileFileUploadProps & {
-  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
-  size?: 'default' | 'sm' | 'lg' | 'icon';
-  children?: React.ReactNode;
+  variant?:
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "link"
+  size?: "default" | "sm" | "lg" | "icon"
+  children?: React.ReactNode
 }) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const isTouchDevice = useIsTouchDevice();
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const isTouchDevice = useIsTouchDevice()
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []);
+    const files = Array.from(event.target.files || [])
     if (files.length > 0) {
-      onFilesSelected(files);
-      event.target.value = '';
+      onFilesSelected(files)
+      event.target.value = ""
     }
-  };
+  }
 
-  const ButtonComponent = isTouchDevice ? MobileButton : Button;
+  const ButtonComponent = isTouchDevice ? MobileButton : Button
 
   return (
     <>
@@ -207,7 +215,7 @@ export function MobileUploadButton({
         className="hidden"
         disabled={disabled}
       />
-      
+
       <ButtonComponent
         onClick={() => fileInputRef.current?.click()}
         disabled={disabled}
@@ -223,5 +231,5 @@ export function MobileUploadButton({
         )}
       </ButtonComponent>
     </>
-  );
+  )
 }

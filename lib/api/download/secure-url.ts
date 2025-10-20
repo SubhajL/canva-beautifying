@@ -1,9 +1,9 @@
-import crypto from 'crypto'
-import { apiErrors, apiErrorConstants } from '../response'
+import crypto from "crypto"
+import { apiErrors, apiErrorConstants } from "../response"
 
 // Configuration
 const TOKEN_EXPIRY_MINUTES = 60 // 1 hour default
-const HMAC_ALGORITHM = 'sha256'
+const HMAC_ALGORITHM = "sha256"
 
 interface SecureDownloadConfig {
   secret: string
@@ -23,14 +23,17 @@ interface SecureDownloadToken {
 function getConfig(): SecureDownloadConfig {
   const secret = process.env.DOWNLOAD_SECRET || process.env.NEXTAUTH_SECRET
   if (!secret) {
-    throw new Error('DOWNLOAD_SECRET or NEXTAUTH_SECRET must be set')
+    throw new Error("DOWNLOAD_SECRET or NEXTAUTH_SECRET must be set")
   }
-  
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL || 'http://localhost:3000'
-  
+
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.VERCEL_URL ||
+    "http://localhost:3000"
+
   return {
     secret,
-    baseUrl: baseUrl.startsWith('http') ? baseUrl : `https://${baseUrl}`
+    baseUrl: baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`,
   }
 }
 
@@ -38,10 +41,7 @@ function getConfig(): SecureDownloadConfig {
  * Generate HMAC signature for token data
  */
 function generateSignature(data: string, secret: string): string {
-  return crypto
-    .createHmac(HMAC_ALGORITHM, secret)
-    .update(data)
-    .digest('hex')
+  return crypto.createHmac(HMAC_ALGORITHM, secret).update(data).digest("hex")
 }
 
 /**
@@ -53,24 +53,24 @@ export function generateSecureDownloadUrl(
   expiryMinutes: number = TOKEN_EXPIRY_MINUTES
 ): string {
   const config = getConfig()
-  
+
   // Create token data
   const token: SecureDownloadToken = {
     documentId,
     userId,
-    expires: Date.now() + (expiryMinutes * 60 * 1000),
-    nonce: crypto.randomBytes(16).toString('hex')
+    expires: Date.now() + expiryMinutes * 60 * 1000,
+    nonce: crypto.randomBytes(16).toString("hex"),
   }
-  
+
   // Create signed payload
-  const payload = Buffer.from(JSON.stringify(token)).toString('base64url')
+  const payload = Buffer.from(JSON.stringify(token)).toString("base64url")
   const signature = generateSignature(payload, config.secret)
-  
+
   // Construct secure URL
   const url = new URL(`/api/v1/secure-download/${documentId}`, config.baseUrl)
-  url.searchParams.set('token', payload)
-  url.searchParams.set('sig', signature)
-  
+  url.searchParams.set("token", payload)
+  url.searchParams.set("sig", signature)
+
   return url.toString()
 }
 
@@ -83,29 +83,36 @@ export function validateSecureDownloadToken(
   expectedDocumentId?: string
 ): SecureDownloadToken {
   const config = getConfig()
-  
+
   // Verify signature
   const expectedSignature = generateSignature(token, config.secret)
-  
+
   // Use timing-safe comparison to prevent timing attacks
-  if (!crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(expectedSignature)
-  )) {
+  if (
+    !crypto.timingSafeEqual(
+      Buffer.from(signature),
+      Buffer.from(expectedSignature)
+    )
+  ) {
     throw apiErrorConstants.INVALID_TOKEN
   }
 
   // Parse token
   let tokenData: SecureDownloadToken
   try {
-    const json = Buffer.from(token, 'base64url').toString('utf-8')
+    const json = Buffer.from(token, "base64url").toString("utf-8")
     tokenData = JSON.parse(json)
   } catch (error) {
     throw apiErrorConstants.INVALID_TOKEN
   }
 
   // Validate token structure
-  if (!tokenData.documentId || !tokenData.userId || !tokenData.expires || !tokenData.nonce) {
+  if (
+    !tokenData.documentId ||
+    !tokenData.userId ||
+    !tokenData.expires ||
+    !tokenData.nonce
+  ) {
     throw apiErrorConstants.INVALID_TOKEN
   }
 
@@ -118,7 +125,7 @@ export function validateSecureDownloadToken(
   if (expectedDocumentId && tokenData.documentId !== expectedDocumentId) {
     throw apiErrorConstants.INVALID_TOKEN
   }
-  
+
   return tokenData
 }
 
@@ -144,6 +151,6 @@ export function containsApiKeyPattern(url: string): boolean {
     /(bai_[a-f0-9]{64})/i, // Our API key format
     /Bearer\s+[a-zA-Z0-9\-_]+/i, // Bearer tokens in URL
   ]
-  
-  return patterns.some(pattern => pattern.test(url))
+
+  return patterns.some((pattern) => pattern.test(url))
 }

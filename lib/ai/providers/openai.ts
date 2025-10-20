@@ -1,17 +1,17 @@
-import { BaseAIProvider } from '../base-provider'
-import { 
-  AIModel, 
-  DocumentAnalysis, 
-  EnhancementRequest, 
-  AIProviderResponse 
-} from '../types'
-import { SecureAPIClient } from '../utils/secure-client'
+import { BaseAIProvider } from "../base-provider"
+import {
+  AIModel,
+  DocumentAnalysis,
+  EnhancementRequest,
+  AIProviderResponse,
+} from "../types"
+import { SecureAPIClient } from "../utils/secure-client"
 
 export class OpenAIProvider extends BaseAIProvider {
-  private baseUrl = process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1'
-  
+  private baseUrl = process.env.OPENAI_BASE_URL || "https://api.openai.com/v1"
+
   get model(): AIModel {
-    return 'gpt-4o-mini'
+    return "gpt-4o-mini"
   }
 
   protected getCostPer1kTokens(): number {
@@ -30,39 +30,40 @@ export class OpenAIProvider extends BaseAIProvider {
       const response = await this.retryWithBackoff(async () => {
         const res = await SecureAPIClient.request({
           url: `${this.baseUrl}/chat/completions`,
-          method: 'POST',
+          method: "POST",
           apiKey: this.config.apiKey,
-          provider: 'openai',
+          provider: "openai",
           body: {
-            model: 'gpt-4o-mini',
+            model: "gpt-4o-mini",
             messages: [
               {
-                role: 'system',
-                content: 'You are a professional document design analyzer. Analyze documents and provide detailed assessments in JSON format.'
+                role: "system",
+                content:
+                  "You are a professional document design analyzer. Analyze documents and provide detailed assessments in JSON format.",
               },
               {
-                role: 'user',
+                role: "user",
                 content: [
                   {
-                    type: 'text',
-                    text: this.buildAnalysisPrompt(request)
+                    type: "text",
+                    text: this.buildAnalysisPrompt(request),
                   },
                   {
-                    type: 'image_url',
+                    type: "image_url",
                     image_url: {
                       url: imageUrl,
-                      detail: 'high'
-                    }
-                  }
-                ]
-              }
+                      detail: "high",
+                    },
+                  },
+                ],
+              },
             ],
             temperature: this.config.temperature || 0.7,
             max_tokens: this.config.maxTokens || 2048,
-            response_format: { type: 'json_object' }
+            response_format: { type: "json_object" },
           },
           timeout: this.config.timeout || 30000,
-          maxRetries: this.config.maxRetries || 3
+          maxRetries: this.config.maxRetries || 3,
         })
 
         if (!res.ok) {
@@ -75,11 +76,11 @@ export class OpenAIProvider extends BaseAIProvider {
 
       const content = response.choices?.[0]?.message?.content
       if (!content) {
-        throw new Error('No content in response')
+        throw new Error("No content in response")
       }
 
       const analysis = JSON.parse(content) as DocumentAnalysis
-      
+
       // Calculate cost
       const usage = response.usage
       const inputCost = (usage.prompt_tokens / 1000) * 0.00015
@@ -93,8 +94,8 @@ export class OpenAIProvider extends BaseAIProvider {
           promptTokens: usage.prompt_tokens,
           completionTokens: usage.completion_tokens,
           totalTokens: usage.total_tokens,
-          cost: totalCost
-        }
+          cost: totalCost,
+        },
       }
     } catch (error) {
       return this.handleError(error)
@@ -110,27 +111,28 @@ export class OpenAIProvider extends BaseAIProvider {
     try {
       const response = await this.retryWithBackoff(async () => {
         const res = await fetch(`${this.baseUrl}/chat/completions`, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.config.apiKey}`,
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${this.config.apiKey}`,
           },
           body: JSON.stringify({
-            model: 'gpt-4o-mini',
+            model: "gpt-4o-mini",
             messages: [
               {
-                role: 'system',
-                content: 'You are an expert in creating prompts for AI image generation that enhance document designs.'
+                role: "system",
+                content:
+                  "You are an expert in creating prompts for AI image generation that enhance document designs.",
               },
               {
-                role: 'user',
-                content: this.buildEnhancementPrompt(analysis, request)
-              }
+                role: "user",
+                content: this.buildEnhancementPrompt(analysis, request),
+              },
             ],
             temperature: this.config.temperature || 0.8,
             max_tokens: this.config.maxTokens || 1024,
           }),
-          signal: AbortSignal.timeout(this.config.timeout || 30000)
+          signal: AbortSignal.timeout(this.config.timeout || 30000),
         })
 
         if (!res.ok) {
@@ -143,7 +145,7 @@ export class OpenAIProvider extends BaseAIProvider {
 
       const content = response.choices?.[0]?.message?.content
       if (!content) {
-        throw new Error('No content in response')
+        throw new Error("No content in response")
       }
 
       // Calculate cost
@@ -159,8 +161,8 @@ export class OpenAIProvider extends BaseAIProvider {
           promptTokens: usage.prompt_tokens,
           completionTokens: usage.completion_tokens,
           totalTokens: usage.total_tokens,
-          cost: totalCost
-        }
+          cost: totalCost,
+        },
       }
     } catch (error) {
       return this.handleError(error)

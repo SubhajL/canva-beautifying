@@ -1,58 +1,64 @@
-import { Worker, Job } from 'bullmq'
-import { getQueueConnection, QUEUE_NAMES } from '../config'
-import type { ExportJobData, JobResult, JobProgress } from '../types'
-import { createClient } from '@/lib/supabase/server'
-import { downloadFromR2, uploadToR2 } from '@/lib/r2/client'
-import { DocumentExporter } from '@/lib/export/document-exporter'
-import { addEmailJob } from '../queues'
+import { Worker, Job } from "bullmq"
+import { getQueueConnection, QUEUE_NAMES } from "../config"
+import type { ExportJobData, JobResult, JobProgress } from "../types"
+import { createClient } from "@/lib/supabase/server"
+import { downloadFile } from "@/lib/r2/download"
+import { uploadBufferToKey } from "@/lib/r2/upload"
+import { toR2Key } from "@/lib/r2/keys"
+import { withJobTrace } from "@/lib/observability/tracing"
+import { DocumentExporter } from "@/lib/export/document-exporter"
+import { addEmailJob } from "../queues"
 
 export const createExportWorker = () => {
   const worker = new Worker<ExportJobData, JobResult>(
     QUEUE_NAMES.EXPORT,
-    async (job: Job<ExportJobData>) => {
+async (job: Job<ExportJobData>) =>
+      withJobTrace(job.data as any, "queue.export", async () => {
       const startTime = Date.now()
-      const { 
-        documentId, 
-        userId, 
+      const {
+        documentId,
+        userId,
         enhancementId,
-        exportFormat, 
+        exportFormat,
         exportSettings,
-        subscriptionTier 
+        subscriptionTier,
       } = job.data
 
       try {
         // Update progress: Starting
         await job.updateProgress({
-          stage: 'initializing',
+          stage: "initializing",
           progress: 10,
-          message: 'Initializing export process',
+          message: "Initializing export process",
         } as JobProgress)
 
         // Get enhancement details
         const supabase = createClient()
         const { data: enhancement, error: enhanceError } = await supabase
-          .from('enhancements')
-          .select('*, documents(*)')
-          .eq('id', enhancementId)
+          .from("enhancements")
+          .select("*, documents(*)")
+          .eq("id", enhancementId)
           .single()
 
         if (enhanceError || !enhancement) {
-          throw new Error('Enhancement not found')
+          throw new Error("Enhancement not found")
         }
 
         // Download enhanced file
         await job.updateProgress({
-          stage: 'downloading',
+          stage: "downloading",
           progress: 20,
-          message: 'Loading enhanced document',
+          message: "Loading enhanced document",
         } as JobProgress)
-        
-        const enhancedFileBuffer = await downloadFromR2(enhancement.enhanced_file_url)
+
+const enhancedFileBuffer = await downloadFile(
+          toR2Key(enhancement.enhanced_file_url)
+        )
 
         // Initialize exporter
         const exporter = new DocumentExporter({
           subscriptionTier,
-          watermark: subscriptionTier === 'free',
+          watermark: subscriptionTier === "free",
         })
 
         // Export based on format
@@ -61,46 +67,47 @@ export const createExportWorker = () => {
         let fileExtension: string
 
         await job.updateProgress({
-          stage: 'exporting',
+          stage: "exporting",
           progress: 50,
           message: `Exporting as ${exportFormat.toUpperCase()}`,
         } as JobProgress)
 
         switch (exportFormat) {
-          case 'pdf':
+          case "pdf":
             exportedFile = await exporter.exportToPDF(
               enhancedFileBuffer,
-              exportSettings?.quality || 'standard'
+              exportSettings?.quality || "standard"
             )
-            mimeType = 'application/pdf'
-            fileExtension = 'pdf'
+            mimeType = "application/pdf"
+            fileExtension = "pdf"
             break
 
-          case 'png':
+          case "png":
             exportedFile = await exporter.exportToPNG(
               enhancedFileBuffer,
-              exportSettings?.quality || 'standard'
+              exportSettings?.quality || "standard"
             )
-            mimeType = 'image/png'
-            fileExtension = 'png'
+            mimeType = "image/png"
+            fileExtension = "png"
             break
 
-          case 'canva':
+          case "canva":
             exportedFile = await exporter.exportToCanva(
               enhancedFileBuffer,
               enhancement.enhancement_strategy
             )
-            mimeType = 'application/json'
-            fileExtension = 'canva'
+            mimeType = "application/json"
+            fileExtension = "canva"
             break
 
-          case 'pptx':
+          case "pptx":
             exportedFile = await exporter.exportToPPTX(
               enhancedFileBuffer,
-              enhancement.documents.title || 'Untitled'
+              enhancement.documents.title || "Untitled"
             )
-            mimeType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
-            fileExtension = 'pptx'
+            mimeType =
+              "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            fileExtension = "pptx"
             break
 
           default:
@@ -110,27 +117,31 @@ export const createExportWorker = () => {
         // Generate report if requested
         if (exportSettings?.includeReport) {
           await job.updateProgress({
-            stage: 'report',
+            stage: "report",
             progress: 70,
-            message: 'Generating enhancement report',
+            message: "Generating enhancement report",
           } as JobProgress)
-          
+
           // Report generation would be handled here
         }
 
         // Upload exported file
         await job.updateProgress({
-          stage: 'uploading',
+          stage: "uploading",
           progress: 80,
-          message: 'Saving exported file',
+          message: "Saving exported file",
         } as JobProgress)
-        
+
         const exportFileKey = `exports/${userId}/${documentId}/${Date.now()}.${fileExtension}`
-        const exportFileUrl = await uploadToR2(exportedFile, exportFileKey)
+const { url: exportFileUrl } = await uploadBufferToKey({
+          buffer: exportedFile,
+          key: exportFileKey,
+          contentType: mimeType,
+        })
 
         // Save export record
         const { data: exportRecord, error: exportError } = await supabase
-          .from('exports')
+          .from("exports")
           .insert({
             enhancement_id: enhancementId,
             user_id: userId,
@@ -149,33 +160,33 @@ export const createExportWorker = () => {
 
         // Update document status
         await supabase
-          .from('documents')
-          .update({ 
-            status: 'completed',
+          .from("documents")
+          .update({
+            status: "completed",
             completed_at: new Date().toISOString(),
           })
-          .eq('id', documentId)
+          .eq("id", documentId)
 
         // Queue email notification
         await job.updateProgress({
-          stage: 'notifying',
+          stage: "notifying",
           progress: 90,
-          message: 'Sending notification',
+          message: "Sending notification",
         } as JobProgress)
-        
+
         const { data: user } = await supabase
-          .from('users')
-          .select('email, name')
-          .eq('id', userId)
+          .from("users")
+          .select("email, name")
+          .eq("id", userId)
           .single()
 
         if (user?.email) {
           await addEmailJob({
             to: user.email,
-            subject: 'Your enhanced document is ready!',
-            template: 'export-ready',
+            subject: "Your enhanced document is ready!",
+            template: "export-ready",
             data: {
-              userName: user.name || 'there',
+              userName: user.name || "there",
               documentTitle: enhancement.documents.title,
               exportFormat: exportFormat.toUpperCase(),
               downloadUrl: exportFileUrl,
@@ -185,9 +196,9 @@ export const createExportWorker = () => {
 
         // Complete
         await job.updateProgress({
-          stage: 'completed',
+          stage: "completed",
           progress: 100,
-          message: 'Export completed successfully',
+          message: "Export completed successfully",
         } as JobProgress)
 
         return {
@@ -203,23 +214,24 @@ export const createExportWorker = () => {
           },
         }
       } catch (error) {
-        console.error('Export error:', error)
-        
+        console.error("Export error:", error)
+
         // Update document status to failed
         const supabase = createClient()
         await supabase
-          .from('documents')
-          .update({ 
-            status: 'export_failed',
-            error_message: error instanceof Error ? error.message : 'Unknown error',
+          .from("documents")
+          .update({
+            status: "export_failed",
+            error_message:
+              error instanceof Error ? error.message : "Unknown error",
           })
-          .eq('id', documentId)
+          .eq("id", documentId)
 
         return {
           success: false,
           error: {
-            message: error instanceof Error ? error.message : 'Export failed',
-            code: 'EXPORT_ERROR',
+            message: error instanceof Error ? error.message : "Export failed",
+            code: "EXPORT_ERROR",
             details: error,
           },
           metadata: {
@@ -227,7 +239,7 @@ export const createExportWorker = () => {
           },
         }
       }
-    },
+    }),
     {
       connection: getQueueConnection(),
       concurrency: 5, // Process up to 5 export jobs concurrently
@@ -239,11 +251,11 @@ export const createExportWorker = () => {
   )
 
   // Error handling
-  worker.on('failed', (job, err) => {
+  worker.on("failed", (job, err) => {
     console.error(`Export job ${job?.id} failed:`, err)
   })
 
-  worker.on('completed', (job) => {
+  worker.on("completed", (job) => {
     console.log(`Export job ${job.id} completed`)
   })
 

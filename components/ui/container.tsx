@@ -15,7 +15,7 @@ const Container = React.forwardRef<HTMLDivElement, ContainerProps>(
       xl: "max-w-[1400px]",
       full: "max-w-full",
     }
-    
+
     return (
       <div
         ref={ref}

@@ -1,48 +1,54 @@
-'use client';
+"use client"
 
-import { ReactNode } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Lock } from 'lucide-react';
-import { useSubscription } from '@/hooks/use-subscription';
-import Link from 'next/link';
+import { ReactNode } from "react"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Lock } from "lucide-react"
+import { useSubscription } from "@/hooks/use-subscription"
+import Link from "next/link"
 
 interface SubscriptionGateProps {
-  children: ReactNode;
-  requiredTier?: 'basic' | 'pro' | 'premium';
-  feature?: string;
-  fallback?: ReactNode;
+  children: ReactNode
+  requiredTier?: "basic" | "pro" | "premium"
+  feature?: string
+  fallback?: ReactNode
 }
 
-export function SubscriptionGate({ 
-  children, 
-  requiredTier, 
+export function SubscriptionGate({
+  children,
+  requiredTier,
   feature,
-  fallback 
+  fallback,
 }: SubscriptionGateProps) {
-  const { tier, canUseFeature } = useSubscription();
+  const { tier, canUseFeature } = useSubscription()
 
   const hasAccess = () => {
     if (feature) {
-      return canUseFeature(feature);
+      return canUseFeature(feature)
     }
-    
+
     if (requiredTier) {
-      const tierOrder = ['free', 'basic', 'pro', 'premium'];
-      const currentTierIndex = tierOrder.indexOf(tier);
-      const requiredTierIndex = tierOrder.indexOf(requiredTier);
-      return currentTierIndex >= requiredTierIndex;
+      const tierOrder = ["free", "basic", "pro", "premium"]
+      const currentTierIndex = tierOrder.indexOf(tier)
+      const requiredTierIndex = tierOrder.indexOf(requiredTier)
+      return currentTierIndex >= requiredTierIndex
     }
-    
-    return true;
-  };
+
+    return true
+  }
 
   if (hasAccess()) {
-    return <>{children}</>;
+    return <>{children}</>
   }
 
   if (fallback) {
-    return <>{fallback}</>;
+    return <>{fallback}</>
   }
 
   return (
@@ -53,16 +59,14 @@ export function SubscriptionGate({
           <CardTitle>Upgrade Required</CardTitle>
         </div>
         <CardDescription>
-          This feature requires a {requiredTier || 'paid'} subscription
+          This feature requires a {requiredTier || "paid"} subscription
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Link href="/app/settings/billing">
-          <Button className="w-full">
-            View Plans
-          </Button>
+          <Button className="w-full">View Plans</Button>
         </Link>
       </CardContent>
     </Card>
-  );
+  )
 }

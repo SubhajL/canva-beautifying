@@ -34,22 +34,17 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
   className,
 }) => {
   const [isFullscreen, setIsFullscreen] = React.useState(false)
-  
+
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen)
   }
-  
+
   const renderPreview = () => {
     switch (fileType) {
       case "image":
         return (
           <div className="relative h-full w-full">
-            <Image
-              src={fileUrl}
-              alt={title}
-              fill
-              className="object-contain"
-            />
+            <Image src={fileUrl} alt={title} fill className="object-contain" />
           </div>
         )
       case "pdf":
@@ -69,11 +64,7 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
                 Document preview not available
               </p>
               {onDownload && (
-                <Button
-                  onClick={onDownload}
-                  variant="outline"
-                  className="mt-4"
-                >
+                <Button onClick={onDownload} variant="outline" className="mt-4">
                   <Download className="mr-2 h-4 w-4" />
                   Download to view
                 </Button>
@@ -83,13 +74,14 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
         )
     }
   }
-  
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent 
+      <DialogContent
         className={cn(
           "max-w-4xl",
-          isFullscreen && "h-screen max-h-screen w-screen max-w-none rounded-none",
+          isFullscreen &&
+            "h-screen max-h-screen w-screen max-w-none rounded-none",
           className
         )}
       >
@@ -102,24 +94,22 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
               )}
             </div>
             <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleFullscreen}
-              >
+              <Button variant="ghost" size="icon" onClick={toggleFullscreen}>
                 <Maximize2 className="h-4 w-4" />
               </Button>
             </div>
           </div>
         </DialogHeader>
-        
-        <div className={cn(
-          "relative overflow-hidden rounded-md bg-gray-50 dark:bg-gray-900",
-          isFullscreen ? "h-[calc(100vh-120px)]" : "h-[600px]"
-        )}>
+
+        <div
+          className={cn(
+            "relative overflow-hidden rounded-md bg-gray-50 dark:bg-gray-900",
+            isFullscreen ? "h-[calc(100vh-120px)]" : "h-[600px]"
+          )}
+        >
           {renderPreview()}
         </div>
-        
+
         {onDownload && (
           <DialogFooter>
             <Button onClick={onDownload} variant="outline">

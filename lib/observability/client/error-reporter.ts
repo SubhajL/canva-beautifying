@@ -2,11 +2,11 @@
  * Client-safe error reporting for browser and Edge Runtime environments
  */
 
-import { ErrorInfo } from 'react'
-import { captureException, withScope } from '@sentry/nextjs'
-import { logger } from './logger'
-import { createTelemetrySpan } from './tracing'
-import { createTelemetryEvent } from './events'
+import { ErrorInfo } from "react"
+import { captureException, withScope } from "@sentry/nextjs"
+import { logger } from "./logger"
+import { createTelemetrySpan } from "./tracing"
+import { createTelemetryEvent } from "./events"
 
 export interface ErrorContext {
   boundary: string
@@ -23,39 +23,43 @@ export function captureErrorBoundaryException(
   errorInfo: ErrorInfo,
   context: ErrorContext
 ) {
-  const span = createTelemetrySpan('error_boundary_report', {
+  const span = createTelemetrySpan("error_boundary_report", {
     attributes: {
-      'error.boundary': context.boundary,
-      'error.id': context.errorId,
-      'error.message': error.message,
-      'error.retry_count': context.retryCount,
+      "error.boundary": context.boundary,
+      "error.id": context.errorId,
+      "error.message": error.message,
+      "error.retry_count": context.retryCount,
     },
   })
 
   try {
     // Capture with Sentry
     withScope((scope) => {
-      scope.setContext('error_boundary', {
+      scope.setContext("error_boundary", {
         boundary: context.boundary,
         errorId: context.errorId,
         retryCount: context.retryCount,
         componentStack: errorInfo.componentStack,
       })
 
-      scope.setTag('error.boundary', context.boundary)
-      scope.setTag('error.id', context.errorId)
-      scope.setLevel('error')
+      scope.setTag("error.boundary", context.boundary)
+      scope.setTag("error.id", context.errorId)
+      scope.setLevel("error")
 
       if (context.userId) {
         scope.setUser({ id: context.userId })
       }
 
       if (context.pathname) {
-        scope.setContext('navigation', { pathname: context.pathname })
+        scope.setContext("navigation", { pathname: context.pathname })
       }
 
       Object.entries(context).forEach(([key, value]) => {
-        if (!['boundary', 'errorId', 'retryCount', 'userId', 'pathname'].includes(key)) {
+        if (
+          !["boundary", "errorId", "retryCount", "userId", "pathname"].includes(
+            key
+          )
+        ) {
           scope.setExtra(key, value)
         }
       })
@@ -64,7 +68,7 @@ export function captureErrorBoundaryException(
     })
 
     // Log the error
-    logger.error('Error boundary exception captured', error, {
+    logger.error("Error boundary exception captured", error, {
       errorId: context.errorId,
       boundary: context.boundary,
       componentStack: errorInfo.componentStack,
@@ -73,7 +77,7 @@ export function captureErrorBoundaryException(
     })
 
     // Track telemetry event
-    createTelemetryEvent('error_boundary_exception', {
+    createTelemetryEvent("error_boundary_exception", {
       errorId: context.errorId,
       boundary: context.boundary,
       errorName: error.name,
@@ -89,13 +93,16 @@ export function captureErrorBoundaryException(
 
 export function getUserErrorMessage(error: Error): string {
   const errorMessages: Record<string, string> = {
-    ChunkLoadError: 'The application needs to be refreshed. Please reload the page.',
-    NetworkError: 'Unable to connect. Please check your internet connection.',
-    'Failed to fetch dynamically imported module': 'The application needs to be updated. Please refresh the page.',
-    QUOTA_EXCEEDED_ERR: 'Your browser storage is full. Please clear some space and try again.',
-    SecurityError: 'A security error occurred. Please refresh the page.',
-    TimeoutError: 'The operation took too long. Please try again.',
-    AbortError: 'The operation was cancelled. Please try again.',
+    ChunkLoadError:
+      "The application needs to be refreshed. Please reload the page.",
+    NetworkError: "Unable to connect. Please check your internet connection.",
+    "Failed to fetch dynamically imported module":
+      "The application needs to be updated. Please refresh the page.",
+    QUOTA_EXCEEDED_ERR:
+      "Your browser storage is full. Please clear some space and try again.",
+    SecurityError: "A security error occurred. Please refresh the page.",
+    TimeoutError: "The operation took too long. Please try again.",
+    AbortError: "The operation was cancelled. Please try again.",
   }
 
   for (const [key, message] of Object.entries(errorMessages)) {
@@ -104,25 +111,25 @@ export function getUserErrorMessage(error: Error): string {
     }
   }
 
-  if (error.message.toLowerCase().includes('network')) {
+  if (error.message.toLowerCase().includes("network")) {
     return errorMessages.NetworkError
   }
 
-  if (error.message.toLowerCase().includes('timeout')) {
+  if (error.message.toLowerCase().includes("timeout")) {
     return errorMessages.TimeoutError
   }
 
-  return 'An unexpected error occurred. Please try again or contact support if the problem persists.'
+  return "An unexpected error occurred. Please try again or contact support if the problem persists."
 }
 
 export function shouldIgnoreError(error: Error): boolean {
   const ignoredErrors = [
-    'ResizeObserver loop limit exceeded',
-    'ResizeObserver loop completed with undelivered notifications',
-    'Non-Error promise rejection captured',
-    'Network request failed',
-    'Load failed',
-    'cancelled',
+    "ResizeObserver loop limit exceeded",
+    "ResizeObserver loop completed with undelivered notifications",
+    "Non-Error promise rejection captured",
+    "Network request failed",
+    "Load failed",
+    "cancelled",
   ]
 
   return ignoredErrors.some((ignored) =>
@@ -139,16 +146,25 @@ export function sanitizeErrorForLogging(error: Error): Record<string, any> {
 
   if (error.stack) {
     sanitized.stack = error.stack
-      .split('\n')
-      .map((line) => line.replace(/https?:\/\/[^\s]+/g, '[URL]'))
-      .join('\n')
+      .split("\n")
+      .map((line) => line.replace(/https?:\/\/[^\s]+/g, "[URL]"))
+      .join("\n")
   }
 
   const errorWithDetails = error as any
-  const sensitiveKeys = ['password', 'token', 'key', 'secret', 'credential', 'auth']
-  
+  const sensitiveKeys = [
+    "password",
+    "token",
+    "key",
+    "secret",
+    "credential",
+    "auth",
+  ]
+
   Object.keys(errorWithDetails).forEach((key) => {
-    if (!sensitiveKeys.some((sensitive) => key.toLowerCase().includes(sensitive))) {
+    if (
+      !sensitiveKeys.some((sensitive) => key.toLowerCase().includes(sensitive))
+    ) {
       sanitized[key] = errorWithDetails[key]
     }
   })
@@ -161,22 +177,22 @@ export function createErrorId(): string {
 }
 
 // Global error handler for unhandled errors
-if (typeof window !== 'undefined') {
-  window.addEventListener('error', (event) => {
+if (typeof window !== "undefined") {
+  window.addEventListener("error", (event) => {
     if (shouldIgnoreError(event.error)) {
       return
     }
 
     const errorId = createErrorId()
-    
-    logger.error('Unhandled error', event.error, {
+
+    logger.error("Unhandled error", event.error, {
       errorId,
       filename: event.filename,
       lineno: event.lineno,
       colno: event.colno,
     })
 
-    createTelemetryEvent('unhandled_error', {
+    createTelemetryEvent("unhandled_error", {
       errorId,
       errorName: event.error?.name,
       errorMessage: event.error?.message,
@@ -186,21 +202,24 @@ if (typeof window !== 'undefined') {
     })
   })
 
-  window.addEventListener('unhandledrejection', (event) => {
-    const error = event.reason instanceof Error ? event.reason : new Error(String(event.reason))
-    
+  window.addEventListener("unhandledrejection", (event) => {
+    const error =
+      event.reason instanceof Error
+        ? event.reason
+        : new Error(String(event.reason))
+
     if (shouldIgnoreError(error)) {
       return
     }
 
     const errorId = createErrorId()
-    
-    logger.error('Unhandled promise rejection', error, {
+
+    logger.error("Unhandled promise rejection", error, {
       errorId,
       reason: event.reason,
     })
 
-    createTelemetryEvent('unhandled_rejection', {
+    createTelemetryEvent("unhandled_rejection", {
       errorId,
       errorName: error.name,
       errorMessage: error.message,

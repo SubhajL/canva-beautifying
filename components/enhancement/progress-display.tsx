@@ -1,12 +1,19 @@
-'use client'
+"use client"
 
-import { useDocumentProgress } from '@/hooks/use-document-progress'
-import { Progress } from '@/components/ui/progress'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Icons } from '@/components/ui/icons'
-import { CheckCircle, XCircle, Clock, Zap, FileText, Palette } from 'lucide-react'
+import { useDocumentProgress } from "@/hooks/use-document-progress"
+import { Progress } from "@/components/ui/progress"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Icons } from "@/components/ui/icons"
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
+  Zap,
+  FileText,
+  Palette,
+} from "lucide-react"
 
 interface ProgressDisplayProps {
   documentId: string
@@ -16,7 +23,10 @@ interface ProgressDisplayProps {
   }) => void
 }
 
-export function ProgressDisplay({ documentId, onComplete }: ProgressDisplayProps) {
+export function ProgressDisplay({
+  documentId,
+  onComplete,
+}: ProgressDisplayProps) {
   const {
     isConnected,
     connectionError,
@@ -43,9 +53,9 @@ export function ProgressDisplay({ documentId, onComplete }: ProgressDisplayProps
     return (
       <Card>
         <CardContent className="py-8 text-center">
-          <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Connection Error</h3>
-          <p className="text-muted-foreground mb-4">{connectionError}</p>
+          <XCircle className="mx-auto mb-4 h-12 w-12 text-red-500" />
+          <h3 className="mb-2 text-lg font-semibold">Connection Error</h3>
+          <p className="mb-4 text-muted-foreground">{connectionError}</p>
           <Button onClick={() => window.location.reload()}>Reload Page</Button>
         </CardContent>
       </Card>
@@ -57,9 +67,9 @@ export function ProgressDisplay({ documentId, onComplete }: ProgressDisplayProps
     return (
       <Card>
         <CardContent className="py-8 text-center">
-          <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Enhancement Failed</h3>
-          <p className="text-muted-foreground mb-4">{error.message}</p>
+          <XCircle className="mx-auto mb-4 h-12 w-12 text-red-500" />
+          <h3 className="mb-2 text-lg font-semibold">Enhancement Failed</h3>
+          <p className="mb-4 text-muted-foreground">{error.message}</p>
           {error.retryable && (
             <Button onClick={retry}>
               <Icons.refresh className="mr-2 h-4 w-4" />
@@ -76,11 +86,13 @@ export function ProgressDisplay({ documentId, onComplete }: ProgressDisplayProps
     return (
       <Card>
         <CardContent className="py-8 text-center">
-          <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Enhancement Complete!</h3>
+          <CheckCircle className="mx-auto mb-4 h-12 w-12 text-green-500" />
+          <h3 className="mb-2 text-lg font-semibold">Enhancement Complete!</h3>
           {completedData.improvements && (
             <div className="mb-4">
-              <p className="text-sm text-muted-foreground mb-2">Quality Score</p>
+              <p className="mb-2 text-sm text-muted-foreground">
+                Quality Score
+              </p>
               <div className="flex items-center justify-center gap-2">
                 <span className="text-2xl font-bold text-red-500">
                   {completedData.improvements.before}
@@ -104,32 +116,32 @@ export function ProgressDisplay({ documentId, onComplete }: ProgressDisplayProps
 
   // Progress stages
   const stages = [
-    { id: 'queued', label: 'Queued', icon: Clock },
-    { id: 'analysis', label: 'Analyzing', icon: FileText },
-    { id: 'enhancement', label: 'Enhancing', icon: Palette },
-    { id: 'export', label: 'Exporting', icon: Zap },
+    { id: "queued", label: "Queued", icon: Clock },
+    { id: "analysis", label: "Analyzing", icon: FileText },
+    { id: "enhancement", label: "Enhancing", icon: Palette },
+    { id: "export", label: "Exporting", icon: Zap },
   ]
 
-  const currentStageIndex = stages.findIndex(s => s.id === currentStage)
+  const currentStageIndex = stages.findIndex((s) => s.id === currentStage)
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>Enhancement Progress</span>
-          <Badge variant={isConnected ? 'default' : 'secondary'}>
-            {isConnected ? 'Connected' : 'Connecting...'}
+          <Badge variant={isConnected ? "default" : "secondary"}>
+            {isConnected ? "Connected" : "Connecting..."}
           </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Queue position */}
         {queuePosition !== undefined && (
-          <div className="text-center py-4 bg-muted rounded-lg">
+          <div className="rounded-lg bg-muted py-4 text-center">
             <p className="text-sm text-muted-foreground">Position in queue</p>
             <p className="text-2xl font-bold">{queuePosition}</p>
             {estimatedWaitTime && (
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="mt-1 text-sm text-muted-foreground">
                 Est. wait: {Math.ceil(estimatedWaitTime / 60)} min
               </p>
             )}
@@ -142,20 +154,17 @@ export function ProgressDisplay({ documentId, onComplete }: ProgressDisplayProps
             const Icon = stage.icon
             const isActive = stage.id === currentStage
             const isComplete = currentStageIndex > index
-            
+
             return (
-              <div
-                key={stage.id}
-                className="flex flex-col items-center flex-1"
-              >
+              <div key={stage.id} className="flex flex-1 flex-col items-center">
                 <div
                   className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-colors",
+                    "mb-2 flex h-10 w-10 items-center justify-center rounded-full transition-colors",
                     isComplete
                       ? "bg-green-500 text-white"
                       : isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground"
                   )}
                 >
                   {isComplete ? (
@@ -180,16 +189,16 @@ export function ProgressDisplay({ documentId, onComplete }: ProgressDisplayProps
         {/* Progress bars */}
         <div className="space-y-3">
           <div>
-            <div className="flex justify-between text-sm mb-1">
+            <div className="mb-1 flex justify-between text-sm">
               <span>Overall Progress</span>
               <span>{overallProgress}%</span>
             </div>
             <Progress value={overallProgress} className="h-2" />
           </div>
-          
-          {currentStage && currentStage !== 'queued' && (
+
+          {currentStage && currentStage !== "queued" && (
             <div>
-              <div className="flex justify-between text-sm mb-1">
+              <div className="mb-1 flex justify-between text-sm">
                 <span>Current Stage</span>
                 <span>{stageProgress}%</span>
               </div>
@@ -200,9 +209,7 @@ export function ProgressDisplay({ documentId, onComplete }: ProgressDisplayProps
 
         {/* Current message */}
         {message && (
-          <p className="text-sm text-center text-muted-foreground">
-            {message}
-          </p>
+          <p className="text-center text-sm text-muted-foreground">{message}</p>
         )}
 
         {/* Analysis findings */}
@@ -234,5 +241,5 @@ export function ProgressDisplay({ documentId, onComplete }: ProgressDisplayProps
 }
 
 function cn(...classes: (string | boolean | undefined)[]) {
-  return classes.filter(Boolean).join(' ')
+  return classes.filter(Boolean).join(" ")
 }

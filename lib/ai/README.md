@@ -35,62 +35,62 @@ ANTHROPIC_API_KEY_FALLBACK=your-fallback-anthropic-key # Optional
 ### Basic Document Analysis
 
 ```typescript
-import { aiService } from '@/lib/ai'
+import { aiService } from "@/lib/ai"
 
 const result = await aiService.analyzeDocument(
-  'https://example.com/document.jpg',
+  "https://example.com/document.jpg",
   {
-    documentUrl: 'https://example.com/document.jpg',
-    documentType: 'worksheet',
-    userTier: 'pro',
+    documentUrl: "https://example.com/document.jpg",
+    documentType: "worksheet",
+    userTier: "pro",
     preferences: {
-      style: 'modern',
-      colorScheme: 'vibrant',
-      targetAudience: 'children'
-    }
+      style: "modern",
+      colorScheme: "vibrant",
+      targetAudience: "children",
+    },
   },
-  'user-123'
+  "user-123"
 )
 
-console.log('Analysis:', result.analysis)
-console.log('Suggestions:', result.suggestedEnhancements)
+console.log("Analysis:", result.analysis)
+console.log("Suggestions:", result.suggestedEnhancements)
 ```
 
 ### Manual Model Selection
 
 ```typescript
-import { ModelSelector } from '@/lib/ai'
+import { ModelSelector } from "@/lib/ai"
 
 const model = ModelSelector.selectModel({
-  userTier: 'premium',
-  documentComplexity: 'high',
-  processingPriority: 'quality',
-  previousFailures: ['gemini-2.0-flash'] // Exclude failed models
+  userTier: "premium",
+  documentComplexity: "high",
+  processingPriority: "quality",
+  previousFailures: ["gemini-2.0-flash"], // Exclude failed models
 })
 ```
 
 ### Cost Tracking
 
 ```typescript
-import { costTracker } from '@/lib/ai'
+import { costTracker } from "@/lib/ai"
 
 // Get user usage
 const usage = await costTracker.getUserUsage(
-  'user-123',
-  new Date('2024-01-01'),
-  new Date('2024-01-31')
+  "user-123",
+  new Date("2024-01-01"),
+  new Date("2024-01-31")
 )
 
-console.log('Total cost:', usage.totalCost)
-console.log('By model:', usage.byModel)
+console.log("Total cost:", usage.totalCost)
+console.log("By model:", usage.byModel)
 ```
 
 ### Rate Limit Checking
 
 ```typescript
-import { rateLimiter } from '@/lib/ai'
+import { rateLimiter } from "@/lib/ai"
 
-const check = await rateLimiter.checkLimit('gpt-4o-mini', 'user-123')
+const check = await rateLimiter.checkLimit("gpt-4o-mini", "user-123")
 if (!check.allowed) {
   console.log(`Rate limited. Retry after ${check.retryAfter} seconds`)
 }
@@ -99,24 +99,28 @@ if (!check.allowed) {
 ## Model Tiers and Capabilities
 
 ### Free Tier
+
 - **Models**: Gemini 2.0 Flash
 - **Use Case**: Basic document analysis
 - **Speed**: Fast
 - **Quality**: Good
 
 ### Basic Tier
+
 - **Models**: Gemini 2.0 Flash, GPT-4o Mini
 - **Use Case**: Enhanced analysis with fallback
 - **Speed**: Fast to Medium
 - **Quality**: Good to Very Good
 
 ### Pro Tier
+
 - **Models**: GPT-4o Mini, Claude 3.5 Sonnet, Gemini 2.0 Flash
 - **Use Case**: Professional document enhancement
 - **Speed**: Medium
 - **Quality**: Very Good to Excellent
 
 ### Premium Tier
+
 - **Models**: Claude 4 Sonnet, Claude 3.5 Sonnet, GPT-4o Mini, Gemini 2.0 Flash
 - **Use Case**: Highest quality analysis and enhancement
 - **Speed**: Medium to Slow

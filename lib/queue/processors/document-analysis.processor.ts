@@ -1,75 +1,88 @@
-import { Worker, Job } from 'bullmq'
-import { getQueueConnection, QUEUE_NAMES } from '../config'
-import type { DocumentAnalysisJobData, JobResult, JobProgress } from '../types'
-import { createClient } from '@/lib/supabase/server'
-import { downloadFromR2 } from '@/lib/r2/client'
-import { DocumentAnalyzer } from '@/lib/analysis/document-analyzer'
+import { Worker, Job } from "bullmq"
+import { getQueueConnection, QUEUE_NAMES } from "../config"
+import type { DocumentAnalysisJobData, JobResult, JobProgress } from "../types"
+import { createClient } from "@/lib/supabase/server"
+import { downloadFile } from "@/lib/r2/download"
+import { toR2Key } from "@/lib/r2/keys"
+import { withJobTrace } from "@/lib/observability/tracing"
+import { DocumentAnalyzer } from "@/lib/analysis/document-analyzer"
 
 export const createDocumentAnalysisWorker = () => {
   const worker = new Worker<DocumentAnalysisJobData, JobResult>(
     QUEUE_NAMES.DOCUMENT_ANALYSIS,
-    async (job: Job<DocumentAnalysisJobData>) => {
+async (job: Job<DocumentAnalysisJobData>) =>
+      withJobTrace(job.data as any, "queue.document-analysis", async () => {
       const startTime = Date.now()
-      const { documentId, userId, fileUrl, fileType, subscriptionTier } = job.data
+      const { documentId, userId, fileUrl, fileType, subscriptionTier } =
+        job.data
 
       try {
         // Update progress: Starting
         await job.updateProgress({
-          stage: 'downloading',
+          stage: "downloading",
           progress: 10,
-          message: 'Downloading document from storage',
+          message: "Downloading document from storage",
         } as JobProgress)
 
         // Download file from R2
-        const fileBuffer = await downloadFromR2(fileUrl)
-        
+const fileBuffer = await downloadFile(toR2Key(fileUrl))
+
         // Update progress: File downloaded
         await job.updateProgress({
-          stage: 'analyzing',
+          stage: "analyzing",
           progress: 30,
-          message: 'Analyzing document structure',
+          message: "Analyzing document structure",
         } as JobProgress)
 
         // Initialize document analyzer
         const analyzer = new DocumentAnalyzer(subscriptionTier)
-        
+
         // Analyze colors
         await job.updateProgress({
-          stage: 'analyzing',
+          stage: "analyzing",
           progress: 40,
-          message: 'Analyzing color palette',
+          message: "Analyzing color palette",
         } as JobProgress)
         const colorAnalysis = await analyzer.analyzeColors(fileBuffer, fileType)
-        
+
         // Analyze typography
         await job.updateProgress({
-          stage: 'analyzing',
+          stage: "analyzing",
           progress: 50,
-          message: 'Analyzing typography',
+          message: "Analyzing typography",
         } as JobProgress)
-        const typographyAnalysis = await analyzer.analyzeTypography(fileBuffer, fileType)
-        
+        const typographyAnalysis = await analyzer.analyzeTypography(
+          fileBuffer,
+          fileType
+        )
+
         // Analyze layout
         await job.updateProgress({
-          stage: 'analyzing',
+          stage: "analyzing",
           progress: 60,
-          message: 'Analyzing layout structure',
+          message: "Analyzing layout structure",
         } as JobProgress)
-        const layoutAnalysis = await analyzer.analyzeLayout(fileBuffer, fileType)
-        
+        const layoutAnalysis = await analyzer.analyzeLayout(
+          fileBuffer,
+          fileType
+        )
+
         // Analyze content
         await job.updateProgress({
-          stage: 'analyzing',
+          stage: "analyzing",
           progress: 70,
-          message: 'Analyzing content quality',
+          message: "Analyzing content quality",
         } as JobProgress)
-        const contentAnalysis = await analyzer.analyzeContent(fileBuffer, fileType)
-        
+        const contentAnalysis = await analyzer.analyzeContent(
+          fileBuffer,
+          fileType
+        )
+
         // Calculate overall quality score
         await job.updateProgress({
-          stage: 'analyzing',
+          stage: "analyzing",
           progress: 80,
-          message: 'Calculating quality score',
+          message: "Calculating quality score",
         } as JobProgress)
         const qualityScore = analyzer.calculateQualityScore({
           colors: colorAnalysis,
@@ -80,14 +93,14 @@ export const createDocumentAnalysisWorker = () => {
 
         // Save analysis results to database
         await job.updateProgress({
-          stage: 'saving',
+          stage: "saving",
           progress: 90,
-          message: 'Saving analysis results',
+          message: "Saving analysis results",
         } as JobProgress)
-        
+
         const supabase = createClient()
         const { error: dbError } = await supabase
-          .from('document_analyses')
+          .from("document_analyses")
           .insert({
             document_id: documentId,
             user_id: userId,
@@ -105,18 +118,18 @@ export const createDocumentAnalysisWorker = () => {
 
         // Update document status
         await supabase
-          .from('documents')
-          .update({ 
-            status: 'analyzed',
+          .from("documents")
+          .update({
+            status: "analyzed",
             analyzed_at: new Date().toISOString(),
           })
-          .eq('id', documentId)
+          .eq("id", documentId)
 
         // Complete
         await job.updateProgress({
-          stage: 'completed',
+          stage: "completed",
           progress: 100,
-          message: 'Analysis completed successfully',
+          message: "Analysis completed successfully",
         } as JobProgress)
 
         return {
@@ -136,23 +149,27 @@ export const createDocumentAnalysisWorker = () => {
           },
         }
       } catch (error) {
-        console.error('Document analysis error:', error)
-        
+        console.error("Document analysis error:", error)
+
         // Update document status to failed
         const supabase = createClient()
         await supabase
-          .from('documents')
-          .update({ 
-            status: 'analysis_failed',
-            error_message: error instanceof Error ? error.message : 'Unknown error',
+          .from("documents")
+          .update({
+            status: "analysis_failed",
+            error_message:
+              error instanceof Error ? error.message : "Unknown error",
           })
-          .eq('id', documentId)
+          .eq("id", documentId)
 
         return {
           success: false,
           error: {
-            message: error instanceof Error ? error.message : 'Document analysis failed',
-            code: 'ANALYSIS_ERROR',
+            message:
+              error instanceof Error
+                ? error.message
+                : "Document analysis failed",
+            code: "ANALYSIS_ERROR",
             details: error,
           },
           metadata: {
@@ -160,7 +177,7 @@ export const createDocumentAnalysisWorker = () => {
           },
         }
       }
-    },
+    }),
     {
       connection: getQueueConnection(),
       concurrency: 5, // Process up to 5 jobs concurrently
@@ -172,11 +189,11 @@ export const createDocumentAnalysisWorker = () => {
   )
 
   // Error handling
-  worker.on('failed', (job, err) => {
+  worker.on("failed", (job, err) => {
     console.error(`Document analysis job ${job?.id} failed:`, err)
   })
 
-  worker.on('completed', (job) => {
+  worker.on("completed", (job) => {
     console.log(`Document analysis job ${job.id} completed`)
   })
 

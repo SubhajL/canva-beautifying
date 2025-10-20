@@ -25,7 +25,7 @@ interface SidebarNavProps extends React.HTMLAttributes<HTMLDivElement> {
 const SidebarNav = React.forwardRef<HTMLDivElement, SidebarNavProps>(
   ({ className, sections, ...props }, ref) => {
     const pathname = usePathname()
-    
+
     return (
       <nav
         ref={ref}
@@ -43,7 +43,7 @@ const SidebarNav = React.forwardRef<HTMLDivElement, SidebarNavProps>(
               {section.items.map((item) => {
                 const Icon = item.icon
                 const isActive = pathname === item.href
-                
+
                 return (
                   <Link
                     key={item.href}
@@ -60,22 +60,26 @@ const SidebarNav = React.forwardRef<HTMLDivElement, SidebarNavProps>(
                   >
                     <div className="flex items-center gap-3">
                       {Icon && (
-                        <Icon className={cn(
-                          "h-4 w-4",
-                          isActive
-                            ? "text-primary-foreground"
-                            : "text-muted-foreground group-hover:text-accent-foreground"
-                        )} />
+                        <Icon
+                          className={cn(
+                            "h-4 w-4",
+                            isActive
+                              ? "text-primary-foreground"
+                              : "text-muted-foreground group-hover:text-accent-foreground"
+                          )}
+                        />
                       )}
                       <span>{item.title}</span>
                     </div>
                     {item.badge && (
-                      <span className={cn(
-                        "rounded-full px-2 py-0.5 text-xs font-medium",
-                        isActive
-                          ? "bg-primary-foreground/20 text-primary-foreground"
-                          : "bg-muted text-muted-foreground"
-                      )}>
+                      <span
+                        className={cn(
+                          "rounded-full px-2 py-0.5 text-xs font-medium",
+                          isActive
+                            ? "bg-primary-foreground/20 text-primary-foreground"
+                            : "bg-muted text-muted-foreground"
+                        )}
+                      >
                         {item.badge}
                       </span>
                     )}

@@ -2,7 +2,7 @@ export interface FileUpload {
   id: string
   file: File
   progress: number
-  status: 'pending' | 'uploading' | 'success' | 'error'
+  status: "pending" | "uploading" | "success" | "error"
   error?: string
   preview?: string
   result?: {

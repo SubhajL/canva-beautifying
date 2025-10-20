@@ -1,12 +1,12 @@
-'use client'
+"use client"
 
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle, Check, Clock, Copy, X } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { useState } from 'react'
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { AlertCircle, Check, Clock, Copy, X } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { useState } from "react"
 
 interface ResponseViewerProps {
   status: number | null
@@ -23,16 +23,16 @@ export function ResponseViewer({
   error,
   headers,
   duration,
-  className
+  className,
 }: ResponseViewerProps) {
   const [copiedTab, setCopiedTab] = useState<string | null>(null)
 
   const getStatusBadgeVariant = (statusCode: number) => {
-    if (statusCode >= 200 && statusCode < 300) return 'default'
-    if (statusCode >= 300 && statusCode < 400) return 'secondary'
-    if (statusCode >= 400 && statusCode < 500) return 'destructive'
-    if (statusCode >= 500) return 'destructive'
-    return 'secondary'
+    if (statusCode >= 200 && statusCode < 300) return "default"
+    if (statusCode >= 300 && statusCode < 400) return "secondary"
+    if (statusCode >= 400 && statusCode < 500) return "destructive"
+    if (statusCode >= 500) return "destructive"
+    return "secondary"
   }
 
   const getStatusIcon = (statusCode: number) => {
@@ -43,7 +43,7 @@ export function ResponseViewer({
   }
 
   const formatResponse = (data: unknown): string => {
-    if (typeof data === 'object' && data !== null) {
+    if (typeof data === "object" && data !== null) {
       return JSON.stringify(data, null, 2)
     }
     return String(data)
@@ -55,14 +55,21 @@ export function ResponseViewer({
       setCopiedTab(tab)
       setTimeout(() => setCopiedTab(null), 2000)
     } catch (_error) {
-      console.error('Failed to copy')
+      console.error("Failed to copy")
     }
   }
 
   if (!status && !error) {
     return (
-      <div className={cn("text-center py-12 text-gray-500 dark:text-gray-400", className)}>
-        <p className="text-sm">No response yet. Send a request to see the results here.</p>
+      <div
+        className={cn(
+          "py-12 text-center text-gray-500 dark:text-gray-400",
+          className
+        )}
+      >
+        <p className="text-sm">
+          No response yet. Send a request to see the results here.
+        </p>
       </div>
     )
   }
@@ -107,22 +114,24 @@ export function ResponseViewer({
           </TabsList>
 
           <TabsContent value="body" className="relative">
-            <div className="absolute top-2 right-2 z-10">
+            <div className="absolute right-2 top-2 z-10">
               <Button
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8"
-                onClick={() => copyToClipboard(formatResponse(response), 'body')}
+                onClick={() =>
+                  copyToClipboard(formatResponse(response), "body")
+                }
               >
-                {copiedTab === 'body' ? (
+                {copiedTab === "body" ? (
                   <Check className="h-4 w-4 text-green-600" />
                 ) : (
                   <Copy className="h-4 w-4" />
                 )}
               </Button>
             </div>
-            <div className="bg-gray-900 dark:bg-gray-950 rounded-lg p-4 overflow-auto max-h-[500px]">
-              <pre className="text-sm text-gray-300 font-mono">
+            <div className="max-h-[500px] overflow-auto rounded-lg bg-gray-900 p-4 dark:bg-gray-950">
+              <pre className="font-mono text-sm text-gray-300">
                 {formatResponse(response)}
               </pre>
             </div>
@@ -131,27 +140,32 @@ export function ResponseViewer({
           <TabsContent value="headers" className="relative">
             {headers && Object.keys(headers).length > 0 ? (
               <>
-                <div className="absolute top-2 right-2 z-10">
+                <div className="absolute right-2 top-2 z-10">
                   <Button
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8"
-                    onClick={() => copyToClipboard(JSON.stringify(headers, null, 2), 'headers')}
+                    onClick={() =>
+                      copyToClipboard(
+                        JSON.stringify(headers, null, 2),
+                        "headers"
+                      )
+                    }
                   >
-                    {copiedTab === 'headers' ? (
+                    {copiedTab === "headers" ? (
                       <Check className="h-4 w-4 text-green-600" />
                     ) : (
                       <Copy className="h-4 w-4" />
                     )}
                   </Button>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 space-y-2">
+                <div className="space-y-2 rounded-lg bg-gray-50 p-4 dark:bg-gray-900/50">
                   {Object.entries(headers).map(([key, value]) => (
                     <div key={key} className="flex gap-2 font-mono text-sm">
                       <span className="font-medium text-gray-700 dark:text-gray-300">
                         {key}:
                       </span>
-                      <span className="text-gray-600 dark:text-gray-400 break-all">
+                      <span className="break-all text-gray-600 dark:text-gray-400">
                         {value}
                       </span>
                     </div>
@@ -159,7 +173,7 @@ export function ResponseViewer({
                 </div>
               </>
             ) : (
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+              <div className="py-8 text-center text-gray-500 dark:text-gray-400">
                 <p className="text-sm">No headers available</p>
               </div>
             )}
@@ -168,11 +182,17 @@ export function ResponseViewer({
       )}
 
       {/* Empty Success Response */}
-      {!error && response === null && status && status >= 200 && status < 300 && (
-        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-          <p className="text-sm">Request completed successfully with no response body</p>
-        </div>
-      )}
+      {!error &&
+        response === null &&
+        status &&
+        status >= 200 &&
+        status < 300 && (
+          <div className="py-8 text-center text-gray-500 dark:text-gray-400">
+            <p className="text-sm">
+              Request completed successfully with no response body
+            </p>
+          </div>
+        )}
     </div>
   )
 }

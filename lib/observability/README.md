@@ -16,17 +16,17 @@ Comprehensive monitoring, logging, and metrics collection for the BeautifyAI pla
 ### Basic Logging
 
 ```typescript
-import { logger } from '@/lib/observability';
+import { logger } from "@/lib/observability"
 
 // Simple logging
-logger.info('User logged in', { userId: 'user-123' });
-logger.error('Failed to process document', { err: error });
+logger.info("User logged in", { userId: "user-123" })
+logger.error("Failed to process document", { err: error })
 
 // With request context
-logger.withContext({ requestId: 'req-123', userId: 'user-456' }, () => {
-  logger.info('Processing request');
+logger.withContext({ requestId: "req-123", userId: "user-456" }, () => {
+  logger.info("Processing request")
   // All logs within this context will include requestId and userId
-});
+})
 ```
 
 ### AI Operation Monitoring
@@ -56,55 +56,58 @@ const result = await monitorAIOperation(
 ### Queue Monitoring
 
 ```typescript
-import { createMonitoredQueue, createMonitoredWorker } from '@/lib/observability/integrations/queue-monitoring';
+import {
+  createMonitoredQueue,
+  createMonitoredWorker,
+} from "@/lib/observability/integrations/queue-monitoring"
 
 // Create monitored queue
-const queue = createMonitoredQueue('enhancement-queue', {
+const queue = createMonitoredQueue("enhancement-queue", {
   connection: redisConnection,
-});
+})
 
 // Create monitored worker
-const worker = createMonitoredWorker(
-  'enhancement-worker',
-  async (job) => {
-    // Process job with automatic monitoring
-    return processEnhancement(job.data);
-  }
-);
+const worker = createMonitoredWorker("enhancement-worker", async (job) => {
+  // Process job with automatic monitoring
+  return processEnhancement(job.data)
+})
 ```
 
 ### HTTP Request Logging
 
 ```typescript
 // In middleware.ts
-import { withLogging } from '@/lib/observability';
+import { withLogging } from "@/lib/observability"
 
 export function middleware(request: NextRequest) {
-  return withLogging(request);
+  return withLogging(request)
 }
 
 // In API routes
-import { withApiLogging } from '@/lib/observability';
+import { withApiLogging } from "@/lib/observability"
 
 export const GET = withApiLogging(async (req) => {
   // Your API logic - automatically tracked
-  return NextResponse.json({ data });
-});
+  return NextResponse.json({ data })
+})
 ```
 
 ## Structured Logging Methods
 
 ### HTTP Requests
+
 ```typescript
-logger.logHttpRequest(req, res, responseTime);
+logger.logHttpRequest(req, res, responseTime)
 ```
 
 ### Database Queries
+
 ```typescript
 logger.logDatabaseQuery(query, params, duration, error?);
 ```
 
 ### AI Operations
+
 ```typescript
 logger.logAIOperation(operation, model, input, output, {
   duration,
@@ -115,25 +118,28 @@ logger.logAIOperation(operation, model, input, output, {
 ```
 
 ### Queue Jobs
+
 ```typescript
 logger.logQueueJob(queue, jobId, action, metadata?);
 ```
 
 ### Security Events
+
 ```typescript
-logger.logSecurityEvent('unauthorized_access', 'high', {
+logger.logSecurityEvent("unauthorized_access", "high", {
   userId,
   resource,
   ip,
-});
+})
 ```
 
 ### Performance Metrics
+
 ```typescript
-logger.logPerformanceMetric('api.response_time', 150, 'ms', {
-  endpoint: '/api/enhance',
-  method: 'POST',
-});
+logger.logPerformanceMetric("api.response_time", 150, "ms", {
+  endpoint: "/api/enhance",
+  method: "POST",
+})
 ```
 
 ## Metrics
@@ -143,10 +149,12 @@ Access metrics at `/api/metrics` (requires authentication).
 ### Available Metrics
 
 - **HTTP Metrics**
+
   - `http_requests_total` - Total HTTP requests
   - `http_request_duration_seconds` - Request duration histogram
 
 - **AI Metrics**
+
   - `ai_operations_total` - Total AI operations
   - `ai_operation_duration_seconds` - AI operation duration
   - `ai_tokens_used_total` - Total tokens consumed
@@ -154,6 +162,7 @@ Access metrics at `/api/metrics` (requires authentication).
   - `ai_model_fallbacks_total` - Model fallback counts
 
 - **Queue Metrics**
+
   - `queue_jobs_total` - Total queue jobs by status
   - `queue_job_duration_seconds` - Job processing duration
   - `queue_depth` - Current queue depth by status
@@ -183,6 +192,7 @@ SENTRY_ENABLED=true            # Enable Sentry in dev
 ### Security
 
 The logger automatically redacts sensitive fields:
+
 - Headers: `authorization`, `cookie`, `set-cookie`
 - Fields: `password`, `apiKey`, `token`, `jwt`, `creditCard`
 
@@ -191,28 +201,25 @@ The logger automatically redacts sensitive fields:
 ### Enhancement Pipeline Monitoring
 
 ```typescript
-import { monitorPipelineStage } from '@/lib/observability/integrations/enhancement-pipeline-monitoring';
+import { monitorPipelineStage } from "@/lib/observability/integrations/enhancement-pipeline-monitoring"
 
 const monitoredStage = monitorPipelineStage({
-  name: 'analysis',
+  name: "analysis",
   execute: async (context) => {
     // Stage logic with automatic monitoring
   },
-});
+})
 ```
 
 ### AI Provider Monitoring
 
 ```typescript
-import { MonitoredAIProvider } from '@/lib/observability/integrations/ai-service-integration';
+import { MonitoredAIProvider } from "@/lib/observability/integrations/ai-service-integration"
 
-const provider = new MonitoredAIProvider(
-  originalProvider,
-  'openai'
-);
+const provider = new MonitoredAIProvider(originalProvider, "openai")
 
 // All operations are automatically monitored
-const result = await provider.analyzeDocument(imageData);
+const result = await provider.analyzeDocument(imageData)
 ```
 
 ## Development
@@ -250,19 +257,27 @@ npm test lib/observability/logger.test.ts
 ## Troubleshooting
 
 ### High Memory Usage
+
 Check for memory leaks in logging:
+
 ```typescript
-logger.child({ /* large object */ }); // Avoid large objects in child loggers
+logger.child({
+  /* large object */
+}) // Avoid large objects in child loggers
 ```
 
 ### Missing Logs
+
 Verify LOG_LEVEL environment variable:
+
 ```typescript
-console.log('Current log level:', process.env.LOG_LEVEL);
+console.log("Current log level:", process.env.LOG_LEVEL)
 ```
 
 ### Metrics Not Updating
+
 Check the metrics endpoint:
+
 ```bash
 curl -H "Authorization: Bearer $METRICS_AUTH_TOKEN" http://localhost:5000/api/metrics
 ```

@@ -1,15 +1,15 @@
-'use client';
+"use client"
 
-import React from 'react';
-import Image, { ImageProps } from 'next/image';
-import { cn } from '@/lib/utils';
+import React from "react"
+import Image, { ImageProps } from "next/image"
+import { cn } from "@/lib/utils"
 
-interface AccessibleImageProps extends Omit<ImageProps, 'alt'> {
-  alt: string;
-  decorative?: boolean; // For purely decorative images
-  caption?: string;
-  loading?: 'lazy' | 'eager';
-  onError?: () => void;
+interface AccessibleImageProps extends Omit<ImageProps, "alt"> {
+  alt: string
+  decorative?: boolean // For purely decorative images
+  caption?: string
+  loading?: "lazy" | "eager"
+  onError?: () => void
 }
 
 export function AccessibleImage({
@@ -17,24 +17,23 @@ export function AccessibleImage({
   decorative = false,
   caption,
   className,
-  loading = 'lazy',
+  loading = "lazy",
   onError,
   ...props
 }: AccessibleImageProps) {
-  const [hasError, setHasError] = React.useState(false);
-  const imageId = React.useId();
+  const [hasError, setHasError] = React.useState(false)
+  const imageId = React.useId()
 
   const handleError = () => {
-    setHasError(true);
-    onError?.();
-  };
-
+    setHasError(true)
+    onError?.()
+  }
 
   if (hasError) {
     return (
       <div
         className={cn(
-          'flex items-center justify-center bg-muted text-muted-foreground',
+          "flex items-center justify-center bg-muted text-muted-foreground",
           className
         )}
         role="img"
@@ -55,16 +54,18 @@ export function AccessibleImage({
           />
         </svg>
       </div>
-    );
+    )
   }
 
   return (
-    <figure className={caption ? 'space-y-2' : undefined}>
+    <figure className={caption ? "space-y-2" : undefined}>
       <Image
         {...props}
-        alt={decorative ? '' : alt}
+        alt={decorative ? "" : alt}
         aria-hidden={decorative ? true : undefined}
-        aria-describedby={!decorative && caption ? `${imageId}-caption` : undefined}
+        aria-describedby={
+          !decorative && caption ? `${imageId}-caption` : undefined
+        }
         className={className}
         loading={loading}
         onError={handleError}
@@ -72,29 +73,33 @@ export function AccessibleImage({
       {caption && (
         <figcaption
           id={`${imageId}-caption`}
-          className="text-sm text-muted-foreground text-center"
+          className="text-center text-sm text-muted-foreground"
         >
           {caption}
         </figcaption>
       )}
     </figure>
-  );
+  )
 }
 
 // Icon component with proper ARIA handling
 interface AccessibleIconProps {
-  icon: React.ReactNode;
-  label?: string; // If provided, icon is meaningful. If not, it's decorative.
-  className?: string;
+  icon: React.ReactNode
+  label?: string // If provided, icon is meaningful. If not, it's decorative.
+  className?: string
 }
 
-export function AccessibleIcon({ icon, label, className }: AccessibleIconProps) {
+export function AccessibleIcon({
+  icon,
+  label,
+  className,
+}: AccessibleIconProps) {
   if (label) {
     return (
       <span className={className} role="img" aria-label={label}>
         {icon}
       </span>
-    );
+    )
   }
 
   // Decorative icon
@@ -102,54 +107,54 @@ export function AccessibleIcon({ icon, label, className }: AccessibleIconProps) 
     <span className={className} aria-hidden="true">
       {icon}
     </span>
-  );
+  )
 }
 
 // Image gallery with proper ARIA
 interface GalleryImage {
-  src: string;
-  alt: string;
-  caption?: string;
+  src: string
+  alt: string
+  caption?: string
 }
 
 interface AccessibleImageGalleryProps {
-  images: GalleryImage[];
-  label?: string;
-  className?: string;
+  images: GalleryImage[]
+  label?: string
+  className?: string
 }
 
 export function AccessibleImageGallery({
   images,
-  label = 'Image gallery',
+  label = "Image gallery",
   className,
 }: AccessibleImageGalleryProps) {
-  const [selectedIndex, setSelectedIndex] = React.useState(0);
-  const _galleryId = React.useId();
+  const [selectedIndex, setSelectedIndex] = React.useState(0)
+  const _galleryId = React.useId()
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     switch (e.key) {
-      case 'ArrowLeft':
-        e.preventDefault();
-        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1));
-        break;
-      case 'ArrowRight':
-        e.preventDefault();
-        setSelectedIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0));
-        break;
-      case 'Home':
-        e.preventDefault();
-        setSelectedIndex(0);
-        break;
-      case 'End':
-        e.preventDefault();
-        setSelectedIndex(images.length - 1);
-        break;
+      case "ArrowLeft":
+        e.preventDefault()
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1))
+        break
+      case "ArrowRight":
+        e.preventDefault()
+        setSelectedIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0))
+        break
+      case "Home":
+        e.preventDefault()
+        setSelectedIndex(0)
+        break
+      case "End":
+        e.preventDefault()
+        setSelectedIndex(images.length - 1)
+        break
     }
-  };
+  }
 
   return (
     <div
-      className={cn('space-y-4', className)}
+      className={cn("space-y-4", className)}
       role="region"
       aria-label={label}
       aria-roledescription="image gallery"
@@ -176,15 +181,15 @@ export function AccessibleImageGallery({
             <li key={index}>
               <button
                 className={cn(
-                  'relative w-20 h-20 overflow-hidden rounded-md border-2 transition-colors',
-                  'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+                  "relative h-20 w-20 overflow-hidden rounded-md border-2 transition-colors",
+                  "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
                   index === selectedIndex
-                    ? 'border-primary'
-                    : 'border-transparent hover:border-muted-foreground'
+                    ? "border-primary"
+                    : "border-transparent hover:border-muted-foreground"
                 )}
                 onClick={() => setSelectedIndex(index)}
                 aria-label={`View image ${index + 1}: ${image.alt}`}
-                aria-current={index === selectedIndex ? 'true' : undefined}
+                aria-current={index === selectedIndex ? "true" : undefined}
               >
                 <AccessibleImage
                   src={image.src}
@@ -211,5 +216,5 @@ export function AccessibleImageGallery({
         )}
       </div>
     </div>
-  );
+  )
 }

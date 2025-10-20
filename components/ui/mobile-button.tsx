@@ -46,10 +46,20 @@ export interface MobileButtonProps
 }
 
 const MobileButton = React.forwardRef<HTMLButtonElement, MobileButtonProps>(
-  ({ className, variant, size, asChild = false, autoMobileSize = true, ...props }, ref) => {
+  (
+    {
+      className,
+      variant,
+      size,
+      asChild = false,
+      autoMobileSize = true,
+      ...props
+    },
+    ref
+  ) => {
     const Comp = asChild ? Slot : "button"
     const isTouchDevice = useIsTouchDevice()
-    
+
     // Auto-apply mobile sizes on touch devices if enabled
     let actualSize = size
     if (autoMobileSize && isTouchDevice && size) {
@@ -61,10 +71,12 @@ const MobileButton = React.forwardRef<HTMLButtonElement, MobileButtonProps>(
       }
       actualSize = (sizeMap[size] || size) as any
     }
-    
+
     return (
       <Comp
-        className={cn(mobileButtonVariants({ variant, size: actualSize, className }))}
+        className={cn(
+          mobileButtonVariants({ variant, size: actualSize, className })
+        )}
         ref={ref}
         {...props}
       />

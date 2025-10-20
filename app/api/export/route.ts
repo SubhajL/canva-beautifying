@@ -1,21 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { ExportService } from '@/lib/export/export-service'
-import { ExportOptions } from '@/lib/export/types'
+import { NextRequest, NextResponse } from "next/server"
+import { createClient } from "@/lib/supabase/server"
+import { ExportService } from "@/lib/export/export-service"
+import { ExportOptions } from "@/lib/export/types"
 
 const exportService = new ExportService()
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
-    
+
     // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     // Parse request body
@@ -24,29 +24,26 @@ export async function POST(request: NextRequest) {
 
     if (!documentId || !format) {
       return NextResponse.json(
-        { error: 'Missing required fields: documentId and format' },
+        { error: "Missing required fields: documentId and format" },
         { status: 400 }
       )
     }
 
     // Get document details
     const { data: enhancement, error: docError } = await supabase
-      .from('enhancements')
-      .select('*')
-      .eq('id', documentId)
-      .eq('user_id', user.id)
+      .from("enhancements")
+      .select("*")
+      .eq("id", documentId)
+      .eq("user_id", user.id)
       .single()
 
     if (docError || !enhancement) {
-      return NextResponse.json(
-        { error: 'Document not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: "Document not found" }, { status: 404 })
     }
 
-    if (enhancement.status !== 'completed' || !enhancement.enhanced_url) {
+    if (enhancement.status !== "completed" || !enhancement.enhanced_url) {
       return NextResponse.json(
-        { error: 'Document enhancement not completed' },
+        { error: "Document enhancement not completed" },
         { status: 400 }
       )
     }
@@ -58,7 +55,7 @@ export async function POST(request: NextRequest) {
       scale: options.scale,
       preserveVectors: options.preserveVectors,
       includeMetadata: options.includeMetadata,
-      backgroundColor: options.backgroundColor
+      backgroundColor: options.backgroundColor,
     }
 
     // Start export
@@ -68,7 +65,7 @@ export async function POST(request: NextRequest) {
       options: exportOptions,
       enhancedUrl: enhancement.enhanced_url,
       originalUrl: enhancement.original_url,
-      metadata: enhancement.enhancement_data
+      metadata: enhancement.enhancement_data,
     })
 
     if (result.success) {
@@ -77,18 +74,18 @@ export async function POST(request: NextRequest) {
         exportUrl: result.exportUrl,
         fileSize: result.fileSize,
         dimensions: result.dimensions,
-        processingTime: result.processingTime
+        processingTime: result.processingTime,
       })
     } else {
       return NextResponse.json(
-        { error: result.error || 'Export failed' },
+        { error: result.error || "Export failed" },
         { status: 500 }
       )
     }
   } catch (error) {
-    console.error('Export error:', error)
+    console.error("Export error:", error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     )
   }
@@ -98,26 +95,26 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
-    
+
     // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const { searchParams } = new URL(request.url)
-    const documentId = searchParams.get('documentId')
+    const documentId = searchParams.get("documentId")
 
     if (documentId) {
       // Get progress for specific document
       const progress = exportService.getProgress(documentId)
-      
+
       if (!progress) {
         return NextResponse.json(
-          { error: 'No export in progress for this document' },
+          { error: "No export in progress for this document" },
           { status: 404 }
         )
       }
@@ -126,17 +123,17 @@ export async function GET(request: NextRequest) {
     } else {
       // Get all export progress for user
       const allProgress = exportService.getAllProgress()
-      
+
       // Filter by user (would need to store userId in progress)
       // For now, return all
       return NextResponse.json({
-        exports: allProgress
+        exports: allProgress,
       })
     }
   } catch (error) {
-    console.error('Export progress error:', error)
+    console.error("Export progress error:", error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     )
   }

@@ -16,19 +16,22 @@ interface StatCardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(
-  ({ 
-    className, 
-    title, 
-    value,
-    description,
-    icon: Icon,
-    trend,
-    variant = "default",
-    ...props 
-  }, ref) => {
+  (
+    {
+      className,
+      title,
+      value,
+      description,
+      icon: Icon,
+      trend,
+      variant = "default",
+      ...props
+    },
+    ref
+  ) => {
     return (
-      <Card 
-        ref={ref} 
+      <Card
+        ref={ref}
         variant={variant}
         className={cn("", className)}
         {...props}
@@ -37,19 +40,19 @@ const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(
           <CardTitle className="text-sm font-medium text-muted-foreground">
             {title}
           </CardTitle>
-          {Icon && (
-            <Icon className="h-4 w-4 text-muted-foreground" />
-          )}
+          {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{value}</div>
           {(description || trend) && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               {trend && (
-                <span className={cn(
-                  "flex items-center gap-1",
-                  trend.isPositive ? "text-success" : "text-destructive"
-                )}>
+                <span
+                  className={cn(
+                    "flex items-center gap-1",
+                    trend.isPositive ? "text-success" : "text-destructive"
+                  )}
+                >
                   {trend.isPositive ? (
                     <TrendingUp className="h-3 w-3" />
                   ) : (

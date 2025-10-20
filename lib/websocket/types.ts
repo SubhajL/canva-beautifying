@@ -2,49 +2,49 @@
 
 export interface ServerToClientEvents {
   // Progress updates
-  'enhancement:progress': (data: EnhancementProgress) => void
-  'analysis:progress': (data: AnalysisProgress) => void
-  'export:progress': (data: ExportProgress) => void
-  
+  "enhancement:progress": (data: EnhancementProgress) => void
+  "analysis:progress": (data: AnalysisProgress) => void
+  "export:progress": (data: ExportProgress) => void
+
   // Status updates
-  'job:started': (data: JobStarted) => void
-  'job:completed': (data: JobCompleted) => void
-  'job:failed': (data: JobFailed) => void
-  
+  "job:started": (data: JobStarted) => void
+  "job:completed": (data: JobCompleted) => void
+  "job:failed": (data: JobFailed) => void
+
   // Queue updates
-  'queue:position': (data: QueuePosition) => void
-  
+  "queue:position": (data: QueuePosition) => void
+
   // Batch processing
-  'batch:update': (data: BatchUpdate) => void
-  
+  "batch:update": (data: BatchUpdate) => void
+
   // System notifications
-  'notification': (data: Notification) => void
-  
+  notification: (data: Notification) => void
+
   // Connection status
-  'connection:ready': () => void
-  'connection:error': (error: string) => void
+  "connection:ready": () => void
+  "connection:error": (error: string) => void
 }
 
 export interface ClientToServerEvents {
   // Subscribe to updates
-  'subscribe:document': (documentId: string) => void
-  'unsubscribe:document': (documentId: string) => void
-  
+  "subscribe:document": (documentId: string) => void
+  "unsubscribe:document": (documentId: string) => void
+
   // Subscribe to batch
-  'subscribe:batch': (batchId: string) => void
-  'unsubscribe:batch': (batchId: string) => void
-  
+  "subscribe:batch": (batchId: string) => void
+  "unsubscribe:batch": (batchId: string) => void
+
   // Subscribe to user's all documents
-  'subscribe:user': (userId: string) => void
-  'unsubscribe:user': (userId: string) => void
-  
+  "subscribe:user": (userId: string) => void
+  "unsubscribe:user": (userId: string) => void
+
   // Connection management
-  'ping': () => void
+  ping: () => void
 }
 
 export interface InterServerEvents {
   // For scaling across multiple servers
-  'broadcast:progress': (room: string, data: any) => void
+  "broadcast:progress": (room: string, data: any) => void
 }
 
 export interface SocketData {
@@ -56,7 +56,7 @@ export interface SocketData {
 // Progress event payloads
 export interface EnhancementProgress {
   documentId: string
-  stage: 'analysis' | 'planning' | 'generation' | 'composition'
+  stage: "analysis" | "planning" | "generation" | "composition"
   progress: number // 0-100
   message: string
   details?: {
@@ -82,21 +82,21 @@ export interface ExportProgress {
   exportId: string
   progress: number
   format: string
-  stage: 'preparing' | 'converting' | 'uploading' | 'complete'
+  stage: "preparing" | "converting" | "uploading" | "complete"
 }
 
 // Job status payloads
 export interface JobStarted {
   jobId: string
   documentId: string
-  type: 'analysis' | 'enhancement' | 'export'
+  type: "analysis" | "enhancement" | "export"
   timestamp: Date
 }
 
 export interface JobCompleted {
   jobId: string
   documentId: string
-  type: 'analysis' | 'enhancement' | 'export'
+  type: "analysis" | "enhancement" | "export"
   result: {
     success: boolean
     enhancedUrl?: string
@@ -113,7 +113,7 @@ export interface JobCompleted {
 export interface JobFailed {
   jobId: string
   documentId: string
-  type: 'analysis' | 'enhancement' | 'export'
+  type: "analysis" | "enhancement" | "export"
   error: {
     message: string
     code?: string
@@ -139,7 +139,7 @@ export interface BatchUpdate {
   inProgress: number
   documents: Array<{
     documentId: string
-    status: 'pending' | 'processing' | 'completed' | 'failed'
+    status: "pending" | "processing" | "completed" | "failed"
     progress?: number
   }>
 }
@@ -147,7 +147,7 @@ export interface BatchUpdate {
 // Notifications
 export interface Notification {
   id: string
-  type: 'info' | 'success' | 'warning' | 'error'
+  type: "info" | "success" | "warning" | "error"
   title: string
   message: string
   documentId?: string

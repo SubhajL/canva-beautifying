@@ -1,19 +1,29 @@
-import type { AIModel, DocumentType, UserTier, EnhancementRequest, DocumentAnalysis, EnhancementSuggestion } from './types'
-import { DocumentCache } from '../cache/document-cache'
-import { EnhancementCache } from '../cache/enhancement-cache'
+import type {
+  AIModel,
+  DocumentType,
+  UserTier,
+  EnhancementRequest,
+  DocumentAnalysis,
+  EnhancementSuggestion,
+} from "./types"
+import { DocumentCache } from "../cache/document-cache"
+import { EnhancementCache } from "../cache/enhancement-cache"
 
 interface FallbackStrategy {
   name: string
   priority: number
   canHandle: (documentType: DocumentType, userTier: UserTier) => boolean
-  execute: (request: EnhancementRequest, failedModel: AIModel) => Promise<FallbackResponse>
+  execute: (
+    request: EnhancementRequest,
+    failedModel: AIModel
+  ) => Promise<FallbackResponse>
 }
 
 interface FallbackResponse {
   analysis?: DocumentAnalysis
   enhancements?: EnhancementSuggestion[]
   degraded: boolean
-  source: 'cache' | 'template' | 'basic-ai' | 'none'
+  source: "cache" | "template" | "basic-ai" | "none"
   message: string
 }
 
@@ -52,7 +62,7 @@ export class FallbackStrategySelector {
     failedModel: AIModel
   ): Promise<FallbackResponse> {
     this.ensureInitialized()
-    
+
     for (const strategy of this.strategies) {
       if (strategy.canHandle(documentType, userTier)) {
         try {
@@ -67,8 +77,9 @@ export class FallbackStrategySelector {
     // If all strategies fail, return minimal response
     return {
       degraded: true,
-      source: 'none',
-      message: 'All enhancement services are temporarily unavailable. Please try again later.'
+      source: "none",
+      message:
+        "All enhancement services are temporarily unavailable. Please try again later.",
     }
   }
 }
@@ -77,7 +88,7 @@ export class FallbackStrategySelector {
  * Strategy 1: Use cached results from previous successful enhancements
  */
 class CachedResultStrategy implements FallbackStrategy {
-  name = 'CachedResults'
+  name = "CachedResults"
   priority = 100
 
   private documentCache = new DocumentCache()
@@ -85,33 +96,45 @@ class CachedResultStrategy implements FallbackStrategy {
 
   canHandle(documentType: DocumentType, userTier: UserTier): boolean {
     // Premium and Pro users get cache fallback
-    return userTier === 'premium' || userTier === 'pro'
+    return userTier === "premium" || userTier === "pro"
   }
 
-  async execute(request: EnhancementRequest, failedModel: AIModel): Promise<FallbackResponse> {
+  async execute(
+    request: EnhancementRequest,
+    failedModel: AIModel
+  ): Promise<FallbackResponse> {
     try {
       // Try to find a similar cached document
-      const similarDocs = await this.documentCache.getSimilar(request.documentType, 1)
-      
-      if (similarDocs && similarDocs.length > 0 && FallbackStrategySelector.enhancementCache) {
+      const similarDocs = await this.documentCache.getSimilar(
+        request.documentType,
+        1
+      )
+
+      if (
+        similarDocs &&
+        similarDocs.length > 0 &&
+        FallbackStrategySelector.enhancementCache
+      ) {
         const docId = similarDocs[0].id
-        const cachedEnhancement = await FallbackStrategySelector.enhancementCache.get(docId)
-        
+        const cachedEnhancement =
+          await FallbackStrategySelector.enhancementCache.get(docId)
+
         if (cachedEnhancement) {
           return {
             analysis: cachedEnhancement.analysis as DocumentAnalysis,
             enhancements: cachedEnhancement.suggestions,
             degraded: true,
-            source: 'cache',
-            message: 'Using cached results from a similar document. Results may not be fully tailored to your specific content.'
+            source: "cache",
+            message:
+              "Using cached results from a similar document. Results may not be fully tailored to your specific content.",
           }
         }
       }
     } catch (error) {
-      console.error('Cache lookup failed:', error)
+      console.error("Cache lookup failed:", error)
     }
 
-    throw new Error('No cached results available')
+    throw new Error("No cached results available")
   }
 }
 
@@ -119,7 +142,7 @@ class CachedResultStrategy implements FallbackStrategy {
  * Strategy 2: Use pre-defined templates based on document type
  */
 class TemplateBasedStrategy implements FallbackStrategy {
-  name = 'TemplateBasedFallback'
+  name = "TemplateBasedFallback"
   priority = 80
 
   canHandle(documentType: DocumentType, userTier: UserTier): boolean {
@@ -127,115 +150,122 @@ class TemplateBasedStrategy implements FallbackStrategy {
     return true
   }
 
-  async execute(request: EnhancementRequest, failedModel: AIModel): Promise<FallbackResponse> {
+  async execute(
+    request: EnhancementRequest,
+    failedModel: AIModel
+  ): Promise<FallbackResponse> {
     const templates = this.getTemplatesForType(request.documentType)
-    
+
     return {
       analysis: this.createBasicAnalysis(request.documentType),
       enhancements: templates,
       degraded: true,
-      source: 'template',
-      message: 'Using pre-defined templates. For personalized suggestions, please try again when our AI services are available.'
+      source: "template",
+      message:
+        "Using pre-defined templates. For personalized suggestions, please try again when our AI services are available.",
     }
   }
 
   private createBasicAnalysis(documentType: DocumentType): DocumentAnalysis {
     return {
       layout: {
-        structure: 'standard',
-        alignment: 'left',
-        spacing: 'normal',
-        grid: false
+        structure: "standard",
+        alignment: "left",
+        spacing: "normal",
+        grid: false,
       },
       colors: {
-        primary: '#000000',
-        secondary: '#666666',
-        accent: '#0066cc',
-        background: '#ffffff'
+        primary: "#000000",
+        secondary: "#666666",
+        accent: "#0066cc",
+        background: "#ffffff",
       },
       typography: {
-        headingFont: 'Arial',
-        bodyFont: 'Arial',
+        headingFont: "Arial",
+        bodyFont: "Arial",
         fontSize: 12,
-        lineHeight: 1.5
+        lineHeight: 1.5,
       },
       engagement: {
         visualHierarchy: 3,
         readability: 3,
         balance: 3,
-        overall: 3
+        overall: 3,
       },
       contentType: documentType,
-      targetAudience: 'general'
+      targetAudience: "general",
     }
   }
 
-  private getTemplatesForType(documentType: DocumentType): EnhancementSuggestion[] {
+  private getTemplatesForType(
+    documentType: DocumentType
+  ): EnhancementSuggestion[] {
     const templates: Record<DocumentType, EnhancementSuggestion[]> = {
       worksheet: [
         {
-          category: 'layout',
-          priority: 'high',
-          description: 'Add clear section headers',
-          impact: 'high',
-          implementation: 'Divide content into clear sections with bold headers'
+          category: "layout",
+          priority: "high",
+          description: "Add clear section headers",
+          impact: "high",
+          implementation:
+            "Divide content into clear sections with bold headers",
         },
         {
-          category: 'visual',
-          priority: 'medium',
-          description: 'Include visual elements',
-          impact: 'medium',
-          implementation: 'Add simple icons or illustrations to break up text'
-        }
+          category: "visual",
+          priority: "medium",
+          description: "Include visual elements",
+          impact: "medium",
+          implementation: "Add simple icons or illustrations to break up text",
+        },
       ],
       presentation: [
         {
-          category: 'layout',
-          priority: 'high',
-          description: 'Use consistent slide layouts',
-          impact: 'high',
-          implementation: 'Apply a consistent template across all slides'
+          category: "layout",
+          priority: "high",
+          description: "Use consistent slide layouts",
+          impact: "high",
+          implementation: "Apply a consistent template across all slides",
         },
         {
-          category: 'typography',
-          priority: 'high',
-          description: 'Increase font size for readability',
-          impact: 'high',
-          implementation: 'Use minimum 24pt for body text, 32pt for headers'
-        }
+          category: "typography",
+          priority: "high",
+          description: "Increase font size for readability",
+          impact: "high",
+          implementation: "Use minimum 24pt for body text, 32pt for headers",
+        },
       ],
       document: [
         {
-          category: 'typography',
-          priority: 'high',
-          description: 'Improve text hierarchy',
-          impact: 'medium',
-          implementation: 'Use consistent heading styles and spacing'
+          category: "typography",
+          priority: "high",
+          description: "Improve text hierarchy",
+          impact: "medium",
+          implementation: "Use consistent heading styles and spacing",
         },
         {
-          category: 'layout',
-          priority: 'medium',
-          description: 'Add white space',
-          impact: 'medium',
-          implementation: 'Increase margins and paragraph spacing'
-        }
+          category: "layout",
+          priority: "medium",
+          description: "Add white space",
+          impact: "medium",
+          implementation: "Increase margins and paragraph spacing",
+        },
       ],
       marketing: [
         {
-          category: 'visual',
-          priority: 'high',
-          description: 'Add eye-catching visuals',
-          impact: 'high',
-          implementation: 'Include high-quality images or graphics'
+          category: "visual",
+          priority: "high",
+          description: "Add eye-catching visuals",
+          impact: "high",
+          implementation: "Include high-quality images or graphics",
         },
         {
-          category: 'content',
-          priority: 'high',
-          description: 'Create compelling headline',
-          impact: 'high',
-          implementation: 'Use action words and clear value proposition'
-        }
-      ]
+          category: "content",
+          priority: "high",
+          description: "Create compelling headline",
+          impact: "high",
+          implementation: "Use action words and clear value proposition",
+        },
+      ],
     }
 
     return templates[documentType] || templates.document
@@ -246,21 +276,28 @@ class TemplateBasedStrategy implements FallbackStrategy {
  * Strategy 3: Provide basic analysis without AI
  */
 class BasicAnalysisStrategy implements FallbackStrategy {
-  name = 'BasicAnalysis'
+  name = "BasicAnalysis"
   priority = 60
 
   canHandle(documentType: DocumentType, userTier: UserTier): boolean {
-    return userTier !== 'free' // Not available for free tier
+    return userTier !== "free" // Not available for free tier
   }
 
-  async execute(request: EnhancementRequest, failedModel: AIModel): Promise<FallbackResponse> {
-    const suggestions = this.generateBasicSuggestions(request.documentType, request.preferences)
-    
+  async execute(
+    request: EnhancementRequest,
+    failedModel: AIModel
+  ): Promise<FallbackResponse> {
+    const suggestions = this.generateBasicSuggestions(
+      request.documentType,
+      request.preferences
+    )
+
     return {
       enhancements: suggestions,
       degraded: true,
-      source: 'basic-ai',
-      message: 'Providing basic enhancement suggestions. Advanced AI analysis is currently unavailable.'
+      source: "basic-ai",
+      message:
+        "Providing basic enhancement suggestions. Advanced AI analysis is currently unavailable.",
     }
   }
 
@@ -272,30 +309,31 @@ class BasicAnalysisStrategy implements FallbackStrategy {
 
     // Universal suggestions
     suggestions.push({
-      category: 'layout',
-      priority: 'high',
-      description: 'Ensure consistent spacing throughout',
-      impact: 'medium',
-      implementation: 'Review and standardize margins, padding, and line spacing'
+      category: "layout",
+      priority: "high",
+      description: "Ensure consistent spacing throughout",
+      impact: "medium",
+      implementation:
+        "Review and standardize margins, padding, and line spacing",
     })
 
-    if (preferences?.style === 'professional') {
+    if (preferences?.style === "professional") {
       suggestions.push({
-        category: 'color',
-        priority: 'medium',
-        description: 'Use a professional color palette',
-        impact: 'medium',
-        implementation: 'Stick to 2-3 colors with good contrast ratios'
+        category: "color",
+        priority: "medium",
+        description: "Use a professional color palette",
+        impact: "medium",
+        implementation: "Stick to 2-3 colors with good contrast ratios",
       })
     }
 
-    if (preferences?.style === 'creative') {
+    if (preferences?.style === "creative") {
       suggestions.push({
-        category: 'visual',
-        priority: 'high',
-        description: 'Add creative visual elements',
-        impact: 'high',
-        implementation: 'Incorporate unique graphics or illustrations'
+        category: "visual",
+        priority: "high",
+        description: "Add creative visual elements",
+        impact: "high",
+        implementation: "Incorporate unique graphics or illustrations",
       })
     }
 
@@ -307,18 +345,21 @@ class BasicAnalysisStrategy implements FallbackStrategy {
  * Strategy 4: Graceful degradation with user notification
  */
 class GracefulDegradationStrategy implements FallbackStrategy {
-  name = 'GracefulDegradation'
+  name = "GracefulDegradation"
   priority = 0 // Lowest priority, last resort
 
   canHandle(): boolean {
     return true // Can always handle as last resort
   }
 
-  async execute(request: EnhancementRequest, failedModel: AIModel): Promise<FallbackResponse> {
+  async execute(
+    request: EnhancementRequest,
+    failedModel: AIModel
+  ): Promise<FallbackResponse> {
     return {
       degraded: true,
-      source: 'none',
-      message: `Our AI enhancement service is experiencing high demand. Your document will be processed as soon as possible. Failed model: ${failedModel}`
+      source: "none",
+      message: `Our AI enhancement service is experiencing high demand. Your document will be processed as soon as possible. Failed model: ${failedModel}`,
     }
   }
 }
@@ -346,29 +387,34 @@ export class CachedFallbackProvider {
           analysis: cachedEnhancement.analysis as DocumentAnalysis,
           enhancements: cachedEnhancement.suggestions,
           degraded: false,
-          source: 'cache',
-          message: 'Using cached analysis results'
+          source: "cache",
+          message: "Using cached analysis results",
         }
       }
 
       // Then try similar documents
-      const similarDocs = await this.documentCache.getSimilar(request.documentType, 1)
-      
+      const similarDocs = await this.documentCache.getSimilar(
+        request.documentType,
+        1
+      )
+
       if (similarDocs && similarDocs.length > 0) {
-        const similarEnhancement = await this.enhancementCache.get(similarDocs[0].id)
-        
+        const similarEnhancement = await this.enhancementCache.get(
+          similarDocs[0].id
+        )
+
         if (similarEnhancement) {
           return {
             analysis: similarEnhancement.analysis as DocumentAnalysis,
             enhancements: similarEnhancement.suggestions,
             degraded: true,
-            source: 'cache',
-            message: 'Using analysis from a similar document'
+            source: "cache",
+            message: "Using analysis from a similar document",
           }
         }
       }
     } catch (error) {
-      console.error('Cache fallback failed:', error)
+      console.error("Cache fallback failed:", error)
     }
 
     return null

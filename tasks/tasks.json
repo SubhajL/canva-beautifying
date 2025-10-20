@@ -18,9 +18,7 @@
       "details": "Install Tailwind CSS and configure it in the Next.js project. Add Shadcn/ui and set up the necessary configurations. Create a basic theme and design system based on the PRD color scheme and typography.",
       "testStrategy": "Verify Tailwind classes are working correctly. Test responsiveness of Shadcn/ui components. Ensure theme consistency across sample components.",
       "priority": "high",
-      "dependencies": [
-        1
-      ],
+      "dependencies": [1],
       "status": "pending",
       "subtasks": []
     },
@@ -31,9 +29,7 @@
       "details": "Initialize Supabase project. Set up authentication with email/Google/Microsoft options. Create database schema for users and enhancements tables. Implement Supabase client in the Next.js app.",
       "testStrategy": "Test user registration and login flows. Verify database connections and basic CRUD operations. Ensure proper error handling for auth and database operations.",
       "priority": "high",
-      "dependencies": [
-        1
-      ],
+      "dependencies": [1],
       "status": "pending",
       "subtasks": []
     },
@@ -44,10 +40,7 @@
       "details": "Develop registration form with email, Google, and Microsoft auth options. Implement login functionality. Create protected routes for authenticated users. Handle session management and token refresh.",
       "testStrategy": "Test registration with all auth providers. Verify login functionality and session persistence. Check protected route access and redirection for unauthenticated users.",
       "priority": "high",
-      "dependencies": [
-        2,
-        3
-      ],
+      "dependencies": [2, 3],
       "status": "pending",
       "subtasks": []
     },
@@ -58,9 +51,7 @@
       "details": "Set up Cloudflare R2 bucket. Implement server-side SDK for R2 interactions. Create utility functions for file upload, retrieval, and deletion.",
       "testStrategy": "Test file upload, download, and deletion operations. Verify correct URL generation for stored files. Check error handling for storage operations.",
       "priority": "high",
-      "dependencies": [
-        1
-      ],
+      "dependencies": [1],
       "status": "pending",
       "subtasks": []
     },
@@ -71,10 +62,7 @@
       "details": "Implement drag-and-drop file upload using react-dropzone. Support multiple file selection. Add file type validation for images and PDFs. Integrate with Cloudflare R2 for actual file storage.",
       "testStrategy": "Test drag-and-drop and click-to-upload functionality. Verify multiple file handling. Check file type restrictions and error messages. Ensure successful upload to R2 storage.",
       "priority": "high",
-      "dependencies": [
-        2,
-        5
-      ],
+      "dependencies": [2, 5],
       "status": "pending",
       "subtasks": []
     },
@@ -85,9 +73,7 @@
       "details": "Implement an abstract interface for AI model interactions. Create separate modules for Gemini, GPT-4.1, and Claude integrations. Implement the model selection logic based on user tier and document complexity.",
       "testStrategy": "Unit test each model integration. Verify correct model selection based on different scenarios. Test fallback mechanisms and error handling.",
       "priority": "high",
-      "dependencies": [
-        1
-      ],
+      "dependencies": [1],
       "status": "pending",
       "subtasks": []
     },
@@ -98,9 +84,7 @@
       "details": "Implement functions for layout analysis, color harmony detection, typography scoring, age-appropriateness detection, and engagement factor scoring. Integrate these with the selected AI model. Store analysis results in the database.",
       "testStrategy": "Test each analysis function with various document types. Verify accuracy of AI model responses. Check correct storage of analysis results in the database.",
       "priority": "high",
-      "dependencies": [
-        7
-      ],
+      "dependencies": [7],
       "status": "pending",
       "subtasks": []
     },
@@ -111,9 +95,7 @@
       "details": "Implement enhancement algorithms for color palette optimization, typography improvements, and layout restructuring. Integrate with AI models for generating improvement suggestions. Create a pipeline for applying enhancements sequentially.",
       "testStrategy": "Unit test each enhancement algorithm. Verify improvements on sample documents. Check integration with AI models for suggestions. Test the full enhancement pipeline with various document types.",
       "priority": "high",
-      "dependencies": [
-        8
-      ],
+      "dependencies": [8],
       "status": "pending",
       "subtasks": []
     },
@@ -124,9 +106,7 @@
       "details": "Integrate with Stable Diffusion XL via Replicate for background generation. Implement prompting logic based on document content and style. Create functions for seamlessly applying generated backgrounds to documents.",
       "testStrategy": "Test background generation with various prompts. Verify quality and relevance of generated backgrounds. Check proper application of backgrounds to different document types.",
       "priority": "medium",
-      "dependencies": [
-        9
-      ],
+      "dependencies": [9],
       "status": "pending",
       "subtasks": []
     },
@@ -137,10 +117,7 @@
       "details": "Design and implement a dashboard layout. Create components for displaying enhancement history, usage statistics, and quick upload functionality. Implement data fetching from Supabase for user-specific information.",
       "testStrategy": "Verify correct display of user data and enhancement history. Test responsiveness of dashboard layout. Check real-time updates of usage statistics.",
       "priority": "medium",
-      "dependencies": [
-        4,
-        6
-      ],
+      "dependencies": [4, 6],
       "status": "pending",
       "subtasks": []
     },
@@ -151,10 +128,7 @@
       "details": "Design and implement a multi-step wizard UI. Include steps for document upload, target audience selection, enhancement style choice, review, and download. Integrate with the enhancement pipeline for real-time processing.",
       "testStrategy": "Test the full wizard flow with various document types. Verify proper state management between steps. Check accessibility and keyboard navigation of the wizard.",
       "priority": "high",
-      "dependencies": [
-        6,
-        9
-      ],
+      "dependencies": [6, 9],
       "status": "pending",
       "subtasks": []
     },
@@ -165,10 +139,7 @@
       "details": "Implement a before/after comparison slider component. Display enhancement report and improvement details. Add download options for various formats. Implement sharing functionality for results.",
       "testStrategy": "Test the comparison slider with different document types. Verify accuracy of enhancement reports. Check all download options and formats. Test sharing functionality across platforms.",
       "priority": "medium",
-      "dependencies": [
-        9,
-        12
-      ],
+      "dependencies": [9, 12],
       "status": "pending",
       "subtasks": []
     },
@@ -179,10 +150,7 @@
       "details": "Set up Stripe integration for subscription plans. Implement subscription management UI. Create webhook handlers for Stripe events. Update user subscription status in the database.",
       "testStrategy": "Test subscription creation, updating, and cancellation flows. Verify correct handling of Stripe webhooks. Check proper updating of user subscription status in the database.",
       "priority": "high",
-      "dependencies": [
-        3,
-        4
-      ],
+      "dependencies": [3, 4],
       "status": "pending",
       "subtasks": []
     },
@@ -193,10 +161,7 @@
       "details": "Implement a usage tracking mechanism in the database. Create middleware to check and enforce usage limits based on user subscription tier. Develop a notification system for approaching limits.",
       "testStrategy": "Test usage tracking accuracy across different operations. Verify enforcement of tier-based limits. Check notifications for approaching usage limits.",
       "priority": "high",
-      "dependencies": [
-        3,
-        14
-      ],
+      "dependencies": [3, 14],
       "status": "pending",
       "subtasks": []
     },
@@ -207,9 +172,7 @@
       "details": "Set up Sentry project and integrate SDK with Next.js. Configure error boundaries in React components. Implement custom error logging for critical operations.",
       "testStrategy": "Trigger various error scenarios and verify proper logging in Sentry. Check error grouping and stack trace accuracy. Test performance impact of Sentry integration.",
       "priority": "medium",
-      "dependencies": [
-        1
-      ],
+      "dependencies": [1],
       "status": "pending",
       "subtasks": []
     },
@@ -220,10 +183,7 @@
       "details": "Set up Plausible analytics account. Integrate Plausible script in the Next.js app. Configure custom events for key user actions. Implement dashboard for viewing analytics data.",
       "testStrategy": "Verify proper tracking of pageviews and custom events. Check accuracy of reported data in Plausible dashboard. Test impact on page load performance.",
       "priority": "low",
-      "dependencies": [
-        1,
-        11
-      ],
+      "dependencies": [1, 11],
       "status": "pending",
       "subtasks": []
     },
@@ -245,10 +205,7 @@
       "details": "Design webhook payload structure. Implement webhook registration and management in the user dashboard. Create a reliable webhook delivery system with retries and logging.",
       "testStrategy": "Test webhook registration and management UI. Verify accurate and timely delivery of webhook payloads. Check retry mechanism for failed webhook deliveries.",
       "priority": "low",
-      "dependencies": [
-        3,
-        9
-      ],
+      "dependencies": [3, 9],
       "status": "pending",
       "subtasks": []
     },
@@ -259,9 +216,7 @@
       "details": "Create GitHub Actions workflows for running tests, linting, and building the application. Set up deployment jobs for staging and production environments. Implement branch protection rules and required status checks.",
       "testStrategy": "Verify successful runs of CI pipeline on pull requests. Test automatic deployments to staging environment. Check proper enforcement of status checks before merging.",
       "priority": "medium",
-      "dependencies": [
-        1
-      ],
+      "dependencies": [1],
       "status": "pending",
       "subtasks": []
     },
@@ -272,10 +227,7 @@
       "details": "Set up Socket.io server and client integration. Implement real-time progress updates during document enhancement. Create a notification system for completed enhancements.",
       "testStrategy": "Test real-time updates during document processing. Verify proper connection handling and reconnection logic. Check performance impact of WebSocket connections.",
       "priority": "medium",
-      "dependencies": [
-        9,
-        12
-      ],
+      "dependencies": [9, 12],
       "status": "pending",
       "subtasks": []
     },
@@ -286,11 +238,7 @@
       "details": "Enhance file upload component to handle multiple files. Implement a queue system for processing multiple documents. Create a batch status tracking UI. Integrate with Socket.io for real-time batch progress updates.",
       "testStrategy": "Test uploading and processing of multiple files simultaneously. Verify correct order of processing and status updates. Check error handling for partial batch failures.",
       "priority": "medium",
-      "dependencies": [
-        6,
-        9,
-        21
-      ],
+      "dependencies": [6, 9, 21],
       "status": "pending",
       "subtasks": []
     },
@@ -301,10 +249,7 @@
       "details": "Set up Redis connection via Upstash. Implement caching strategies for frequently accessed data and expensive computations. Create cache invalidation mechanisms.",
       "testStrategy": "Measure performance improvements with caching enabled. Test cache hit rates for various operations. Verify proper cache invalidation on data updates.",
       "priority": "medium",
-      "dependencies": [
-        3,
-        9
-      ],
+      "dependencies": [3, 9],
       "status": "pending",
       "subtasks": []
     },
@@ -315,9 +260,7 @@
       "details": "Design a compelling landing page showcasing key features and benefits. Implement responsive design for mobile devices. Add call-to-action buttons for sign-up and demo requests.",
       "testStrategy": "Test responsiveness across various devices and screen sizes. Verify proper rendering of all content and images. Check performance metrics like load time and Largest Contentful Paint.",
       "priority": "medium",
-      "dependencies": [
-        2
-      ],
+      "dependencies": [2],
       "status": "pending",
       "subtasks": []
     },
@@ -328,9 +271,7 @@
       "details": "Implement proper meta tags and Open Graph data. Create a sitemap.xml and robots.txt file. Optimize page load speeds and Core Web Vitals. Implement structured data for rich snippets.",
       "testStrategy": "Use SEO audit tools to verify implementation of best practices. Check proper indexing of pages by search engines. Monitor improvements in search rankings and organic traffic.",
       "priority": "low",
-      "dependencies": [
-        24
-      ],
+      "dependencies": [24],
       "status": "pending",
       "subtasks": []
     },
@@ -341,10 +282,7 @@
       "details": "Set up Resend integration for email sending. Design email templates for various notifications (welcome, enhancement complete, subscription updates). Implement email preference management for users.",
       "testStrategy": "Test sending of various notification types. Verify proper rendering of email templates across email clients. Check delivery rates and spam folder placement.",
       "priority": "medium",
-      "dependencies": [
-        3,
-        14
-      ],
+      "dependencies": [3, 14],
       "status": "pending",
       "subtasks": []
     },
@@ -355,10 +293,7 @@
       "details": "Implement logic to run analysis and enhancements through multiple models (Claude 4 Sonnet + GPT-4.1). Create an aggregation system to combine results from multiple models. Optimize for performance and cost.",
       "testStrategy": "Compare ensemble results with single-model results for quality improvements. Measure processing time and optimize for efficiency. Verify correct application of ensemble only for premium tier users.",
       "priority": "medium",
-      "dependencies": [
-        7,
-        9
-      ],
+      "dependencies": [7, 9],
       "status": "pending",
       "subtasks": []
     },
@@ -369,10 +304,7 @@
       "details": "Create a mechanism to analyze and extract style patterns from user-approved enhancements. Implement a storage system for user-specific style profiles. Integrate learned styles into the enhancement pipeline.",
       "testStrategy": "Test style extraction from various document types. Verify accurate application of learned styles to new documents. Check performance impact of custom style application.",
       "priority": "low",
-      "dependencies": [
-        9,
-        27
-      ],
+      "dependencies": [9, 27],
       "status": "pending",
       "subtasks": []
     },
@@ -383,9 +315,7 @@
       "details": "Integrate an A/B testing library compatible with Next.js. Implement server-side and client-side A/B test capabilities. Create a dashboard for managing and analyzing A/B tests.",
       "testStrategy": "Verify proper segmentation of users into test groups. Check accurate tracking of conversion events for each variant. Test statistical significance calculations for test results.",
       "priority": "low",
-      "dependencies": [
-        17
-      ],
+      "dependencies": [17],
       "status": "pending",
       "subtasks": []
     },
@@ -396,11 +326,7 @@
       "details": "Design and implement a referral program with unique referral codes. Create a reward system for successful referrals. Implement tracking of referral sign-ups and conversions. Integrate with the email system for referral invitations.",
       "testStrategy": "Test generation and uniqueness of referral codes. Verify proper tracking and attribution of referrals. Check accurate reward distribution for successful referrals.",
       "priority": "low",
-      "dependencies": [
-        3,
-        14,
-        26
-      ],
+      "dependencies": [3, 14, 26],
       "status": "pending",
       "subtasks": []
     },
@@ -411,9 +337,7 @@
       "details": "Integrate social sharing APIs for major platforms (Twitter, Facebook, LinkedIn). Create shareable links with preview images for enhanced documents. Implement tracking of social shares and resulting sign-ups.",
       "testStrategy": "Test sharing functionality across different social platforms. Verify proper rendering of preview images and metadata. Check tracking accuracy of shares and resulting sign-ups.",
       "priority": "low",
-      "dependencies": [
-        13
-      ],
+      "dependencies": [13],
       "status": "pending",
       "subtasks": []
     },
@@ -424,10 +348,7 @@
       "details": "Design and implement a gallery page with filterable categories. Create a system for users to opt-in to showcase their enhancements. Implement lazy loading and pagination for gallery items.",
       "testStrategy": "Test gallery filtering and sorting functionality. Verify proper display of before/after comparisons. Check performance with a large number of gallery items.",
       "priority": "low",
-      "dependencies": [
-        13,
-        31
-      ],
+      "dependencies": [13, 31],
       "status": "pending",
       "subtasks": []
     },
@@ -438,9 +359,7 @@
       "details": "Design and implement a user-friendly rating interface. Create a feedback form for detailed comments. Implement a system to store and analyze user feedback. Use feedback data to improve enhancement algorithms.",
       "testStrategy": "Test submission of ratings and feedback from various points in the user journey. Verify proper storage and retrieval of feedback data. Check integration of feedback into the enhancement improvement process.",
       "priority": "medium",
-      "dependencies": [
-        13
-      ],
+      "dependencies": [13],
       "status": "pending",
       "subtasks": []
     },
@@ -451,11 +370,7 @@
       "details": "Design RESTful API endpoints for document upload, enhancement, and retrieval. Implement API key generation and management for premium users. Create rate limiting and usage tracking for API access.",
       "testStrategy": "Test all API endpoints with various input scenarios. Verify proper authentication and authorization for API access. Check rate limiting and usage tracking accuracy.",
       "priority": "low",
-      "dependencies": [
-        3,
-        9,
-        14
-      ],
+      "dependencies": [3, 9, 14],
       "status": "pending",
       "subtasks": []
     },
@@ -466,10 +381,7 @@
       "details": "Develop clear instructions for exporting designs from Canva. Implement a Canva-compatible import process. Create export functionality that generates Canva-compatible files. Design a user interface for guiding users through the Canva workflow.",
       "testStrategy": "Test the full workflow of exporting from Canva, enhancing, and re-importing to Canva. Verify compatibility of exported files with Canva. Check clarity and effectiveness of user instructions.",
       "priority": "medium",
-      "dependencies": [
-        6,
-        9
-      ],
+      "dependencies": [6, 9],
       "status": "pending",
       "subtasks": []
     },
@@ -480,9 +392,7 @@
       "details": "Design a data structure for storing enhancement templates. Implement functionality to save current enhancement settings as a template. Create a UI for managing and applying saved templates. Integrate templates into the enhancement workflow.",
       "testStrategy": "Test saving various enhancement configurations as templates. Verify accurate application of templates to new documents. Check performance impact of template application.",
       "priority": "medium",
-      "dependencies": [
-        9
-      ],
+      "dependencies": [9],
       "status": "pending",
       "subtasks": []
     },
@@ -493,11 +403,7 @@
       "details": "Implement algorithms to detect style and content consistency across multiple documents. Create a system for suggesting global enhancements for workbook coherence. Integrate workbook analysis into the batch processing pipeline.",
       "testStrategy": "Test analysis accuracy with various types of workbooks. Verify quality and relevance of coherence suggestions. Check performance with large workbooks.",
       "priority": "low",
-      "dependencies": [
-        8,
-        9,
-        22
-      ],
+      "dependencies": [8, 9, 22],
       "status": "pending",
       "subtasks": []
     },
@@ -508,10 +414,7 @@
       "details": "Implement algorithms to assess and score difficulty levels of worksheets. Create a system for gradually increasing difficulty across a series. Integrate difficulty adjustment into the enhancement pipeline for educational content.",
       "testStrategy": "Test accuracy of difficulty assessments across various subjects. Verify appropriate progression of difficulty in enhanced worksheet series. Check integration with overall enhancement process.",
       "priority": "low",
-      "dependencies": [
-        8,
-        37
-      ],
+      "dependencies": [8, 37],
       "status": "pending",
       "subtasks": []
     },
@@ -522,11 +425,7 @@
       "details": "Enhance the AI model integration to understand document content and context. Implement prompts for generating subject-specific decorative elements and educational graphics. Create a library of generated assets for reuse.",
       "testStrategy": "Test relevance and quality of generated assets for various subjects. Verify proper integration and placement of generated elements in documents. Check performance and cost efficiency of asset generation.",
       "priority": "medium",
-      "dependencies": [
-        8,
-        9,
-        10
-      ],
+      "dependencies": [8, 9, 10],
       "status": "pending",
       "subtasks": []
     },
@@ -537,11 +436,7 @@
       "details": "Design a step-by-step onboarding process introducing key features. Implement interactive tutorials for core functionalities. Create a system for tracking onboarding progress. Develop personalized onboarding paths based on user roles (teacher, business owner, etc.).",
       "testStrategy": "Test the full onboarding flow for different user types. Verify proper tracking of onboarding progress. Check effectiveness of tutorials through user feedback and engagement metrics.",
       "priority": "high",
-      "dependencies": [
-        4,
-        11,
-        12
-      ],
+      "dependencies": [4, 11, 12],
       "status": "pending",
       "subtasks": []
     }

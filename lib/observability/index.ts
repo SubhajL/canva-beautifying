@@ -1,9 +1,9 @@
 // This module is for server-side use only
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   throw new Error(
-    'Server-only module: @/lib/observability cannot be imported in client-side code. ' +
-    'Use @/lib/observability/client instead.'
-  );
+    "Server-only module: @/lib/observability cannot be imported in client-side code. " +
+      "Use @/lib/observability/client instead."
+  )
 }
 
 // Logger exports
@@ -21,14 +21,10 @@ export {
   type StorageLogEntry,
   type SecurityLogEntry,
   type PerformanceLogEntry,
-} from './logger';
+} from "./logger"
 
 // Middleware exports
-export {
-  withLogging,
-  withApiLogging,
-  getCurrentContext,
-} from './middleware';
+export { withLogging, withApiLogging, getCurrentContext } from "./middleware"
 
 // AI monitoring exports
 export {
@@ -38,7 +34,7 @@ export {
   createMonitoredAIClient,
   type AIOperationOptions,
   type AIOperationResult,
-} from './ai-monitoring';
+} from "./ai-monitoring"
 
 // Metrics exports
 export {
@@ -48,7 +44,7 @@ export {
   recordSystemMetrics,
   getMetricsResponse,
   getMetricsJson,
-} from './metrics';
+} from "./metrics"
 
 // Tracing exports
 export {
@@ -61,7 +57,7 @@ export {
   setSpanAttributes,
   getCurrentTraceId,
   getCurrentSpanId,
-} from './tracing';
+} from "./tracing"
 
 // Instrumentation exports
 export {
@@ -69,7 +65,7 @@ export {
   instrumentDatabase,
   instrumentAIProviders,
   instrumentBullMQ,
-} from './instrumentation';
+} from "./instrumentation"
 
 // Performance monitoring exports
 export {
@@ -79,16 +75,16 @@ export {
   type PerformanceThreshold,
   type AggregatedMetric,
   PerformanceMonitor,
-} from './performance-monitor';
+} from "./performance-monitor"
 
-// Performance analyzer exports  
+// Performance analyzer exports
 export {
   initializePerformanceAnalyzer,
   getPerformanceAnalyzer,
   type ResourceUsage,
   type PerformanceBottleneck,
   PerformanceAnalyzer,
-} from './performance-analyzer';
+} from "./performance-analyzer"
 
 // AI performance tracker exports
 export {
@@ -99,7 +95,7 @@ export {
   type ModelSelectionCriteria,
   type ModelRecommendation,
   AIPerformanceTracker,
-} from './ai-performance-tracker';
+} from "./ai-performance-tracker"
 
 // Alerting exports
 export {
@@ -109,13 +105,10 @@ export {
   type AlertRule,
   type AlertAction,
   AlertManager,
-} from './alerting';
+} from "./alerting"
 
 // Log shipper exports
-export {
-  getLogShipper,
-  LogShipper,
-} from './log-shipper';
+export { getLogShipper, LogShipper } from "./log-shipper"
 
 // Resource tracker exports
 export {
@@ -125,7 +118,7 @@ export {
   type SystemMetrics,
   type DiskIOMetrics,
   type NetworkMetrics,
-} from './resource-tracker';
+} from "./resource-tracker"
 
 // SLI/SLO tracker exports
 export {
@@ -137,7 +130,7 @@ export {
   type SLOStatus,
   type SLIQuery,
   type QueryDefinition,
-} from './sli-slo-tracker';
+} from "./sli-slo-tracker"
 
 // Trace alerting exports
 export {
@@ -148,4 +141,4 @@ export {
   type AlertCondition,
   type AlertAction as TraceAlertAction,
   type Alert as TraceAlert,
-} from './trace-alerting';
+} from "./trace-alerting"

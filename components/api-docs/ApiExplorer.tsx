@@ -1,18 +1,24 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { API_ENDPOINTS } from '@/lib/api-docs/api-spec'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Loader2, Play, AlertCircle } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { useState } from "react"
+import { API_ENDPOINTS } from "@/lib/api-docs/api-spec"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Loader2, Play, AlertCircle } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface ApiExplorerProps {
   apiKey: string
@@ -29,48 +35,54 @@ interface RequestState {
 }
 
 const methodColors = {
-  GET: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
-  POST: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
-  PUT: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
-  DELETE: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
-  PATCH: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
+  GET: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
+  POST: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
+  PUT: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
+  DELETE: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
+  PATCH:
+    "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300",
 }
 
 export function ApiExplorer({ apiKey, isAuthenticated }: ApiExplorerProps) {
-  const [selectedEndpointId, setSelectedEndpointId] = useState<string>('')
+  const [selectedEndpointId, setSelectedEndpointId] = useState<string>("")
   const [pathParams, setPathParams] = useState<Record<string, string>>({})
   const [queryParams, setQueryParams] = useState<Record<string, string>>({})
   const [headers, setHeaders] = useState<Record<string, string>>({})
-  const [requestBody, setRequestBody] = useState<string>('')
+  const [requestBody, setRequestBody] = useState<string>("")
   const [requestState, setRequestState] = useState<RequestState>({
     isLoading: false,
     response: null,
     error: null,
     status: null,
     headers: null,
-    duration: null
+    duration: null,
   })
 
-  const selectedEndpoint = API_ENDPOINTS.find(ep => ep.id === selectedEndpointId)
+  const selectedEndpoint = API_ENDPOINTS.find(
+    (ep) => ep.id === selectedEndpointId
+  )
 
   const buildUrl = () => {
-    if (!selectedEndpoint) return ''
-    
+    if (!selectedEndpoint) return ""
+
     let path = selectedEndpoint.path
-    
+
     // Replace path parameters
     Object.entries(pathParams).forEach(([key, value]) => {
       path = path.replace(`{${key}}`, encodeURIComponent(value))
     })
-    
+
     // Add query parameters
     const queryString = Object.entries(queryParams)
       .filter(([_, value]) => value)
-      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
-      .join('&')
-    
-    const baseUrl = 'https://api.beautifyai.com'
-    return `${baseUrl}${path}${queryString ? '?' + queryString : ''}`
+      .map(
+        ([key, value]) =>
+          `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
+      )
+      .join("&")
+
+    const baseUrl = "https://api.beautifyai.com"
+    return `${baseUrl}${path}${queryString ? "?" + queryString : ""}`
   }
 
   const executeRequest = async () => {
@@ -82,16 +94,16 @@ export function ApiExplorer({ apiKey, isAuthenticated }: ApiExplorerProps) {
       error: null,
       status: null,
       headers: null,
-      duration: null
+      duration: null,
     })
 
     const startTime = Date.now()
     const url = buildUrl()
-    
+
     const requestHeaders: Record<string, string> = {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-      ...headers
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      ...headers,
     }
 
     try {
@@ -106,22 +118,22 @@ export function ApiExplorer({ apiKey, isAuthenticated }: ApiExplorerProps) {
           JSON.parse(requestBody)
           options.body = requestBody
         } catch (e) {
-          throw new Error('Invalid JSON in request body')
+          throw new Error("Invalid JSON in request body")
         }
       }
 
       const response = await fetch(url, options)
       const duration = Date.now() - startTime
-      
+
       const responseHeaders: Record<string, string> = {}
       response.headers.forEach((value, key) => {
         responseHeaders[key] = value
       })
 
       let responseData
-      const contentType = response.headers.get('content-type') || ''
-      
-      if (contentType.includes('application/json')) {
+      const contentType = response.headers.get("content-type") || ""
+
+      if (contentType.includes("application/json")) {
         responseData = await response.json()
       } else {
         responseData = await response.text()
@@ -133,24 +145,25 @@ export function ApiExplorer({ apiKey, isAuthenticated }: ApiExplorerProps) {
         error: null,
         status: response.status,
         headers: responseHeaders,
-        duration
+        duration,
       })
     } catch (error) {
       const duration = Date.now() - startTime
       setRequestState({
         isLoading: false,
         response: null,
-        error: error instanceof Error ? error.message : 'An unknown error occurred',
+        error:
+          error instanceof Error ? error.message : "An unknown error occurred",
         status: null,
         headers: null,
-        duration
+        duration,
       })
     }
   }
 
   const extractPathParams = (path: string) => {
     const matches = path.match(/\{([^}]+)\}/g)
-    return matches ? matches.map(m => m.slice(1, -1)) : []
+    return matches ? matches.map((m) => m.slice(1, -1)) : []
   }
 
   return (
@@ -159,7 +172,8 @@ export function ApiExplorer({ apiKey, isAuthenticated }: ApiExplorerProps) {
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Please set up your API key in the Authentication tab to test endpoints.
+            Please set up your API key in the Authentication tab to test
+            endpoints.
           </AlertDescription>
         </Alert>
       )}
@@ -170,7 +184,10 @@ export function ApiExplorer({ apiKey, isAuthenticated }: ApiExplorerProps) {
           <h3 className="text-lg font-semibold">Select Endpoint</h3>
         </CardHeader>
         <CardContent>
-          <Select value={selectedEndpointId} onValueChange={setSelectedEndpointId}>
+          <Select
+            value={selectedEndpointId}
+            onValueChange={setSelectedEndpointId}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Choose an endpoint to test" />
             </SelectTrigger>
@@ -178,7 +195,9 @@ export function ApiExplorer({ apiKey, isAuthenticated }: ApiExplorerProps) {
               {API_ENDPOINTS.map((endpoint) => (
                 <SelectItem key={endpoint.id} value={endpoint.id}>
                   <div className="flex items-center gap-2">
-                    <Badge className={cn("text-xs", methodColors[endpoint.method])}>
+                    <Badge
+                      className={cn("text-xs", methodColors[endpoint.method])}
+                    >
                       {endpoint.method}
                     </Badge>
                     <span className="font-mono text-sm">{endpoint.path}</span>
@@ -196,7 +215,7 @@ export function ApiExplorer({ apiKey, isAuthenticated }: ApiExplorerProps) {
           <Card>
             <CardHeader>
               <h3 className="text-lg font-semibold">Configure Request</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                 {selectedEndpoint.summary}
               </p>
             </CardHeader>
@@ -204,7 +223,9 @@ export function ApiExplorer({ apiKey, isAuthenticated }: ApiExplorerProps) {
               {/* Path Parameters */}
               {extractPathParams(selectedEndpoint.path).length > 0 && (
                 <div>
-                  <Label className="text-sm font-medium mb-2 block">Path Parameters</Label>
+                  <Label className="mb-2 block text-sm font-medium">
+                    Path Parameters
+                  </Label>
                   <div className="space-y-2">
                     {extractPathParams(selectedEndpoint.path).map((param) => (
                       <div key={param}>
@@ -213,8 +234,13 @@ export function ApiExplorer({ apiKey, isAuthenticated }: ApiExplorerProps) {
                         </Label>
                         <Input
                           id={`path-${param}`}
-                          value={pathParams[param] || ''}
-                          onChange={(e) => setPathParams({ ...pathParams, [param]: e.target.value })}
+                          value={pathParams[param] || ""}
+                          onChange={(e) =>
+                            setPathParams({
+                              ...pathParams,
+                              [param]: e.target.value,
+                            })
+                          }
                           placeholder={`Enter ${param}`}
                           className="mt-1"
                         />
@@ -225,27 +251,42 @@ export function ApiExplorer({ apiKey, isAuthenticated }: ApiExplorerProps) {
               )}
 
               {/* Query Parameters */}
-              {selectedEndpoint.parameters?.filter(p => p.in === 'query').length > 0 && (
+              {selectedEndpoint.parameters?.filter((p) => p.in === "query")
+                .length > 0 && (
                 <div>
-                  <Label className="text-sm font-medium mb-2 block">Query Parameters</Label>
+                  <Label className="mb-2 block text-sm font-medium">
+                    Query Parameters
+                  </Label>
                   <div className="space-y-2">
                     {selectedEndpoint.parameters
-                      .filter(p => p.in === 'query')
+                      .filter((p) => p.in === "query")
                       .map((param) => (
                         <div key={param.name}>
-                          <Label htmlFor={`query-${param.name}`} className="text-xs">
+                          <Label
+                            htmlFor={`query-${param.name}`}
+                            className="text-xs"
+                          >
                             {param.name}
-                            {param.required && <span className="text-red-500 ml-1">*</span>}
+                            {param.required && (
+                              <span className="ml-1 text-red-500">*</span>
+                            )}
                           </Label>
                           <Input
                             id={`query-${param.name}`}
-                            value={queryParams[param.name] || ''}
-                            onChange={(e) => setQueryParams({ ...queryParams, [param.name]: e.target.value })}
+                            value={queryParams[param.name] || ""}
+                            onChange={(e) =>
+                              setQueryParams({
+                                ...queryParams,
+                                [param.name]: e.target.value,
+                              })
+                            }
                             placeholder={param.example || `Enter ${param.name}`}
                             className="mt-1"
                           />
                           {param.description && (
-                            <p className="text-xs text-gray-500 mt-1">{param.description}</p>
+                            <p className="mt-1 text-xs text-gray-500">
+                              {param.description}
+                            </p>
                           )}
                         </div>
                       ))}
@@ -254,22 +295,35 @@ export function ApiExplorer({ apiKey, isAuthenticated }: ApiExplorerProps) {
               )}
 
               {/* Additional Headers */}
-              {selectedEndpoint.parameters?.filter(p => p.in === 'header').length > 0 && (
+              {selectedEndpoint.parameters?.filter((p) => p.in === "header")
+                .length > 0 && (
                 <div>
-                  <Label className="text-sm font-medium mb-2 block">Headers</Label>
+                  <Label className="mb-2 block text-sm font-medium">
+                    Headers
+                  </Label>
                   <div className="space-y-2">
                     {selectedEndpoint.parameters
-                      .filter(p => p.in === 'header')
+                      .filter((p) => p.in === "header")
                       .map((param) => (
                         <div key={param.name}>
-                          <Label htmlFor={`header-${param.name}`} className="text-xs">
+                          <Label
+                            htmlFor={`header-${param.name}`}
+                            className="text-xs"
+                          >
                             {param.name}
-                            {param.required && <span className="text-red-500 ml-1">*</span>}
+                            {param.required && (
+                              <span className="ml-1 text-red-500">*</span>
+                            )}
                           </Label>
                           <Input
                             id={`header-${param.name}`}
-                            value={headers[param.name] || ''}
-                            onChange={(e) => setHeaders({ ...headers, [param.name]: e.target.value })}
+                            value={headers[param.name] || ""}
+                            onChange={(e) =>
+                              setHeaders({
+                                ...headers,
+                                [param.name]: e.target.value,
+                              })
+                            }
                             placeholder={param.example || `Enter ${param.name}`}
                             className="mt-1"
                           />
@@ -282,25 +336,32 @@ export function ApiExplorer({ apiKey, isAuthenticated }: ApiExplorerProps) {
               {/* Request Body */}
               {selectedEndpoint.requestBody && (
                 <div>
-                  <Label htmlFor="request-body" className="text-sm font-medium mb-2 block">
+                  <Label
+                    htmlFor="request-body"
+                    className="mb-2 block text-sm font-medium"
+                  >
                     Request Body
                     {selectedEndpoint.requestBody.required && (
-                      <span className="text-red-500 ml-1">*</span>
+                      <span className="ml-1 text-red-500">*</span>
                     )}
                   </Label>
                   <Textarea
                     id="request-body"
                     value={requestBody}
                     onChange={(e) => setRequestBody(e.target.value)}
-                    placeholder={JSON.stringify(selectedEndpoint.requestBody.schema, null, 2)}
-                    className="font-mono text-sm min-h-[200px]"
+                    placeholder={JSON.stringify(
+                      selectedEndpoint.requestBody.schema,
+                      null,
+                      2
+                    )}
+                    className="min-h-[200px] font-mono text-sm"
                   />
                 </div>
               )}
 
               {/* Execute Button */}
               <div className="flex items-center justify-between pt-4">
-                <div className="text-sm text-gray-600 dark:text-gray-400 font-mono">
+                <div className="font-mono text-sm text-gray-600 dark:text-gray-400">
                   {buildUrl()}
                 </div>
                 <Button
@@ -332,8 +393,13 @@ export function ApiExplorer({ apiKey, isAuthenticated }: ApiExplorerProps) {
                   <h3 className="text-lg font-semibold">Response</h3>
                   {requestState.status && (
                     <div className="flex items-center gap-2">
-                      <Badge 
-                        variant={requestState.status >= 200 && requestState.status < 300 ? 'default' : 'destructive'}
+                      <Badge
+                        variant={
+                          requestState.status >= 200 &&
+                          requestState.status < 300
+                            ? "default"
+                            : "destructive"
+                        }
                       >
                         {requestState.status}
                       </Badge>
@@ -358,30 +424,32 @@ export function ApiExplorer({ apiKey, isAuthenticated }: ApiExplorerProps) {
                       <TabsTrigger value="body">Body</TabsTrigger>
                       <TabsTrigger value="headers">Headers</TabsTrigger>
                     </TabsList>
-                    
+
                     <TabsContent value="body">
-                      <div className="bg-gray-900 dark:bg-gray-950 p-4 rounded-lg overflow-auto max-h-[500px]">
+                      <div className="max-h-[500px] overflow-auto rounded-lg bg-gray-900 p-4 dark:bg-gray-950">
                         <pre className="text-sm text-gray-300">
-                          {typeof requestState.response === 'object' 
+                          {typeof requestState.response === "object"
                             ? JSON.stringify(requestState.response, null, 2)
-                            : requestState.response
-                          }
+                            : requestState.response}
                         </pre>
                       </div>
                     </TabsContent>
-                    
+
                     <TabsContent value="headers">
                       <div className="space-y-1">
-                        {requestState.headers && Object.entries(requestState.headers).map(([key, value]) => (
-                          <div key={key} className="flex gap-2 text-sm">
-                            <span className="font-mono font-medium text-gray-700 dark:text-gray-300">
-                              {key}:
-                            </span>
-                            <span className="font-mono text-gray-600 dark:text-gray-400">
-                              {value}
-                            </span>
-                          </div>
-                        ))}
+                        {requestState.headers &&
+                          Object.entries(requestState.headers).map(
+                            ([key, value]) => (
+                              <div key={key} className="flex gap-2 text-sm">
+                                <span className="font-mono font-medium text-gray-700 dark:text-gray-300">
+                                  {key}:
+                                </span>
+                                <span className="font-mono text-gray-600 dark:text-gray-400">
+                                  {value}
+                                </span>
+                              </div>
+                            )
+                          )}
                       </div>
                     </TabsContent>
                   </Tabs>

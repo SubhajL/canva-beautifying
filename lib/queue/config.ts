@@ -1,5 +1,5 @@
-import { Redis } from 'ioredis'
-import { ConnectionOptions } from 'bullmq'
+import { Redis } from "ioredis"
+import { ConnectionOptions } from "bullmq"
 
 // Create Redis connection based on environment
 const createRedisConnection = (): Redis => {
@@ -9,15 +9,15 @@ const createRedisConnection = (): Redis => {
       maxRetriesPerRequest: null,
       enableReadyCheck: false,
       tls: {
-        rejectUnauthorized: false
+        rejectUnauthorized: false,
       },
       password: process.env.UPSTASH_REDIS_TOKEN,
     })
   } else {
     // Use local Redis for development
     return new Redis({
-      host: process.env.REDIS_HOST || 'localhost',
-      port: parseInt(process.env.REDIS_PORT || '6379'),
+      host: process.env.REDIS_HOST || "localhost",
+      port: parseInt(process.env.REDIS_PORT || "6379"),
       maxRetriesPerRequest: null,
     })
   }
@@ -28,16 +28,16 @@ export const getQueueConnection = (): ConnectionOptions => {
   if (process.env.UPSTASH_REDIS_URL && process.env.UPSTASH_REDIS_TOKEN) {
     return {
       host: new URL(process.env.UPSTASH_REDIS_URL).hostname,
-      port: parseInt(new URL(process.env.UPSTASH_REDIS_URL).port || '6379'),
+      port: parseInt(new URL(process.env.UPSTASH_REDIS_URL).port || "6379"),
       password: process.env.UPSTASH_REDIS_TOKEN,
       tls: {
-        rejectUnauthorized: false
-      }
+        rejectUnauthorized: false,
+      },
     }
   } else {
     return {
-      host: process.env.REDIS_HOST || 'localhost',
-      port: parseInt(process.env.REDIS_PORT || '6379'),
+      host: process.env.REDIS_HOST || "localhost",
+      port: parseInt(process.env.REDIS_PORT || "6379"),
     }
   }
 }
@@ -47,10 +47,10 @@ export const redis = createRedisConnection()
 
 // Queue configuration constants
 export const QUEUE_NAMES = {
-  DOCUMENT_ANALYSIS: 'document-analysis',
-  ENHANCEMENT: 'enhancement',
-  EXPORT: 'export',
-  EMAIL: 'email',
+  DOCUMENT_ANALYSIS: "document-analysis",
+  ENHANCEMENT: "enhancement",
+  EXPORT: "export",
+  EMAIL: "email",
 } as const
 
 export const DEFAULT_JOB_OPTIONS = {
@@ -64,7 +64,7 @@ export const DEFAULT_JOB_OPTIONS = {
   },
   attempts: 3,
   backoff: {
-    type: 'exponential' as const,
+    type: "exponential" as const,
     delay: 2000,
   },
 }
@@ -79,10 +79,10 @@ export const PRIORITY_LEVELS = {
 
 // Job status types
 export const JOB_STATUS = {
-  WAITING: 'waiting',
-  ACTIVE: 'active',
-  COMPLETED: 'completed',
-  FAILED: 'failed',
-  DELAYED: 'delayed',
-  PAUSED: 'paused',
+  WAITING: "waiting",
+  ACTIVE: "active",
+  COMPLETED: "completed",
+  FAILED: "failed",
+  DELAYED: "delayed",
+  PAUSED: "paused",
 } as const

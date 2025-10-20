@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { ReportService } from '@/lib/reports/report-service'
+import { NextRequest, NextResponse } from "next/server"
+import { createClient } from "@/lib/supabase/server"
+import { ReportService } from "@/lib/reports/report-service"
 
 const reportService = new ReportService()
 
@@ -8,24 +8,21 @@ const reportService = new ReportService()
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
-    
+
     // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const body = await request.json()
     const { reportId, expiresInDays = 7, password } = body
 
     if (!reportId) {
-      return NextResponse.json(
-        { error: 'Missing reportId' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "Missing reportId" }, { status: 400 })
     }
 
     // Create shareable link
@@ -38,12 +35,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      shareableLink
+      shareableLink,
     })
   } catch (error) {
-    console.error('Create shareable link error:', error)
+    console.error("Create shareable link error:", error)
     return NextResponse.json(
-      { error: 'Failed to create shareable link' },
+      { error: "Failed to create shareable link" },
       { status: 500 }
     )
   }
@@ -53,14 +50,11 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const shortCode = searchParams.get('code')
-    const password = searchParams.get('password')
+    const shortCode = searchParams.get("code")
+    const password = searchParams.get("password")
 
     if (!shortCode) {
-      return NextResponse.json(
-        { error: 'Missing share code' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "Missing share code" }, { status: 400 })
     }
 
     // Get report by share code
@@ -71,27 +65,27 @@ export async function GET(request: NextRequest) {
 
     if (!report) {
       return NextResponse.json(
-        { error: 'Report not found or expired' },
+        { error: "Report not found or expired" },
         { status: 404 }
       )
     }
 
     return NextResponse.json({
       success: true,
-      report
+      report,
     })
   } catch (error: any) {
-    console.error('Get shared report error:', error)
-    
-    if (error.message === 'Password required') {
+    console.error("Get shared report error:", error)
+
+    if (error.message === "Password required") {
       return NextResponse.json(
-        { error: 'Password required', requiresPassword: true },
+        { error: "Password required", requiresPassword: true },
         { status: 401 }
       )
     }
-    
+
     return NextResponse.json(
-      { error: 'Failed to fetch shared report' },
+      { error: "Failed to fetch shared report" },
       { status: 500 }
     )
   }

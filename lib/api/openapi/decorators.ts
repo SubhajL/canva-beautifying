@@ -1,72 +1,85 @@
-import { z } from 'zod';
-import { routeRegistry } from './registry';
+import { z } from "zod"
+import { NextRequest } from "next/server"
+import { routeRegistry } from "./registry"
 import {
   RouteMetadata,
   RequestMetadata,
   ResponseMetadata,
   ROUTE_METADATA_KEY,
   REQUEST_METADATA_KEY,
-  RESPONSE_METADATA_KEY
-} from './types';
+  RESPONSE_METADATA_KEY,
+} from "./types"
 
 /**
  * Type for route handler functions in Next.js App Router
  * Supports both Request and NextRequest for compatibility
  */
 type RouteHandler = (
-  request: Request | any,
-  context?: any
-) => Promise<Response> | Response;
+  request: Request | NextRequest,
+  context?: { params: Record<string, string> }
+) => Promise<Response> | Response
 
 /**
  * Extended route handler with metadata
  */
 interface ExtendedRouteHandler extends RouteHandler {
-  [ROUTE_METADATA_KEY]?: RouteMetadata;
-  [REQUEST_METADATA_KEY]?: RequestMetadata;
-  [RESPONSE_METADATA_KEY]?: ResponseMetadata;
+  [ROUTE_METADATA_KEY]?: RouteMetadata
+  [REQUEST_METADATA_KEY]?: RequestMetadata
+  [RESPONSE_METADATA_KEY]?: ResponseMetadata
 }
 
 /**
  * Main decorator to mark routes for documentation
  */
-export function apiRoute(metadata: Omit<RouteMetadata, 'method' | 'path'>) {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-    const handler = descriptor.value as ExtendedRouteHandler;
-    
+export function apiRoute(metadata: Omit<RouteMetadata, "method" | "path">) {
+  return function (
+    target: any,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
+    const handler = descriptor.value as ExtendedRouteHandler
+
     // Store metadata on the handler function
-    handler[ROUTE_METADATA_KEY] = metadata as RouteMetadata;
-    
-    return descriptor;
-  };
+    handler[ROUTE_METADATA_KEY] = metadata as RouteMetadata
+
+    return descriptor
+  }
 }
 
 /**
  * Decorator for request documentation
  */
 export function apiRequest(request: RequestMetadata) {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-    const handler = descriptor.value as ExtendedRouteHandler;
-    
+  return function (
+    target: any,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
+    const handler = descriptor.value as ExtendedRouteHandler
+
     // Store request metadata on the handler function
-    handler[REQUEST_METADATA_KEY] = request;
-    
-    return descriptor;
-  };
+    handler[REQUEST_METADATA_KEY] = request
+
+    return descriptor
+  }
 }
 
 /**
  * Decorator for response documentation
  */
 export function apiResponse(responses: ResponseMetadata) {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-    const handler = descriptor.value as ExtendedRouteHandler;
-    
+  return function (
+    target: any,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
+    const handler = descriptor.value as ExtendedRouteHandler
+
     // Store response metadata on the handler function
-    handler[RESPONSE_METADATA_KEY] = responses;
-    
-    return descriptor;
-  };
+    handler[RESPONSE_METADATA_KEY] = responses
+
+    return descriptor
+  }
 }
 
 /**
@@ -80,23 +93,23 @@ export function documentRoute<T extends RouteHandler>(
   responses?: ResponseMetadata
 ): T {
   // Store metadata on the handler for potential runtime use
-  const extendedHandler = handler as ExtendedRouteHandler;
-  extendedHandler[ROUTE_METADATA_KEY] = metadata;
-  if (request) extendedHandler[REQUEST_METADATA_KEY] = request;
-  if (responses) extendedHandler[RESPONSE_METADATA_KEY] = responses;
-  
+  const extendedHandler = handler as ExtendedRouteHandler
+  extendedHandler[ROUTE_METADATA_KEY] = metadata
+  if (request) extendedHandler[REQUEST_METADATA_KEY] = request
+  if (responses) extendedHandler[RESPONSE_METADATA_KEY] = responses
+
   // Register in the global registry
-  routeRegistry.registerRoute(metadata);
-  
+  routeRegistry.registerRoute(metadata)
+
   if (request) {
-    routeRegistry.addRequestMetadata(metadata.method, metadata.path, request);
+    routeRegistry.addRequestMetadata(metadata.method, metadata.path, request)
   }
-  
+
   if (responses) {
-    routeRegistry.addResponseMetadata(metadata.method, metadata.path, responses);
+    routeRegistry.addResponseMetadata(metadata.method, metadata.path, responses)
   }
-  
-  return handler;
+
+  return handler
 }
 
 /**
@@ -105,14 +118,14 @@ export function documentRoute<T extends RouteHandler>(
 export function requestBody(
   schema: z.ZodType<any>,
   options: {
-    description?: string;
-    required?: boolean;
-    contentType?: string;
-    examples?: Record<string, any>;
+    description?: string
+    required?: boolean
+    contentType?: string
+    examples?: Record<string, any>
   } = {}
 ): RequestMetadata {
-  const contentType = options.contentType || 'application/json';
-  
+  const contentType = options.contentType || "application/json"
+
   return {
     body: {
       description: options.description,
@@ -120,11 +133,11 @@ export function requestBody(
       content: {
         [contentType]: {
           schema,
-          examples: options.examples
-        }
-      }
-    }
-  };
+          examples: options.examples,
+        },
+      },
+    },
+  }
 }
 
 /**
@@ -137,9 +150,9 @@ export function queryParams(
   return {
     query: {
       schema,
-      description
-    }
-  };
+      description,
+    },
+  }
 }
 
 /**
@@ -152,9 +165,9 @@ export function pathParams(
   return {
     params: {
       schema,
-      description
-    }
-  };
+      description,
+    },
+  }
 }
 
 /**
@@ -167,9 +180,9 @@ export function headers(
   return {
     headers: {
       schema,
-      description
-    }
-  };
+      description,
+    },
+  }
 }
 
 /**
@@ -179,40 +192,42 @@ export function response(
   statusCode: number | string,
   description: string,
   options: {
-    schema?: z.ZodType<any>;
-    contentType?: string;
-    headers?: Record<string, { description?: string; schema: z.ZodType<any> }>;
-    examples?: Record<string, any>;
+    schema?: z.ZodType<any>
+    contentType?: string
+    headers?: Record<string, { description?: string; schema: z.ZodType<any> }>
+    examples?: Record<string, any>
   } = {}
 ): ResponseMetadata {
   const response: ResponseMetadata = {
     [statusCode.toString()]: {
-      description
-    }
-  };
-  
+      description,
+    },
+  }
+
   if (options.schema) {
-    const contentType = options.contentType || 'application/json';
+    const contentType = options.contentType || "application/json"
     response[statusCode.toString()].content = {
       [contentType]: {
         schema: options.schema,
-        examples: options.examples
-      }
-    };
+        examples: options.examples,
+      },
+    }
   }
-  
+
   if (options.headers) {
-    response[statusCode.toString()].headers = options.headers;
+    response[statusCode.toString()].headers = options.headers
   }
-  
-  return response;
+
+  return response
 }
 
 /**
  * Combine multiple response definitions
  */
-export function responses(...responseDefs: ResponseMetadata[]): ResponseMetadata {
-  return responseDefs.reduce((acc, curr) => ({ ...acc, ...curr }), {});
+export function responses(
+  ...responseDefs: ResponseMetadata[]
+): ResponseMetadata {
+  return responseDefs.reduce((acc, curr) => ({ ...acc, ...curr }), {})
 }
 
 /**
@@ -220,78 +235,78 @@ export function responses(...responseDefs: ResponseMetadata[]): ResponseMetadata
  */
 export function errorResponses(): ResponseMetadata {
   return responses(
-    response(400, 'Bad Request', {
+    response(400, "Bad Request", {
       schema: z.object({
         error: z.string(),
         message: z.string(),
-        code: z.string().optional()
-      })
+        code: z.string().optional(),
+      }),
     }),
-    response(401, 'Unauthorized', {
+    response(401, "Unauthorized", {
       schema: z.object({
         error: z.string(),
-        message: z.string()
-      })
+        message: z.string(),
+      }),
     }),
-    response(403, 'Forbidden', {
+    response(403, "Forbidden", {
       schema: z.object({
         error: z.string(),
-        message: z.string()
-      })
+        message: z.string(),
+      }),
     }),
-    response(404, 'Not Found', {
+    response(404, "Not Found", {
       schema: z.object({
         error: z.string(),
-        message: z.string()
-      })
+        message: z.string(),
+      }),
     }),
-    response(500, 'Internal Server Error', {
+    response(500, "Internal Server Error", {
       schema: z.object({
         error: z.string(),
-        message: z.string()
-      })
+        message: z.string(),
+      }),
     })
-  );
+  )
 }
 
 /**
  * Initialize route documentation for a specific API version
  */
 export function initializeAPIDocs(options: {
-  title: string;
-  version: string;
-  description?: string;
-  servers?: Array<{ url: string; description?: string }>;
-  tags?: Array<{ name: string; description?: string }>;
-  securitySchemes?: Record<string, any>;
+  title: string
+  version: string
+  description?: string
+  servers?: Array<{ url: string; description?: string }>
+  tags?: Array<{ name: string; description?: string }>
+  securitySchemes?: Record<string, any>
 }) {
-  const registry = routeRegistry;
-  
+  const registry = routeRegistry
+
   // Set API info
   registry.setInfo({
     title: options.title,
     version: options.version,
-    description: options.description
-  });
-  
+    description: options.description,
+  })
+
   // Add servers
   if (options.servers) {
-    options.servers.forEach(server => {
-      registry.addServer(server.url, server.description);
-    });
+    options.servers.forEach((server) => {
+      registry.addServer(server.url, server.description)
+    })
   }
-  
+
   // Add tags
   if (options.tags) {
-    options.tags.forEach(tag => {
-      registry.addTag(tag.name, tag.description);
-    });
+    options.tags.forEach((tag) => {
+      registry.addTag(tag.name, tag.description)
+    })
   }
-  
+
   // Add security schemes
   if (options.securitySchemes) {
     Object.entries(options.securitySchemes).forEach(([name, scheme]) => {
-      registry.addSecurityScheme(name, scheme);
-    });
+      registry.addSecurityScheme(name, scheme)
+    })
   }
 }

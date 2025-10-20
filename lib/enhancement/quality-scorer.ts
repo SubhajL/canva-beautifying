@@ -1,4 +1,4 @@
-import { DocumentAnalysisEngine } from '@/lib/analysis'
+import { DocumentAnalysisEngine } from "@/lib/analysis"
 
 export class QualityScorer {
   private analysisEngine: DocumentAnalysisEngine
@@ -15,24 +15,27 @@ export class QualityScorer {
     // 1. Analyze both original and enhanced documents
     // 2. Compare scores across all metrics
     // 3. Calculate improvement percentage
-    
+
     // For now, simulate the scoring
     const beforeScore = await this.scoreDocument(originalUrl)
     const afterScore = await this.scoreDocument(enhancedUrl, true)
-    
+
     const improvement = ((afterScore - beforeScore) / beforeScore) * 100
-    
+
     return {
       before: beforeScore,
       after: afterScore,
-      improvement: Math.round(improvement)
+      improvement: Math.round(improvement),
     }
   }
 
-  private async scoreDocument(url: string, isEnhanced: boolean = false): Promise<number> {
+  private async scoreDocument(
+    url: string,
+    isEnhanced: boolean = false
+  ): Promise<number> {
     // In production, this would actually analyze the document
     // For now, simulate scoring
-    
+
     if (isEnhanced) {
       // Enhanced documents get higher scores
       return Math.floor(Math.random() * 20) + 75 // 75-95
@@ -43,24 +46,34 @@ export class QualityScorer {
   }
 
   async scoreEnhancement(
-    original: { layout: number; colors: number; typography: number; engagement: number },
-    enhanced: { layout: number; colors: number; typography: number; engagement: number }
+    original: {
+      layout: number
+      colors: number
+      typography: number
+      engagement: number
+    },
+    enhanced: {
+      layout: number
+      colors: number
+      typography: number
+      engagement: number
+    }
   ): Promise<number> {
     // Calculate weighted improvement score
     const weights = {
       layout: 0.25,
       colors: 0.25,
       typography: 0.25,
-      engagement: 0.25
+      engagement: 0.25,
     }
-    
+
     let totalImprovement = 0
-    
+
     for (const metric of Object.keys(weights) as Array<keyof typeof weights>) {
       const improvement = enhanced[metric] - original[metric]
       totalImprovement += improvement * weights[metric]
     }
-    
+
     return Math.round(totalImprovement)
   }
 
@@ -70,19 +83,19 @@ export class QualityScorer {
   ): Promise<{ accuracy: number; effectiveness: number }> {
     // Compare predicted impact vs actual improvement
     const accuracy = 100 - Math.abs(strategy.impact - actualImprovement)
-    
+
     // Evaluate effectiveness based on priority and improvement
     let effectiveness = actualImprovement
-    
-    if (strategy.priority === 'high' && actualImprovement < 50) {
+
+    if (strategy.priority === "high" && actualImprovement < 50) {
       effectiveness *= 0.8 // Penalty for underperforming high-priority strategies
-    } else if (strategy.priority === 'low' && actualImprovement > 70) {
+    } else if (strategy.priority === "low" && actualImprovement > 70) {
       effectiveness *= 1.2 // Bonus for overperforming low-priority strategies
     }
-    
+
     return {
       accuracy: Math.max(0, accuracy),
-      effectiveness: Math.min(100, effectiveness)
+      effectiveness: Math.min(100, effectiveness),
     }
   }
 }

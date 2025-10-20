@@ -1,4 +1,4 @@
-export type ExportFormat = 'png' | 'jpg' | 'pdf' | 'canva'
+export type ExportFormat = "png" | "jpg" | "pdf" | "canva"
 
 export interface ExportOptions {
   format: ExportFormat
@@ -25,7 +25,7 @@ export interface ExportRequest {
 
 export interface ExportProgress {
   documentId: string
-  status: 'pending' | 'processing' | 'completed' | 'failed'
+  status: "pending" | "processing" | "completed" | "failed"
   progress: number // 0-100
   format: ExportFormat
   startedAt: Date
@@ -50,23 +50,23 @@ export interface ExportResult {
 
 export interface CanvaFormat {
   version: string
-  type: 'GRAPHIC' | 'PRESENTATION' | 'DOCUMENT'
+  type: "GRAPHIC" | "PRESENTATION" | "DOCUMENT"
   pages: Array<{
     id: string
     elements: Array<{
-      type: 'TEXT' | 'IMAGE' | 'SHAPE' | 'GROUP'
+      type: "TEXT" | "IMAGE" | "SHAPE" | "GROUP"
       position: { x: number; y: number }
       size: { width: number; height: number }
       properties: Record<string, unknown>
     }>
     background: {
-      type: 'solid' | 'gradient' | 'image'
+      type: "solid" | "gradient" | "image"
       value: string | Record<string, unknown>
     }
   }>
   assets: Array<{
     id: string
-    type: 'image' | 'font'
+    type: "image" | "font"
     url: string
   }>
 }
@@ -89,7 +89,11 @@ export interface ExportHistory {
 }
 
 export interface ExportNotification {
-  type: 'export_started' | 'export_completed' | 'export_failed' | 'batch_completed'
+  type:
+    | "export_started"
+    | "export_completed"
+    | "export_failed"
+    | "batch_completed"
   userId: string
   documentId?: string
   batchId?: string

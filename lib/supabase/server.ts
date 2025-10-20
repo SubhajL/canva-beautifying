@@ -1,7 +1,7 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
-import { cookies } from 'next/headers'
-import type { Database } from './database.types'
-import { applyQueryProtection } from '@/lib/database/protected-client'
+import { createServerClient, type CookieOptions } from "@supabase/ssr"
+import { cookies } from "next/headers"
+import type { Database } from "./database.types"
+import { applyQueryProtection } from "@/lib/database/protected-client"
 
 export async function createClient() {
   const cookieStore = await cookies()
@@ -25,7 +25,7 @@ export async function createClient() {
         },
         remove(name: string, options: CookieOptions) {
           try {
-            cookieStore.set({ name, value: '', ...options })
+            cookieStore.set({ name, value: "", ...options })
           } catch {
             // The `delete` method was called from a Server Component.
             // This can be ignored if you have middleware refreshing
@@ -39,6 +39,6 @@ export async function createClient() {
   // Apply query protection
   return applyQueryProtection(supabaseClient, {
     // Allow bypassing protection for system tables that may need larger queries
-    bypassProtectionForTables: ['rpc', 'storage.objects'],
+    bypassProtectionForTables: ["rpc", "storage.objects"],
   })
 }

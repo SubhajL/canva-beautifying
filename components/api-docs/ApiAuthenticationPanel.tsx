@@ -1,22 +1,38 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Eye, EyeOff, Key, CheckCircle, XCircle, Copy, RefreshCw } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { useState } from "react"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Eye,
+  EyeOff,
+  Key,
+  CheckCircle,
+  XCircle,
+  Copy,
+  RefreshCw,
+} from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface ApiAuthenticationPanelProps {
   className?: string
 }
 
-export function ApiAuthenticationPanel({ className }: ApiAuthenticationPanelProps) {
-  const [apiKey, setApiKey] = useState('')
+export function ApiAuthenticationPanel({
+  className,
+}: ApiAuthenticationPanelProps) {
+  const [apiKey, setApiKey] = useState("")
   const [showKey, setShowKey] = useState(false)
   const [isValidating, setIsValidating] = useState(false)
   const [validationResult, setValidationResult] = useState<{
@@ -44,7 +60,7 @@ export function ApiAuthenticationPanel({ className }: ApiAuthenticationPanelProp
     if (!apiKey) {
       setValidationResult({
         isValid: false,
-        message: 'Please enter an API key'
+        message: "Please enter an API key",
       })
       return
     }
@@ -54,35 +70,35 @@ export function ApiAuthenticationPanel({ className }: ApiAuthenticationPanelProp
 
     try {
       // Simulate API validation
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
       // Mock validation logic
-      if (apiKey.startsWith('bai_')) {
+      if (apiKey.startsWith("bai_")) {
         setValidationResult({
           isValid: true,
-          message: 'API key is valid',
+          message: "API key is valid",
           details: {
-            tier: 'Pro',
+            tier: "Pro",
             rateLimits: {
               requests: 1000,
-              period: 'hour'
+              period: "hour",
             },
             usage: {
               used: 234,
-              limit: 1000
-            }
-          }
+              limit: 1000,
+            },
+          },
         })
       } else {
         setValidationResult({
           isValid: false,
-          message: 'Invalid API key format'
+          message: "Invalid API key format",
         })
       }
     } catch (_error) {
       setValidationResult({
         isValid: false,
-        message: 'Failed to validate API key'
+        message: "Failed to validate API key",
       })
     } finally {
       setIsValidating(false)
@@ -93,13 +109,13 @@ export function ApiAuthenticationPanel({ className }: ApiAuthenticationPanelProp
     try {
       await navigator.clipboard.writeText(text)
     } catch (error) {
-      console.error('Failed to copy:', error)
+      console.error("Failed to copy:", error)
     }
   }
 
   const generateNewKey = () => {
     // This would typically open a modal or redirect to key generation
-    console.log('Generate new API key')
+    console.log("Generate new API key")
   }
 
   return (
@@ -118,11 +134,11 @@ export function ApiAuthenticationPanel({ className }: ApiAuthenticationPanelProp
               <TabsTrigger value="generate">Generate Key</TabsTrigger>
               <TabsTrigger value="manage">Manage Keys</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="test" className="space-y-4">
               <div>
                 <Label htmlFor="api-key">API Key</Label>
-                <div className="flex gap-2 mt-2">
+                <div className="mt-2 flex gap-2">
                   <div className="relative flex-1">
                     <Input
                       id="api-key"
@@ -134,7 +150,7 @@ export function ApiAuthenticationPanel({ className }: ApiAuthenticationPanelProp
                     />
                     <button
                       onClick={() => setShowKey(!showKey)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 hover:bg-gray-100 dark:hover:bg-gray-800"
                       type="button"
                     >
                       {showKey ? (
@@ -144,25 +160,34 @@ export function ApiAuthenticationPanel({ className }: ApiAuthenticationPanelProp
                       )}
                     </button>
                   </div>
-                  <Button
-                    onClick={validateApiKey}
-                    disabled={isValidating}
-                  >
-                    {isValidating ? 'Validating...' : 'Validate'}
+                  <Button onClick={validateApiKey} disabled={isValidating}>
+                    {isValidating ? "Validating..." : "Validate"}
                   </Button>
                 </div>
               </div>
 
               {validationResult && (
-                <Alert className={validationResult.isValid ? 'border-green-200' : 'border-red-200'}>
+                <Alert
+                  className={
+                    validationResult.isValid
+                      ? "border-green-200"
+                      : "border-red-200"
+                  }
+                >
                   <div className="flex items-start gap-2">
                     {validationResult.isValid ? (
-                      <CheckCircle className="h-4 w-4 text-green-600 mt-0.5" />
+                      <CheckCircle className="mt-0.5 h-4 w-4 text-green-600" />
                     ) : (
-                      <XCircle className="h-4 w-4 text-red-600 mt-0.5" />
+                      <XCircle className="mt-0.5 h-4 w-4 text-red-600" />
                     )}
                     <div className="flex-1">
-                      <AlertTitle className={validationResult.isValid ? 'text-green-800' : 'text-red-800'}>
+                      <AlertTitle
+                        className={
+                          validationResult.isValid
+                            ? "text-green-800"
+                            : "text-red-800"
+                        }
+                      >
                         {validationResult.message}
                       </AlertTitle>
                       {validationResult.isValid && validationResult.details && (
@@ -172,12 +197,15 @@ export function ApiAuthenticationPanel({ className }: ApiAuthenticationPanelProp
                             <Badge>{validationResult.details.tier}</Badge>
                           </div>
                           <div className="text-sm">
-                            <span className="font-medium">Rate Limits:</span>{' '}
-                            {validationResult.details.rateLimits?.requests} requests per {validationResult.details.rateLimits?.period}
+                            <span className="font-medium">Rate Limits:</span>{" "}
+                            {validationResult.details.rateLimits?.requests}{" "}
+                            requests per{" "}
+                            {validationResult.details.rateLimits?.period}
                           </div>
                           <div className="text-sm">
-                            <span className="font-medium">Current Usage:</span>{' '}
-                            {validationResult.details.usage?.used} / {validationResult.details.usage?.limit}
+                            <span className="font-medium">Current Usage:</span>{" "}
+                            {validationResult.details.usage?.used} /{" "}
+                            {validationResult.details.usage?.limit}
                           </div>
                         </AlertDescription>
                       )}
@@ -187,9 +215,11 @@ export function ApiAuthenticationPanel({ className }: ApiAuthenticationPanelProp
               )}
 
               <div className="pt-4">
-                <h4 className="text-sm font-medium mb-2">How to use your API key:</h4>
+                <h4 className="mb-2 text-sm font-medium">
+                  How to use your API key:
+                </h4>
                 <div className="space-y-2">
-                  <div className="bg-gray-900 dark:bg-gray-950 p-3 rounded-lg">
+                  <div className="rounded-lg bg-gray-900 p-3 dark:bg-gray-950">
                     <code className="text-sm text-gray-300">
                       Authorization: Bearer YOUR_API_KEY
                     </code>
@@ -200,16 +230,17 @@ export function ApiAuthenticationPanel({ className }: ApiAuthenticationPanelProp
                 </div>
               </div>
             </TabsContent>
-            
+
             <TabsContent value="generate" className="space-y-4">
               <Alert>
                 <Key className="h-4 w-4" />
                 <AlertTitle>Generate New API Key</AlertTitle>
                 <AlertDescription className="mt-2">
-                  Generate a new API key for your application. Make sure to copy it immediately as it won&apos;t be shown again.
+                  Generate a new API key for your application. Make sure to copy
+                  it immediately as it won&apos;t be shown again.
                 </AlertDescription>
               </Alert>
-              
+
               <div>
                 <Label htmlFor="key-name">Key Name (optional)</Label>
                 <Input
@@ -217,7 +248,7 @@ export function ApiAuthenticationPanel({ className }: ApiAuthenticationPanelProp
                   placeholder="e.g., Production App"
                   className="mt-2"
                 />
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="mt-1 text-sm text-gray-500">
                   Help identify this key in your dashboard
                 </p>
               </div>
@@ -227,21 +258,25 @@ export function ApiAuthenticationPanel({ className }: ApiAuthenticationPanelProp
                 Generate New API Key
               </Button>
             </TabsContent>
-            
+
             <TabsContent value="manage" className="space-y-4">
               <div className="space-y-3">
                 <h4 className="text-sm font-medium">Active API Keys</h4>
-                
+
                 {/* Mock API keys list */}
                 <div className="space-y-2">
                   <Card>
                     <CardContent className="flex items-center justify-between p-4">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-sm">{maskApiKey('bai_1234567890abcdef')}</span>
-                          <Badge variant="outline" className="text-xs">Pro</Badge>
+                          <span className="font-mono text-sm">
+                            {maskApiKey("bai_1234567890abcdef")}
+                          </span>
+                          <Badge variant="outline" className="text-xs">
+                            Pro
+                          </Badge>
                         </div>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <p className="mt-1 text-sm text-gray-500">
                           Production App • Created 2 days ago
                         </p>
                       </div>
@@ -249,7 +284,9 @@ export function ApiAuthenticationPanel({ className }: ApiAuthenticationPanelProp
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => copyToClipboard('bai_1234567890abcdef')}
+                          onClick={() =>
+                            copyToClipboard("bai_1234567890abcdef")
+                          }
                         >
                           <Copy className="h-4 w-4" />
                         </Button>
@@ -259,15 +296,19 @@ export function ApiAuthenticationPanel({ className }: ApiAuthenticationPanelProp
                       </div>
                     </CardContent>
                   </Card>
-                  
+
                   <Card>
                     <CardContent className="flex items-center justify-between p-4">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-sm">{maskApiKey('bai_abcdef1234567890')}</span>
-                          <Badge variant="outline" className="text-xs">Pro</Badge>
+                          <span className="font-mono text-sm">
+                            {maskApiKey("bai_abcdef1234567890")}
+                          </span>
+                          <Badge variant="outline" className="text-xs">
+                            Pro
+                          </Badge>
                         </div>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <p className="mt-1 text-sm text-gray-500">
                           Development • Created 1 week ago
                         </p>
                       </div>
@@ -275,7 +316,9 @@ export function ApiAuthenticationPanel({ className }: ApiAuthenticationPanelProp
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => copyToClipboard('bai_abcdef1234567890')}
+                          onClick={() =>
+                            copyToClipboard("bai_abcdef1234567890")
+                          }
                         >
                           <Copy className="h-4 w-4" />
                         </Button>
@@ -289,7 +332,8 @@ export function ApiAuthenticationPanel({ className }: ApiAuthenticationPanelProp
 
                 <Alert>
                   <AlertDescription>
-                    You can have up to 5 active API keys at a time. Revoke unused keys to maintain security.
+                    You can have up to 5 active API keys at a time. Revoke
+                    unused keys to maintain security.
                   </AlertDescription>
                 </Alert>
               </div>
@@ -305,23 +349,26 @@ export function ApiAuthenticationPanel({ className }: ApiAuthenticationPanelProp
         <CardContent>
           <ul className="space-y-2 text-sm">
             <li className="flex items-start gap-2">
-              <span className="text-green-600 mt-0.5">•</span>
-              <span>Never expose your API key in client-side code or public repositories</span>
+              <span className="mt-0.5 text-green-600">•</span>
+              <span>
+                Never expose your API key in client-side code or public
+                repositories
+              </span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-green-600 mt-0.5">•</span>
+              <span className="mt-0.5 text-green-600">•</span>
               <span>Use environment variables to store API keys securely</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-green-600 mt-0.5">•</span>
+              <span className="mt-0.5 text-green-600">•</span>
               <span>Rotate your API keys regularly</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-green-600 mt-0.5">•</span>
+              <span className="mt-0.5 text-green-600">•</span>
               <span>Use different keys for development and production</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-green-600 mt-0.5">•</span>
+              <span className="mt-0.5 text-green-600">•</span>
               <span>Monitor your API usage for unusual activity</span>
             </li>
           </ul>

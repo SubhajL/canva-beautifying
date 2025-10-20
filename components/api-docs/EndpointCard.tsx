@@ -1,14 +1,14 @@
-'use client'
+"use client"
 
-import { ApiEndpoint } from '@/lib/api-docs/api-spec'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { ChevronDown, ChevronUp, Copy, CheckCircle } from 'lucide-react'
-import { useState } from 'react'
-import { cn } from '@/lib/utils'
-import { CodeSnippetGenerator } from './CodeSnippetGenerator'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ApiEndpoint } from "@/lib/api-docs/api-spec"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { ChevronDown, ChevronUp, Copy, CheckCircle } from "lucide-react"
+import { useState } from "react"
+import { cn } from "@/lib/utils"
+import { CodeSnippetGenerator } from "./CodeSnippetGenerator"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 interface EndpointCardProps {
   endpoint: ApiEndpoint
@@ -17,14 +17,19 @@ interface EndpointCardProps {
 }
 
 const methodColors = {
-  GET: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
-  POST: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
-  PUT: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
-  DELETE: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
-  PATCH: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
+  GET: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
+  POST: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
+  PUT: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
+  DELETE: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
+  PATCH:
+    "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300",
 }
 
-export function EndpointCard({ endpoint, isExpanded, onToggle }: EndpointCardProps) {
+export function EndpointCard({
+  endpoint,
+  isExpanded,
+  onToggle,
+}: EndpointCardProps) {
   const [copiedPath, setCopiedPath] = useState(false)
 
   const handleCopyPath = () => {
@@ -34,17 +39,17 @@ export function EndpointCard({ endpoint, isExpanded, onToggle }: EndpointCardPro
   }
 
   return (
-    <Card className="border-gray-200 dark:border-gray-700 overflow-hidden">
-      <CardHeader 
-        className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+    <Card className="overflow-hidden border-gray-200 dark:border-gray-700">
+      <CardHeader
+        className="cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
         onClick={onToggle}
       >
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 flex-1">
+          <div className="flex flex-1 items-center gap-3">
             <Badge className={cn("font-mono", methodColors[endpoint.method])}>
               {endpoint.method}
             </Badge>
-            <code className="text-sm font-mono text-gray-700 dark:text-gray-300 flex-1">
+            <code className="flex-1 font-mono text-sm text-gray-700 dark:text-gray-300">
               {endpoint.path}
             </code>
             <Button
@@ -69,7 +74,7 @@ export function EndpointCard({ endpoint, isExpanded, onToggle }: EndpointCardPro
             <ChevronDown className="h-5 w-5 text-gray-500" />
           )}
         </div>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
           {endpoint.summary}
         </p>
       </CardHeader>
@@ -79,7 +84,7 @@ export function EndpointCard({ endpoint, isExpanded, onToggle }: EndpointCardPro
           <div className="space-y-6">
             {/* Description */}
             <div>
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+              <h4 className="mb-2 text-sm font-semibold text-gray-900 dark:text-white">
                 Description
               </h4>
               <p className="text-sm text-gray-600 dark:text-gray-300">
@@ -89,39 +94,52 @@ export function EndpointCard({ endpoint, isExpanded, onToggle }: EndpointCardPro
 
             {/* Authentication */}
             <div>
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+              <h4 className="mb-2 text-sm font-semibold text-gray-900 dark:text-white">
                 Authentication
               </h4>
-              <Badge variant={endpoint.authentication ? 'default' : 'secondary'}>
-                {endpoint.authentication ? 'Required' : 'Not Required'}
+              <Badge
+                variant={endpoint.authentication ? "default" : "secondary"}
+              >
+                {endpoint.authentication ? "Required" : "Not Required"}
               </Badge>
             </div>
 
             {/* Parameters */}
             {endpoint.parameters && endpoint.parameters.length > 0 && (
               <div>
-                <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                <h4 className="mb-2 text-sm font-semibold text-gray-900 dark:text-white">
                   Parameters
                 </h4>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b dark:border-gray-700">
-                        <th className="text-left py-2 pr-4 font-medium text-gray-700 dark:text-gray-300">Name</th>
-                        <th className="text-left py-2 pr-4 font-medium text-gray-700 dark:text-gray-300">Type</th>
-                        <th className="text-left py-2 pr-4 font-medium text-gray-700 dark:text-gray-300">In</th>
-                        <th className="text-left py-2 font-medium text-gray-700 dark:text-gray-300">Description</th>
+                        <th className="py-2 pr-4 text-left font-medium text-gray-700 dark:text-gray-300">
+                          Name
+                        </th>
+                        <th className="py-2 pr-4 text-left font-medium text-gray-700 dark:text-gray-300">
+                          Type
+                        </th>
+                        <th className="py-2 pr-4 text-left font-medium text-gray-700 dark:text-gray-300">
+                          In
+                        </th>
+                        <th className="py-2 text-left font-medium text-gray-700 dark:text-gray-300">
+                          Description
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       {endpoint.parameters.map((param) => (
-                        <tr key={param.name} className="border-b dark:border-gray-700">
+                        <tr
+                          key={param.name}
+                          className="border-b dark:border-gray-700"
+                        >
                           <td className="py-2 pr-4">
-                            <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                            <code className="rounded bg-gray-100 px-2 py-1 text-xs dark:bg-gray-800">
                               {param.name}
                             </code>
                             {param.required && (
-                              <span className="text-red-500 ml-1">*</span>
+                              <span className="ml-1 text-red-500">*</span>
                             )}
                           </td>
                           <td className="py-2 pr-4 text-gray-600 dark:text-gray-400">
@@ -136,8 +154,10 @@ export function EndpointCard({ endpoint, isExpanded, onToggle }: EndpointCardPro
                             {param.description}
                             {param.example && (
                               <div className="mt-1">
-                                <span className="text-xs text-gray-500">Example: </span>
-                                <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                                <span className="text-xs text-gray-500">
+                                  Example:{" "}
+                                </span>
+                                <code className="rounded bg-gray-100 px-2 py-1 text-xs dark:bg-gray-800">
                                   {param.example}
                                 </code>
                               </div>
@@ -154,18 +174,19 @@ export function EndpointCard({ endpoint, isExpanded, onToggle }: EndpointCardPro
             {/* Request Body */}
             {endpoint.requestBody && (
               <div>
-                <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                <h4 className="mb-2 text-sm font-semibold text-gray-900 dark:text-white">
                   Request Body
                   {endpoint.requestBody.required && (
-                    <span className="text-red-500 ml-1">*</span>
+                    <span className="ml-1 text-red-500">*</span>
                   )}
                 </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                  Content-Type: <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs">
+                <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
+                  Content-Type:{" "}
+                  <code className="rounded bg-gray-100 px-2 py-1 text-xs dark:bg-gray-800">
                     {endpoint.requestBody.contentType}
                   </code>
                 </p>
-                <div className="bg-gray-900 dark:bg-gray-950 p-4 rounded-lg overflow-x-auto">
+                <div className="overflow-x-auto rounded-lg bg-gray-900 p-4 dark:bg-gray-950">
                   <pre className="text-sm text-gray-300">
                     {JSON.stringify(endpoint.requestBody.schema, null, 2)}
                   </pre>
@@ -175,19 +196,22 @@ export function EndpointCard({ endpoint, isExpanded, onToggle }: EndpointCardPro
 
             {/* Responses */}
             <div>
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+              <h4 className="mb-2 text-sm font-semibold text-gray-900 dark:text-white">
                 Responses
               </h4>
               <div className="space-y-3">
                 {endpoint.responses.map((response) => (
-                  <div key={response.status} className="border dark:border-gray-700 rounded-lg p-3">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Badge 
-                        variant="outline" 
+                  <div
+                    key={response.status}
+                    className="rounded-lg border p-3 dark:border-gray-700"
+                  >
+                    <div className="mb-2 flex items-center gap-3">
+                      <Badge
+                        variant="outline"
                         className={cn(
-                          response.status >= 200 && response.status < 300 
-                            ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900 dark:text-green-300' 
-                            : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900 dark:text-red-300'
+                          response.status >= 200 && response.status < 300
+                            ? "border-green-200 bg-green-50 text-green-700 dark:bg-green-900 dark:text-green-300"
+                            : "border-red-200 bg-red-50 text-red-700 dark:bg-red-900 dark:text-red-300"
                         )}
                       >
                         {response.status}
@@ -197,7 +221,7 @@ export function EndpointCard({ endpoint, isExpanded, onToggle }: EndpointCardPro
                       </span>
                     </div>
                     {response.schema && (
-                      <div className="bg-gray-900 dark:bg-gray-950 p-3 rounded-lg overflow-x-auto">
+                      <div className="overflow-x-auto rounded-lg bg-gray-900 p-3 dark:bg-gray-950">
                         <pre className="text-xs text-gray-300">
                           {JSON.stringify(response.schema, null, 2)}
                         </pre>
@@ -211,7 +235,7 @@ export function EndpointCard({ endpoint, isExpanded, onToggle }: EndpointCardPro
             {/* Code Examples */}
             {endpoint.examples && endpoint.examples.length > 0 && (
               <div>
-                <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                <h4 className="mb-2 text-sm font-semibold text-gray-900 dark:text-white">
                   Examples
                 </h4>
                 <Tabs defaultValue="example-0" className="w-full">
@@ -225,7 +249,7 @@ export function EndpointCard({ endpoint, isExpanded, onToggle }: EndpointCardPro
                   {endpoint.examples.map((example, index) => (
                     <TabsContent key={index} value={`example-${index}`}>
                       {example.description && (
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                        <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
                           {example.description}
                         </p>
                       )}

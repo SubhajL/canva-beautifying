@@ -1,8 +1,8 @@
-import { DocumentAnalysis } from '@/lib/ai/types'
-import { createClient } from '@/lib/supabase/server'
-import { DocumentAnalysisEngine } from './engine'
-import { SupabaseAnalysisCache } from './cache'
-import { DocumentContext } from './types'
+import { DocumentAnalysis } from "@/lib/ai/types"
+import { createClient } from "@/lib/supabase/server"
+import { DocumentAnalysisEngine } from "./engine"
+import { SupabaseAnalysisCache } from "./cache"
+import { DocumentContext } from "./types"
 
 export class AnalysisService {
   private engine: DocumentAnalysisEngine
@@ -16,8 +16,8 @@ export class AnalysisService {
   async analyzeDocument(
     documentId: string,
     imageData: ImageData,
-    documentType: 'worksheet' | 'presentation' | 'marketing',
-    userPreferences?: DocumentContext['userPreferences']
+    documentType: "worksheet" | "presentation" | "marketing",
+    userPreferences?: DocumentContext["userPreferences"]
   ): Promise<DocumentAnalysis> {
     // Check cache first
     const cached = await this.cache.get(documentId)
@@ -31,11 +31,11 @@ export class AnalysisService {
       metadata: {
         width: imageData.width,
         height: imageData.height,
-        format: 'image/png', // Will be determined from actual file
-        size: imageData.data.length
+        format: "image/png", // Will be determined from actual file
+        size: imageData.data.length,
       },
       type: documentType,
-      userPreferences
+      userPreferences,
     }
 
     // Run analysis
@@ -50,49 +50,53 @@ export class AnalysisService {
     return analysis
   }
 
-  async storeAnalysis(documentId: string, analysis: DocumentAnalysis): Promise<void> {
+  async storeAnalysis(
+    documentId: string,
+    analysis: DocumentAnalysis
+  ): Promise<void> {
     const supabase = await createClient()
-    
+
     // Find or create enhancement record
     const { data: enhancement, error: fetchError } = await supabase
-      .from('enhancements')
-      .select('id')
-      .eq('document_id', documentId)
+      .from("enhancements")
+      .select("id")
+      .eq("document_id", documentId)
       .single()
 
-    if (fetchError && fetchError.code !== 'PGRST116') { // Not found is ok
-      console.error('Error fetching enhancement:', fetchError)
-      throw new Error('Failed to fetch enhancement record')
+    if (fetchError && fetchError.code !== "PGRST116") {
+      // Not found is ok
+      console.error("Error fetching enhancement:", fetchError)
+      throw new Error("Failed to fetch enhancement record")
     }
 
     if (enhancement) {
       // Update existing record
       const { error: updateError } = await supabase
-        .from('enhancements')
+        .from("enhancements")
         .update({
           analysis_data: analysis,
-          status: 'analyzed',
-          updated_at: new Date().toISOString()
+          status: "analyzed",
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', enhancement.id)
+        .eq("id", enhancement.id)
 
       if (updateError) {
-        console.error('Error updating analysis:', updateError)
-        throw new Error('Failed to update analysis')
+        console.error("Error updating analysis:", updateError)
+        throw new Error("Failed to update analysis")
       }
     } else {
       // Create new record
       const { error: insertError } = await supabase
-        .from('enhancements')
+        .from("enhancements")
         .insert({
           document_id: documentId,
           analysis_data: analysis,
-          status: 'analyzed'
+          status: "analyzed",
         })
 
       if (insertError) {
-        console.error('Error inserting analysis:', insertError)
-        throw new Error('Failed to store analysis')
+        console.error("Error inserting analysis:", insertError)
+        throw new Error("Failed to store analysis")
       }
     }
   }

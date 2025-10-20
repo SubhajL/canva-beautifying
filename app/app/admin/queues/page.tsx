@@ -1,15 +1,21 @@
-'use client'
+"use client"
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Icons } from '@/components/ui/icons'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useAuth } from '@/contexts/auth-context'
-import { createClient } from '@/lib/supabase/client'
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Progress } from "@/components/ui/progress"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Icons } from "@/components/ui/icons"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useAuth } from "@/contexts/auth-context"
+import { createClient } from "@/lib/supabase/client"
 
 interface QueueMetrics {
   waiting: number
@@ -31,7 +37,7 @@ interface AllQueueMetrics {
 }
 
 interface UserProfile {
-  subscription_tier: 'free' | 'basic' | 'pro' | 'premium';
+  subscription_tier: "free" | "basic" | "pro" | "premium"
 }
 
 export default function QueueMonitoringPage() {
@@ -39,7 +45,7 @@ export default function QueueMonitoringPage() {
   const { user: authUser } = useAuth()
   const [metrics, setMetrics] = useState<AllQueueMetrics | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [error, setError] = useState("")
   const [autoRefresh, setAutoRefresh] = useState(true)
   const [_userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const supabase = createClient()
@@ -48,21 +54,21 @@ export default function QueueMonitoringPage() {
   useEffect(() => {
     const checkAccess = async () => {
       if (!authUser) {
-        router.replace('/login')
+        router.replace("/login")
         return
       }
 
       // Fetch user profile to check subscription tier
       const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('subscription_tier')
-        .eq('id', authUser.id)
+        .from("user_profiles")
+        .select("subscription_tier")
+        .eq("id", authUser.id)
         .single()
 
       setUserProfile(profile)
 
-      if (profile && profile.subscription_tier !== 'premium') {
-        router.replace('/app/dashboard')
+      if (profile && profile.subscription_tier !== "premium") {
+        router.replace("/app/dashboard")
       }
     }
 
@@ -72,15 +78,15 @@ export default function QueueMonitoringPage() {
   // Fetch queue metrics
   const fetchMetrics = async () => {
     try {
-      const response = await fetch('/api/admin/queues')
+      const response = await fetch("/api/admin/queues")
       if (!response.ok) {
-        throw new Error('Failed to fetch queue metrics')
+        throw new Error("Failed to fetch queue metrics")
       }
       const data = await response.json()
       setMetrics(data.metrics)
-      setError('')
+      setError("")
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load metrics')
+      setError(err instanceof Error ? err.message : "Failed to load metrics")
     } finally {
       setLoading(false)
     }
@@ -89,7 +95,7 @@ export default function QueueMonitoringPage() {
   // Initial fetch and auto-refresh
   useEffect(() => {
     fetchMetrics()
-    
+
     if (autoRefresh) {
       const interval = setInterval(fetchMetrics, 5000) // Refresh every 5 seconds
       return () => clearInterval(interval)
@@ -147,7 +153,9 @@ export default function QueueMonitoringPage() {
             </div>
             <div>
               <p className="text-muted-foreground">Completed</p>
-              <p className="text-2xl font-bold text-green-600">{queue.completed}</p>
+              <p className="text-2xl font-bold text-green-600">
+                {queue.completed}
+              </p>
             </div>
             <div>
               <p className="text-muted-foreground">Failed</p>
@@ -155,14 +163,18 @@ export default function QueueMonitoringPage() {
             </div>
             <div>
               <p className="text-muted-foreground">Delayed</p>
-              <p className="text-2xl font-bold text-yellow-600">{queue.delayed}</p>
+              <p className="text-2xl font-bold text-yellow-600">
+                {queue.delayed}
+              </p>
             </div>
           </div>
 
           <div className="space-y-2 border-t pt-4">
             <div className="flex justify-between text-sm">
               <span>Failure Rate</span>
-              <Badge variant={queue.failureRate > 10 ? 'destructive' : 'secondary'}>
+              <Badge
+                variant={queue.failureRate > 10 ? "destructive" : "secondary"}
+              >
                 {queue.failureRate.toFixed(1)}%
               </Badge>
             </div>
@@ -180,7 +192,9 @@ export default function QueueMonitoringPage() {
     <div className="container mx-auto py-8">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Queue Monitoring</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Queue Monitoring
+          </h1>
           <p className="text-muted-foreground">
             Real-time queue performance and job statistics
           </p>
@@ -277,25 +291,25 @@ export default function QueueMonitoringPage() {
                   variant={
                     metrics.documentAnalysis.failureRate > 20 ||
                     metrics.enhancement.failureRate > 20
-                      ? 'destructive'
-                      : 'secondary'
+                      ? "destructive"
+                      : "secondary"
                   }
                   className="text-lg"
                 >
                   {metrics.documentAnalysis.failureRate > 20 ||
                   metrics.enhancement.failureRate > 20
-                    ? 'Degraded'
-                    : 'Healthy'}
+                    ? "Degraded"
+                    : "Healthy"}
                 </Badge>
               </CardContent>
             </Card>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            {renderQueueCard('Document Analysis', metrics.documentAnalysis)}
-            {renderQueueCard('Enhancement', metrics.enhancement)}
-            {renderQueueCard('Export', metrics.export)}
-            {renderQueueCard('Email', metrics.email)}
+            {renderQueueCard("Document Analysis", metrics.documentAnalysis)}
+            {renderQueueCard("Enhancement", metrics.enhancement)}
+            {renderQueueCard("Export", metrics.export)}
+            {renderQueueCard("Email", metrics.email)}
           </div>
         </TabsContent>
 
@@ -310,32 +324,32 @@ export default function QueueMonitoringPage() {
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <h3 className="font-medium mb-2">Document Analysis</h3>
-                  <div className="text-sm space-y-1 text-muted-foreground">
+                  <h3 className="mb-2 font-medium">Document Analysis</h3>
+                  <div className="space-y-1 text-sm text-muted-foreground">
                     <p>Concurrency: 5 jobs</p>
                     <p>Rate limit: 10 jobs/minute</p>
                     <p>Retry attempts: 3</p>
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-medium mb-2">Enhancement</h3>
-                  <div className="text-sm space-y-1 text-muted-foreground">
+                  <h3 className="mb-2 font-medium">Enhancement</h3>
+                  <div className="space-y-1 text-sm text-muted-foreground">
                     <p>Concurrency: 3 jobs</p>
                     <p>Rate limit: 5 jobs/minute</p>
                     <p>Retry attempts: 3</p>
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-medium mb-2">Export</h3>
-                  <div className="text-sm space-y-1 text-muted-foreground">
+                  <h3 className="mb-2 font-medium">Export</h3>
+                  <div className="space-y-1 text-sm text-muted-foreground">
                     <p>Concurrency: 5 jobs</p>
                     <p>Rate limit: 20 jobs/minute</p>
                     <p>Retry attempts: 3</p>
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-medium mb-2">Email</h3>
-                  <div className="text-sm space-y-1 text-muted-foreground">
+                  <h3 className="mb-2 font-medium">Email</h3>
+                  <div className="space-y-1 text-sm text-muted-foreground">
                     <p>Concurrency: 10 jobs</p>
                     <p>Rate limit: 100 jobs/minute</p>
                     <p>Retry attempts: 5</p>

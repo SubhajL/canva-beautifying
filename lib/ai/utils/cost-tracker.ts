@@ -1,5 +1,5 @@
-import { AIModel, CostTracking } from '../types'
-import { createClient } from '@/lib/supabase/client'
+import { AIModel, CostTracking } from "../types"
+import { createClient } from "@/lib/supabase/client"
 
 export class CostTracker {
   private pendingCosts: CostTracking[] = []
@@ -24,7 +24,7 @@ export class CostTracker {
       tokens,
       cost,
       userId,
-      documentId
+      documentId,
     }
 
     this.pendingCosts.push(tracking)
@@ -51,26 +51,24 @@ export class CostTracker {
 
     try {
       // Insert cost tracking records
-      const { error } = await this.supabase
-        .from('ai_usage_tracking')
-        .insert(
-          costsToFlush.map(cost => ({
-            model: cost.model,
-            user_id: cost.userId,
-            document_id: cost.documentId,
-            tokens_used: cost.tokens,
-            cost: cost.cost,
-            created_at: cost.timestamp.toISOString()
-          }))
-        )
+      const { error } = await this.supabase.from("ai_usage_tracking").insert(
+        costsToFlush.map((cost) => ({
+          model: cost.model,
+          user_id: cost.userId,
+          document_id: cost.documentId,
+          tokens_used: cost.tokens,
+          cost: cost.cost,
+          created_at: cost.timestamp.toISOString(),
+        }))
+      )
 
       if (error) {
-        console.error('Failed to flush cost tracking:', error)
+        console.error("Failed to flush cost tracking:", error)
         // Re-add failed costs back to pending
         this.pendingCosts.unshift(...costsToFlush)
       }
     } catch (error) {
-      console.error('Error flushing cost tracking:', error)
+      console.error("Error flushing cost tracking:", error)
       // Re-add failed costs back to pending
       this.pendingCosts.unshift(...costsToFlush)
     }
@@ -86,31 +84,37 @@ export class CostTracker {
     byModel: Record<AIModel, { cost: number; tokens: number; count: number }>
   }> {
     let query = this.supabase
-      .from('ai_usage_tracking')
-      .select('*')
-      .eq('user_id', userId)
+      .from("ai_usage_tracking")
+      .select("*")
+      .eq("user_id", userId)
 
     if (startDate) {
-      query = query.gte('created_at', startDate.toISOString())
+      query = query.gte("created_at", startDate.toISOString())
     }
     if (endDate) {
-      query = query.lte('created_at', endDate.toISOString())
+      query = query.lte("created_at", endDate.toISOString())
     }
 
     const { data, error } = await query
 
     if (error) {
-      console.error('Failed to get user usage:', error)
+      console.error("Failed to get user usage:", error)
       return {
         totalCost: 0,
         totalTokens: 0,
-        byModel: {} as Record<AIModel, { cost: number; tokens: number; count: number }>
+        byModel: {} as Record<
+          AIModel,
+          { cost: number; tokens: number; count: number }
+        >,
       }
     }
 
     let totalCost = 0
     let totalTokens = 0
-    const byModel: Record<string, { cost: number; tokens: number; count: number }> = {}
+    const byModel: Record<
+      string,
+      { cost: number; tokens: number; count: number }
+    > = {}
 
     for (const record of data || []) {
       totalCost += record.cost
@@ -127,18 +131,18 @@ export class CostTracker {
     return {
       totalCost,
       totalTokens,
-      byModel
+      byModel,
     }
   }
 
   async getDocumentCost(documentId: string): Promise<number> {
     const { data, error } = await this.supabase
-      .from('ai_usage_tracking')
-      .select('cost')
-      .eq('document_id', documentId)
+      .from("ai_usage_tracking")
+      .select("cost")
+      .eq("document_id", documentId)
 
     if (error) {
-      console.error('Failed to get document cost:', error)
+      console.error("Failed to get document cost:", error)
       return 0
     }
 
@@ -153,33 +157,42 @@ export class CostTracker {
     totalCost: number
     totalDocuments: number
     averageCostPerDocument: number
-    modelBreakdown: Record<AIModel, {
-      cost: number
-      percentage: number
-      documentsProcessed: number
-    }>
+    modelBreakdown: Record<
+      AIModel,
+      {
+        cost: number
+        percentage: number
+        documentsProcessed: number
+      }
+    >
   }> {
     const { data, error } = await this.supabase
-      .from('ai_usage_tracking')
-      .select('*')
-      .gte('created_at', startDate.toISOString())
-      .lte('created_at', endDate.toISOString())
+      .from("ai_usage_tracking")
+      .select("*")
+      .gte("created_at", startDate.toISOString())
+      .lte("created_at", endDate.toISOString())
 
     if (error) {
-      console.error('Failed to get cost statistics:', error)
+      console.error("Failed to get cost statistics:", error)
       return {
         totalCost: 0,
         totalDocuments: 0,
         averageCostPerDocument: 0,
-        modelBreakdown: {} as Record<AIModel, { cost: number; percentage: number; documentsProcessed: number }>
+        modelBreakdown: {} as Record<
+          AIModel,
+          { cost: number; percentage: number; documentsProcessed: number }
+        >,
       }
     }
 
     const uniqueDocuments = new Set<string>()
-    const modelStats: Record<string, {
-      cost: number
-      documents: Set<string>
-    }> = {}
+    const modelStats: Record<
+      string,
+      {
+        cost: number
+        documents: Set<string>
+      }
+    > = {}
 
     let totalCost = 0
 
@@ -190,7 +203,7 @@ export class CostTracker {
       if (!modelStats[record.model]) {
         modelStats[record.model] = {
           cost: 0,
-          documents: new Set()
+          documents: new Set(),
         }
       }
       modelStats[record.model].cost += record.cost
@@ -198,25 +211,29 @@ export class CostTracker {
     }
 
     const totalDocuments = uniqueDocuments.size
-    const modelBreakdown: Record<string, {
-      cost: number
-      percentage: number
-      documentsProcessed: number
-    }> = {}
+    const modelBreakdown: Record<
+      string,
+      {
+        cost: number
+        percentage: number
+        documentsProcessed: number
+      }
+    > = {}
 
     for (const [model, stats] of Object.entries(modelStats)) {
       modelBreakdown[model] = {
         cost: stats.cost,
         percentage: (stats.cost / totalCost) * 100,
-        documentsProcessed: stats.documents.size
+        documentsProcessed: stats.documents.size,
       }
     }
 
     return {
       totalCost,
       totalDocuments,
-      averageCostPerDocument: totalDocuments > 0 ? totalCost / totalDocuments : 0,
-      modelBreakdown
+      averageCostPerDocument:
+        totalDocuments > 0 ? totalCost / totalDocuments : 0,
+      modelBreakdown,
     }
   }
 

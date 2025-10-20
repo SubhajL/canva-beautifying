@@ -17,7 +17,7 @@ export interface DocumentAnalysisJobData {
   fileUrl: string
   fileName: string
   fileType: string
-  subscriptionTier: 'free' | 'basic' | 'pro' | 'premium'
+  subscriptionTier: "free" | "basic" | "pro" | "premium"
   priority?: number
   traceContext?: TraceContext
 }
@@ -38,7 +38,7 @@ export interface EnhancementJobData {
     layoutPreferences?: string
     aiModel?: string
   }
-  subscriptionTier: 'free' | 'basic' | 'pro' | 'premium'
+  subscriptionTier: "free" | "basic" | "pro" | "premium"
   priority?: number
   traceContext?: TraceContext
 }
@@ -47,13 +47,13 @@ export interface ExportJobData {
   documentId: string
   userId: string
   enhancementId: string
-  exportFormat: 'png' | 'pdf' | 'canva' | 'pptx'
+  exportFormat: "png" | "pdf" | "canva" | "pptx"
   exportSettings?: {
-    quality?: 'standard' | 'high' | 'print'
+    quality?: "standard" | "high" | "print"
     includeReport?: boolean
     watermark?: boolean
   }
-  subscriptionTier: 'free' | 'basic' | 'pro' | 'premium'
+  subscriptionTier: "free" | "basic" | "pro" | "premium"
   priority?: number
   traceContext?: TraceContext
 }
@@ -61,7 +61,11 @@ export interface ExportJobData {
 export interface EmailJobData {
   to: string
   subject: string
-  template: 'enhancement-complete' | 'export-ready' | 'error-notification' | 'welcome'
+  template:
+    | "enhancement-complete"
+    | "export-ready"
+    | "error-notification"
+    | "welcome"
   data: Record<string, unknown>
   priority?: number
 }

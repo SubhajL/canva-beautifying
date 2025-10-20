@@ -1,4 +1,4 @@
-import type { Config } from "tailwindcss";
+import type { Config } from "tailwindcss"
 
 const config: Config = {
   darkMode: ["class"],
@@ -21,30 +21,30 @@ const config: Config = {
         mono: ["var(--font-mono)", "monospace"],
       },
       fontSize: {
-        'xs': ['0.75rem', { lineHeight: '1rem' }],
-        'sm': ['0.875rem', { lineHeight: '1.25rem' }],
-        'base': ['1rem', { lineHeight: '1.5rem' }],
-        'lg': ['1.125rem', { lineHeight: '1.75rem' }],
-        'xl': ['1.25rem', { lineHeight: '1.75rem' }],
-        '2xl': ['1.5rem', { lineHeight: '2rem' }],
-        '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
-        '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
-        '5xl': ['3rem', { lineHeight: '1' }],
-        '6xl': ['3.75rem', { lineHeight: '1' }],
-        '7xl': ['4.5rem', { lineHeight: '1' }],
-        '8xl': ['6rem', { lineHeight: '1' }],
-        '9xl': ['8rem', { lineHeight: '1' }],
+        xs: ["0.75rem", { lineHeight: "1rem" }],
+        sm: ["0.875rem", { lineHeight: "1.25rem" }],
+        base: ["1rem", { lineHeight: "1.5rem" }],
+        lg: ["1.125rem", { lineHeight: "1.75rem" }],
+        xl: ["1.25rem", { lineHeight: "1.75rem" }],
+        "2xl": ["1.5rem", { lineHeight: "2rem" }],
+        "3xl": ["1.875rem", { lineHeight: "2.25rem" }],
+        "4xl": ["2.25rem", { lineHeight: "2.5rem" }],
+        "5xl": ["3rem", { lineHeight: "1" }],
+        "6xl": ["3.75rem", { lineHeight: "1" }],
+        "7xl": ["4.5rem", { lineHeight: "1" }],
+        "8xl": ["6rem", { lineHeight: "1" }],
+        "9xl": ["8rem", { lineHeight: "1" }],
       },
       fontWeight: {
-        thin: '100',
-        extralight: '200',
-        light: '300',
-        normal: '400',
-        medium: '500',
-        semibold: '600',
-        bold: '700',
-        extrabold: '800',
-        black: '900',
+        thin: "100",
+        extralight: "200",
+        light: "300",
+        normal: "400",
+        medium: "500",
+        semibold: "600",
+        bold: "700",
+        extrabold: "800",
+        black: "900",
       },
       colors: {
         border: "hsl(var(--border))",
@@ -174,11 +174,11 @@ const config: Config = {
           from: { transform: "scale(0.3)", opacity: "0" },
           to: { transform: "scale(1)", opacity: "1" },
         },
-        "spin": {
+        spin: {
           from: { transform: "rotate(0deg)" },
           to: { transform: "rotate(360deg)" },
         },
-        "pulse": {
+        pulse: {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.5" },
         },
@@ -189,15 +189,19 @@ const config: Config = {
         "fade-in": "fade-in var(--animation-base) ease-out",
         "fade-out": "fade-out var(--animation-base) ease-out",
         "slide-in-from-top": "slide-in-from-top var(--animation-base) ease-out",
-        "slide-in-from-bottom": "slide-in-from-bottom var(--animation-base) ease-out",
-        "slide-in-from-left": "slide-in-from-left var(--animation-base) ease-out",
-        "slide-in-from-right": "slide-in-from-right var(--animation-base) ease-out",
-        "bounce-in": "bounce-in var(--animation-slow) cubic-bezier(0.68, -0.55, 0.265, 1.55)",
-        "spin": "spin 1s linear infinite",
-        "pulse": "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "slide-in-from-bottom":
+          "slide-in-from-bottom var(--animation-base) ease-out",
+        "slide-in-from-left":
+          "slide-in-from-left var(--animation-base) ease-out",
+        "slide-in-from-right":
+          "slide-in-from-right var(--animation-base) ease-out",
+        "bounce-in":
+          "bounce-in var(--animation-slow) cubic-bezier(0.68, -0.55, 0.265, 1.55)",
+        spin: "spin 1s linear infinite",
+        pulse: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
       },
     },
   },
   plugins: [require("tailwindcss-animate")],
-};
-export default config;
+}
+export default config

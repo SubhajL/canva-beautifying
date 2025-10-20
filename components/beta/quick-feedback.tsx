@@ -1,58 +1,81 @@
-'use client';
+"use client"
 
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
-import { 
-  MessageSquare, 
-  Bug, 
-  Lightbulb, 
-  Zap, 
-  Send,
-  Loader2
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useState } from "react"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { useToast } from "@/hooks/use-toast"
+import { MessageSquare, Bug, Lightbulb, Zap, Send, Loader2 } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface QuickFeedbackProps {
-  userId: string;
+  userId: string
 }
 
-type FeedbackType = 'bug' | 'feature' | 'improvement' | 'general';
+type FeedbackType = "bug" | "feature" | "improvement" | "general"
 
 const feedbackTypes = [
-  { value: 'bug', label: 'Bug', icon: Bug, color: 'text-red-600', bgColor: 'bg-red-100' },
-  { value: 'feature', label: 'Feature', icon: Lightbulb, color: 'text-yellow-600', bgColor: 'bg-yellow-100' },
-  { value: 'improvement', label: 'Improvement', icon: Zap, color: 'text-purple-600', bgColor: 'bg-purple-100' },
-  { value: 'general', label: 'General', icon: MessageSquare, color: 'text-blue-600', bgColor: 'bg-blue-100' },
-] as const;
+  {
+    value: "bug",
+    label: "Bug",
+    icon: Bug,
+    color: "text-red-600",
+    bgColor: "bg-red-100",
+  },
+  {
+    value: "feature",
+    label: "Feature",
+    icon: Lightbulb,
+    color: "text-yellow-600",
+    bgColor: "bg-yellow-100",
+  },
+  {
+    value: "improvement",
+    label: "Improvement",
+    icon: Zap,
+    color: "text-purple-600",
+    bgColor: "bg-purple-100",
+  },
+  {
+    value: "general",
+    label: "General",
+    icon: MessageSquare,
+    color: "text-blue-600",
+    bgColor: "bg-blue-100",
+  },
+] as const
 
 export function QuickFeedback({ userId: _userId }: QuickFeedbackProps) {
-  const [selectedType, setSelectedType] = useState<FeedbackType>('general');
-  const [message, setMessage] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
+  const [selectedType, setSelectedType] = useState<FeedbackType>("general")
+  const [message, setMessage] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const { toast } = useToast()
 
   const handleSubmit = async () => {
     if (!message.trim()) {
       toast({
-        title: 'Message required',
-        description: 'Please enter your feedback message',
-        variant: 'destructive',
-      });
-      return;
+        title: "Message required",
+        description: "Please enter your feedback message",
+        variant: "destructive",
+      })
+      return
     }
 
-    setIsSubmitting(true);
-    
+    setIsSubmitting(true)
+
     try {
-      const title = message.slice(0, 50) + (message.length > 50 ? '...' : '');
-      
-      const response = await fetch('/api/v1/beta/feedback', {
-        method: 'POST',
+      const title = message.slice(0, 50) + (message.length > 50 ? "..." : "")
+
+      const response = await fetch("/api/v1/beta/feedback", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           type: selectedType,
@@ -60,39 +83,42 @@ export function QuickFeedback({ userId: _userId }: QuickFeedbackProps) {
           description: message,
           page_url: window.location.href,
         }),
-      });
+      })
 
-      const data = await response.json();
+      const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error?.message || 'Failed to submit feedback');
+        throw new Error(data.error?.message || "Failed to submit feedback")
       }
-      
+
       toast({
-        title: 'Feedback submitted!',
-        description: 'Thank you for your contribution to BeautifyAI',
-      });
-      
+        title: "Feedback submitted!",
+        description: "Thank you for your contribution to BeautifyAI",
+      })
+
       // Reset form
-      setMessage('');
-      setSelectedType('general');
+      setMessage("")
+      setSelectedType("general")
     } catch (error) {
-      console.error('Error submitting feedback:', error);
+      console.error("Error submitting feedback:", error)
       toast({
-        title: 'Submission failed',
-        description: error instanceof Error ? error.message : 'Please try again later',
-        variant: 'destructive',
-      });
+        title: "Submission failed",
+        description:
+          error instanceof Error ? error.message : "Please try again later",
+        variant: "destructive",
+      })
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Quick Feedback</CardTitle>
-        <CardDescription>Share your thoughts, report bugs, or suggest features</CardDescription>
+        <CardDescription>
+          Share your thoughts, report bugs, or suggest features
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Feedback Type Selection */}
@@ -102,15 +128,15 @@ export function QuickFeedback({ userId: _userId }: QuickFeedbackProps) {
               key={value}
               onClick={() => setSelectedType(value)}
               className={cn(
-                'flex flex-col items-center gap-2 p-3 rounded-lg border transition-all',
-                'hover:shadow-sm',
-                selectedType === value 
-                  ? 'border-primary bg-primary/10' 
-                  : 'border-border hover:border-primary/50'
+                "flex flex-col items-center gap-2 rounded-lg border p-3 transition-all",
+                "hover:shadow-sm",
+                selectedType === value
+                  ? "border-primary bg-primary/10"
+                  : "border-border hover:border-primary/50"
               )}
             >
-              <div className={cn('p-2 rounded-lg', bgColor)}>
-                <Icon className={cn('h-4 w-4', color)} />
+              <div className={cn("rounded-lg p-2", bgColor)}>
+                <Icon className={cn("h-4 w-4", color)} />
               </div>
               <span className="text-xs font-medium">{label}</span>
             </button>
@@ -123,18 +149,18 @@ export function QuickFeedback({ userId: _userId }: QuickFeedbackProps) {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder={
-              selectedType === 'bug' 
+              selectedType === "bug"
                 ? "Describe the bug you encountered..."
-                : selectedType === 'feature'
-                ? "What feature would you like to see?"
-                : selectedType === 'improvement'
-                ? "How can we improve this?"
-                : "Share your feedback..."
+                : selectedType === "feature"
+                  ? "What feature would you like to see?"
+                  : selectedType === "improvement"
+                    ? "How can we improve this?"
+                    : "Share your feedback..."
             }
             rows={4}
             className="resize-none"
           />
-          <div className="flex justify-between items-center">
+          <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground">
               {message.length}/500 characters
             </p>
@@ -147,7 +173,7 @@ export function QuickFeedback({ userId: _userId }: QuickFeedbackProps) {
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <>
-                  <Send className="h-4 w-4 mr-2" />
+                  <Send className="mr-2 h-4 w-4" />
                   Submit Feedback
                 </>
               )}
@@ -156,9 +182,9 @@ export function QuickFeedback({ userId: _userId }: QuickFeedbackProps) {
         </div>
 
         {/* Feedback Tips */}
-        <div className="bg-muted/50 rounded-lg p-3 space-y-1">
+        <div className="space-y-1 rounded-lg bg-muted/50 p-3">
           <p className="text-xs font-medium">Feedback Tips:</p>
-          <ul className="text-xs text-muted-foreground space-y-0.5 list-disc list-inside">
+          <ul className="list-inside list-disc space-y-0.5 text-xs text-muted-foreground">
             <li>Be specific and provide context</li>
             <li>Include steps to reproduce bugs</li>
             <li>Explain how features would benefit users</li>
@@ -167,5 +193,5 @@ export function QuickFeedback({ userId: _userId }: QuickFeedbackProps) {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

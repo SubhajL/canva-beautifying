@@ -17,72 +17,75 @@ interface UploadProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const Upload = React.forwardRef<HTMLDivElement, UploadProps>(
-  ({ 
-    className, 
-    accept,
-    multiple = false,
-    maxSize = 10,
-    onFilesSelected,
-    onFileRemove,
-    files = [],
-    uploading = false,
-    uploadProgress = 0,
-    disabled = false,
-    ...props 
-  }, ref) => {
+  (
+    {
+      className,
+      accept,
+      multiple = false,
+      maxSize = 10,
+      onFilesSelected,
+      onFileRemove,
+      files = [],
+      uploading = false,
+      uploadProgress = 0,
+      disabled = false,
+      ...props
+    },
+    ref
+  ) => {
     const inputRef = React.useRef<HTMLInputElement>(null)
     const [isDragging, setIsDragging] = React.useState(false)
-    
+
     const handleDragOver = (e: React.DragEvent) => {
       e.preventDefault()
       setIsDragging(true)
     }
-    
+
     const handleDragLeave = (e: React.DragEvent) => {
       e.preventDefault()
       setIsDragging(false)
     }
-    
+
     const handleDrop = (e: React.DragEvent) => {
       e.preventDefault()
       setIsDragging(false)
-      
+
       const droppedFiles = Array.from(e.dataTransfer.files)
       handleFiles(droppedFiles)
     }
-    
+
     const handleFiles = (selectedFiles: File[]) => {
-      const validFiles = selectedFiles.filter(file => {
+      const validFiles = selectedFiles.filter((file) => {
         const sizeMB = file.size / (1024 * 1024)
         return sizeMB <= maxSize
       })
-      
+
       if (onFilesSelected) {
         onFilesSelected(validFiles)
       }
     }
-    
+
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files) {
         const selectedFiles = Array.from(e.target.files)
         handleFiles(selectedFiles)
       }
     }
-    
+
     const getFileIcon = (file: File) => {
-      if (file.type.startsWith('image/')) return Image
-      if (file.type.includes('pdf')) return FileText
+      if (file.type.startsWith("image/")) return Image
+      if (file.type.includes("pdf")) return FileText
       return File
     }
-    
+
     const formatFileSize = (bytes: number) => {
-      if (bytes === 0) return '0 Bytes'
+      if (bytes === 0) return "0 Bytes"
       const k = 1024
-      const sizes = ['Bytes', 'KB', 'MB', 'GB']
+      const sizes = ["Bytes", "KB", "MB", "GB"]
       const i = Math.floor(Math.log(bytes) / Math.log(k))
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
     }
-    
+
     return (
       <div ref={ref} className={cn("w-full", className)} {...props}>
         <div
@@ -92,7 +95,9 @@ const Upload = React.forwardRef<HTMLDivElement, UploadProps>(
           onClick={() => !disabled && inputRef.current?.click()}
           className={cn(
             "relative rounded-lg border-2 border-dashed p-8 text-center transition-all duration-base",
-            isDragging ? "border-primary bg-primary/5" : "border-border hover:border-primary/50",
+            isDragging
+              ? "border-primary bg-primary/5"
+              : "border-border hover:border-primary/50",
             disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
             uploading && "pointer-events-none"
           )}
@@ -106,7 +111,7 @@ const Upload = React.forwardRef<HTMLDivElement, UploadProps>(
             disabled={disabled || uploading}
             className="hidden"
           />
-          
+
           {uploading ? (
             <div className="space-y-4">
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
@@ -115,7 +120,9 @@ const Upload = React.forwardRef<HTMLDivElement, UploadProps>(
               <div className="space-y-2">
                 <p className="text-sm font-medium">Uploading...</p>
                 <Progress value={uploadProgress} className="mx-auto max-w-xs" />
-                <p className="text-xs text-muted-foreground">{uploadProgress}%</p>
+                <p className="text-xs text-muted-foreground">
+                  {uploadProgress}%
+                </p>
               </div>
             </div>
           ) : (
@@ -128,7 +135,9 @@ const Upload = React.forwardRef<HTMLDivElement, UploadProps>(
                   Drop files here or click to upload
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {accept ? `Accepted formats: ${accept}` : 'All file types accepted'}
+                  {accept
+                    ? `Accepted formats: ${accept}`
+                    : "All file types accepted"}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   Max file size: {maxSize}MB
@@ -137,7 +146,7 @@ const Upload = React.forwardRef<HTMLDivElement, UploadProps>(
             </>
           )}
         </div>
-        
+
         {files.length > 0 && !uploading && (
           <div className="mt-4 space-y-2">
             {files.map((file, index) => {

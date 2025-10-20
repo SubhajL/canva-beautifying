@@ -1,13 +1,13 @@
 // Enhancement Pipeline Types and Interfaces
 
-export type DocumentType = 
-  | 'educational' 
-  | 'presentation' 
-  | 'marketing' 
-  | 'business' 
-  | 'creative' 
-  | 'technical' 
-  | 'general'
+export type DocumentType =
+  | "educational"
+  | "presentation"
+  | "marketing"
+  | "business"
+  | "creative"
+  | "technical"
+  | "general"
 
 export interface ColorPalette {
   primary: string
@@ -18,23 +18,23 @@ export interface ColorPalette {
   additional?: string[]
 }
 
-export type PipelineStage = 
-  | 'initial-analysis'
-  | 'enhancement-planning'
-  | 'asset-generation'
-  | 'final-composition'
+export type PipelineStage =
+  | "initial-analysis"
+  | "enhancement-planning"
+  | "asset-generation"
+  | "final-composition"
 
-export type PipelineStatus = 
-  | 'pending'
-  | 'running'
-  | 'completed'
-  | 'failed'
-  | 'cancelled'
+export type PipelineStatus =
+  | "pending"
+  | "running"
+  | "completed"
+  | "failed"
+  | "cancelled"
 
 export interface PipelineContext {
   documentId: string
   userId: string
-  subscriptionTier: 'free' | 'basic' | 'pro' | 'premium'
+  subscriptionTier: "free" | "basic" | "pro" | "premium"
   originalFileUrl: string
   fileType: string
   startTime: number
@@ -42,11 +42,16 @@ export interface PipelineContext {
 }
 
 export interface EnhancementSettings {
-  targetStyle?: 'modern' | 'classic' | 'playful' | 'professional' | 'educational'
-  colorScheme?: 'vibrant' | 'pastel' | 'monochrome' | 'brand' | 'auto'
-  layoutPreference?: 'minimal' | 'balanced' | 'rich' | 'auto'
+  targetStyle?:
+    | "modern"
+    | "classic"
+    | "playful"
+    | "professional"
+    | "educational"
+  colorScheme?: "vibrant" | "pastel" | "monochrome" | "brand" | "auto"
+  layoutPreference?: "minimal" | "balanced" | "rich" | "auto"
   aiModel?: string
-  quality?: 'standard' | 'high' | 'premium'
+  quality?: "standard" | "high" | "premium"
   generateAssets?: boolean
   preserveContent?: boolean
 }
@@ -60,10 +65,10 @@ export interface InitialAnalysisResult {
     captions: string[]
   }
   layoutAnalysis: {
-    structure: 'single-column' | 'multi-column' | 'grid' | 'freeform'
+    structure: "single-column" | "multi-column" | "grid" | "freeform"
     sections: LayoutSection[]
     whitespace: number // percentage
-    alignment: 'left' | 'center' | 'right' | 'justified' | 'mixed'
+    alignment: "left" | "center" | "right" | "justified" | "mixed"
   }
   designIssues: DesignIssue[]
   currentScore: {
@@ -84,14 +89,14 @@ export interface InitialAnalysisResult {
 
 export interface LayoutSection {
   id: string
-  type: 'header' | 'content' | 'sidebar' | 'footer' | 'image' | 'text'
+  type: "header" | "content" | "sidebar" | "footer" | "image" | "text"
   bounds: { x: number; y: number; width: number; height: number }
   zIndex: number
 }
 
 export interface DesignIssue {
-  type: 'color' | 'typography' | 'layout' | 'spacing' | 'alignment' | 'contrast'
-  severity: 'low' | 'medium' | 'high'
+  type: "color" | "typography" | "layout" | "spacing" | "alignment" | "contrast"
+  severity: "low" | "medium" | "high"
   description: string
   location?: { x: number; y: number; width: number; height: number }
 }
@@ -99,8 +104,8 @@ export interface DesignIssue {
 // Stage 2: Enhancement Planning Results
 export interface EnhancementPlan {
   strategy: {
-    approach: 'subtle' | 'moderate' | 'dramatic'
-    priority: ('color' | 'typography' | 'layout' | 'visuals')[]
+    approach: "subtle" | "moderate" | "dramatic"
+    priority: ("color" | "typography" | "layout" | "visuals")[]
     estimatedImpact: number // 0-100
   }
   colorEnhancements: {
@@ -131,7 +136,7 @@ export interface EnhancementPlan {
 }
 
 export interface ColorAdjustment {
-  target: 'background' | 'text' | 'accent' | 'border'
+  target: "background" | "text" | "accent" | "border"
   from: string
   to: string
   reason: string
@@ -140,7 +145,7 @@ export interface ColorAdjustment {
 export interface FontSelection {
   family: string
   weight: number
-  style: 'normal' | 'italic'
+  style: "normal" | "italic"
   fallback: string[]
 }
 
@@ -152,27 +157,27 @@ export interface PlannedSection {
 }
 
 export interface WhitespaceAdjustment {
-  area: 'margins' | 'padding' | 'spacing'
+  area: "margins" | "padding" | "spacing"
   value: number
-  unit: 'px' | '%' | 'em'
+  unit: "px" | "%" | "em"
 }
 
 export interface BackgroundRequirement {
-  style: 'gradient' | 'pattern' | 'image' | 'solid'
+  style: "gradient" | "pattern" | "image" | "solid"
   theme: string
   colors: string[]
   opacity: number
 }
 
 export interface DecorativeRequirement {
-  type: 'icon' | 'shape' | 'border' | 'divider'
+  type: "icon" | "shape" | "border" | "divider"
   style: string
   quantity: number
-  placement: 'random' | 'grid' | 'edges' | 'corners'
+  placement: "random" | "grid" | "edges" | "corners"
 }
 
 export interface GraphicRequirement {
-  type: 'chart' | 'diagram' | 'illustration' | 'infographic'
+  type: "chart" | "diagram" | "illustration" | "infographic"
   data?: Record<string, unknown>
   style: string
   dimensions: { width: number; height: number }
@@ -190,7 +195,7 @@ export interface GeneratedAssets {
 export interface GeneratedBackground {
   id: string
   url: string
-  type: 'gradient' | 'pattern' | 'image'
+  type: "gradient" | "pattern" | "image"
   dimensions: { width: number; height: number }
   fileSize: number
 }
@@ -291,11 +296,21 @@ export interface PipelineError {
 }
 
 // Pipeline Events
-export type PipelineEvent = 
-  | { type: 'stage-started'; stage: PipelineStage; timestamp: Date }
-  | { type: 'stage-completed'; stage: PipelineStage; result: unknown; timestamp: Date }
-  | { type: 'stage-failed'; stage: PipelineStage; error: Error; timestamp: Date }
-  | { type: 'progress-updated'; progress: number; message?: string }
-  | { type: 'pipeline-completed'; result: CompositionResult }
-  | { type: 'pipeline-failed'; error: Error }
-  | { type: 'pipeline-cancelled'; reason?: string }
+export type PipelineEvent =
+  | { type: "stage-started"; stage: PipelineStage; timestamp: Date }
+  | {
+      type: "stage-completed"
+      stage: PipelineStage
+      result: unknown
+      timestamp: Date
+    }
+  | {
+      type: "stage-failed"
+      stage: PipelineStage
+      error: Error
+      timestamp: Date
+    }
+  | { type: "progress-updated"; progress: number; message?: string }
+  | { type: "pipeline-completed"; result: CompositionResult }
+  | { type: "pipeline-failed"; error: Error }
+  | { type: "pipeline-cancelled"; reason?: string }

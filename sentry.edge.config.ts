@@ -1,5 +1,5 @@
 // This file configures the initialization of Sentry for edge features (middleware, edge routes, and so on).
-import * as Sentry from "@sentry/nextjs";
+import * as Sentry from "@sentry/nextjs"
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -13,12 +13,15 @@ Sentry.init({
   // Filter out certain errors
   beforeSend(event, hint) {
     // Don't send events in development unless explicitly enabled
-    if (process.env.NODE_ENV === 'development' && !process.env.NEXT_PUBLIC_SENTRY_ENABLED) {
-      console.error('Sentry Event (not sent in dev):', event);
-      return null;
+    if (
+      process.env.NODE_ENV === "development" &&
+      !process.env.NEXT_PUBLIC_SENTRY_ENABLED
+    ) {
+      console.error("Sentry Event (not sent in dev):", event)
+      return null
     }
 
-    return event;
+    return event
   },
 
   // Set environment
@@ -27,7 +30,7 @@ Sentry.init({
   // Identify edge errors
   initialScope: {
     tags: {
-      component: 'edge',
+      component: "edge",
     },
   },
-});
+})

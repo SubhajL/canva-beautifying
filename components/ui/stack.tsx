@@ -10,27 +10,30 @@ interface StackProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const Stack = React.forwardRef<HTMLDivElement, StackProps>(
-  ({ 
-    className, 
-    direction = "column", 
-    align = "stretch",
-    justify = "start",
-    gap = "default",
-    wrap = false,
-    ...props 
-  }, ref) => {
+  (
+    {
+      className,
+      direction = "column",
+      align = "stretch",
+      justify = "start",
+      gap = "default",
+      wrap = false,
+      ...props
+    },
+    ref
+  ) => {
     const directionClasses = {
       row: "flex-row",
       column: "flex-col",
     }
-    
+
     const alignClasses = {
       start: "items-start",
       center: "items-center",
       end: "items-end",
       stretch: "items-stretch",
     }
-    
+
     const justifyClasses = {
       start: "justify-start",
       center: "justify-center",
@@ -39,7 +42,7 @@ const Stack = React.forwardRef<HTMLDivElement, StackProps>(
       around: "justify-around",
       evenly: "justify-evenly",
     }
-    
+
     const gapClasses = {
       none: "gap-0",
       sm: "gap-2",
@@ -47,7 +50,7 @@ const Stack = React.forwardRef<HTMLDivElement, StackProps>(
       lg: "gap-6",
       xl: "gap-8",
     }
-    
+
     return (
       <div
         ref={ref}

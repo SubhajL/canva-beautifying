@@ -1,5 +1,5 @@
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation"
 
 export default function SettingsPage() {
-  redirect('/app/settings/billing');
+  redirect("/app/settings/billing")
 }

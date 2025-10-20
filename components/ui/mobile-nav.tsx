@@ -1,5 +1,11 @@
 import * as React from "react"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./sheet"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "./sheet"
 import { Button } from "./button"
 import { Menu } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -13,7 +19,7 @@ interface MobileNavProps extends React.HTMLAttributes<HTMLDivElement> {
 const MobileNav = React.forwardRef<HTMLDivElement, MobileNavProps>(
   ({ className, sections, title = "Menu", ...props }, ref) => {
     const [open, setOpen] = React.useState(false)
-    
+
     return (
       <div ref={ref} className={cn("lg:hidden", className)} {...props}>
         <Sheet open={open} onOpenChange={setOpen}>

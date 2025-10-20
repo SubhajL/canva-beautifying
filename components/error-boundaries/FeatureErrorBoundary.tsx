@@ -1,15 +1,15 @@
-'use client'
+"use client"
 
-import React, { Component, ErrorInfo, ReactNode } from 'react'
-import { Button } from '@/components/ui/button'
-import { AlertCircle, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react'
-import { 
-  logger, 
-  captureErrorBoundaryException, 
-  createErrorId, 
-  createTelemetryEvent 
-} from '@/lib/observability/client'
-import { attemptAutoRecovery } from '@/lib/error-boundary/recovery-strategies'
+import React, { Component, ErrorInfo, ReactNode } from "react"
+import { Button } from "@/components/ui/button"
+import { AlertCircle, RefreshCw, ChevronDown, ChevronUp } from "lucide-react"
+import {
+  logger,
+  captureErrorBoundaryException,
+  createErrorId,
+  createTelemetryEvent,
+} from "@/lib/observability/client"
+import { attemptAutoRecovery } from "@/lib/error-boundary/recovery-strategies"
 
 interface Props {
   children: ReactNode
@@ -83,13 +83,13 @@ export class FeatureErrorBoundary extends Component<Props, State> {
     })
 
     captureErrorBoundaryException(error, errorInfo, {
-      boundary: 'feature',
+      boundary: "feature",
       feature: featureName,
       errorId,
       retryCount,
     })
 
-    createTelemetryEvent('feature_error_boundary_triggered', {
+    createTelemetryEvent("feature_error_boundary_triggered", {
       feature: featureName,
       errorId,
       errorMessage: error.message,
@@ -117,10 +117,10 @@ export class FeatureErrorBoundary extends Component<Props, State> {
     }
 
     const canRecover = await attemptAutoRecovery(error, featureName)
-    
+
     if (canRecover && this.mounted) {
       this.setState({ isRecovering: true })
-      
+
       setTimeout(() => {
         if (this.mounted) {
           this.handleRetry()
@@ -138,7 +138,7 @@ export class FeatureErrorBoundary extends Component<Props, State> {
       retryCount: retryCount + 1,
     })
 
-    createTelemetryEvent('feature_error_boundary_retry', {
+    createTelemetryEvent("feature_error_boundary_retry", {
       feature: featureName,
       errorId,
       retryCount: retryCount + 1,
@@ -158,31 +158,38 @@ export class FeatureErrorBoundary extends Component<Props, State> {
   }
 
   render() {
-    const { hasError, error, errorId, retryCount, showDetails, isRecovering } = this.state
-    const { children, featureName, fallback, showDetails: propShowDetails = false, maxRetries = 3 } = this.props
+    const { hasError, error, errorId, retryCount, showDetails, isRecovering } =
+      this.state
+    const {
+      children,
+      featureName,
+      fallback,
+      showDetails: propShowDetails = false,
+      maxRetries = 3,
+    } = this.props
 
     if (hasError && error) {
       if (fallback) {
         return <>{fallback}</>
       }
 
-      const isDevelopment = process.env.NODE_ENV === 'development'
+      const isDevelopment = process.env.NODE_ENV === "development"
       const canRetry = retryCount < maxRetries
 
       return (
-        <div className="relative border border-red-200 rounded-lg bg-red-50 p-4">
+        <div className="relative rounded-lg border border-red-200 bg-red-50 p-4">
           <div className="flex items-start space-x-3">
-            <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-500" />
             <div className="flex-1">
               <h3 className="text-sm font-medium text-red-800">
                 {featureName} encountered an error
               </h3>
-              <p className="text-sm text-red-600 mt-1">
-                {error.message || 'An unexpected error occurred'}
+              <p className="mt-1 text-sm text-red-600">
+                {error.message || "An unexpected error occurred"}
               </p>
-              
+
               {errorId && (
-                <p className="text-xs text-red-500 mt-2">
+                <p className="mt-2 text-xs text-red-500">
                   Error ID: <code className="font-mono">{errorId}</code>
                 </p>
               )}
@@ -190,15 +197,19 @@ export class FeatureErrorBoundary extends Component<Props, State> {
               {(isDevelopment || propShowDetails) && (
                 <button
                   onClick={this.toggleDetails}
-                  className="flex items-center gap-1 text-xs text-red-600 hover:text-red-700 mt-2"
+                  className="mt-2 flex items-center gap-1 text-xs text-red-600 hover:text-red-700"
                 >
-                  {showDetails ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-                  {showDetails ? 'Hide' : 'Show'} details
+                  {showDetails ? (
+                    <ChevronUp className="h-3 w-3" />
+                  ) : (
+                    <ChevronDown className="h-3 w-3" />
+                  )}
+                  {showDetails ? "Hide" : "Show"} details
                 </button>
               )}
 
               {showDetails && error.stack && (
-                <div className="mt-2 p-2 bg-red-100 rounded text-xs font-mono text-red-700 overflow-x-auto">
+                <div className="mt-2 overflow-x-auto rounded bg-red-100 p-2 font-mono text-xs text-red-700">
                   <pre className="whitespace-pre-wrap">{error.stack}</pre>
                 </div>
               )}
@@ -210,15 +221,17 @@ export class FeatureErrorBoundary extends Component<Props, State> {
                     variant="outline"
                     onClick={this.handleRetry}
                     disabled={isRecovering}
-                    className="text-red-700 border-red-300 hover:bg-red-100"
+                    className="border-red-300 text-red-700 hover:bg-red-100"
                   >
-                    <RefreshCw className={`h-3 w-3 mr-1 ${isRecovering ? 'animate-spin' : ''}`} />
-                    {isRecovering ? 'Recovering...' : 'Retry'}
+                    <RefreshCw
+                      className={`mr-1 h-3 w-3 ${isRecovering ? "animate-spin" : ""}`}
+                    />
+                    {isRecovering ? "Recovering..." : "Retry"}
                   </Button>
                 )}
-                
+
                 {retryCount > 0 && (
-                  <span className="text-xs text-red-600 flex items-center">
+                  <span className="flex items-center text-xs text-red-600">
                     Attempt {retryCount} of {maxRetries}
                   </span>
                 )}

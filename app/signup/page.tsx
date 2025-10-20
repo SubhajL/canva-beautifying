@@ -1,42 +1,49 @@
 "use client"
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { useAuth } from '@/contexts/auth-context'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, Mail } from 'lucide-react'
-import { FcGoogle } from 'react-icons/fc'
-import { BsMicrosoft } from 'react-icons/bs'
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
+import { useAuth } from "@/contexts/auth-context"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Loader2, Mail } from "lucide-react"
+import { FcGoogle } from "react-icons/fc"
+import { BsMicrosoft } from "react-icons/bs"
 
 export default function SignUpPage() {
   const router = useRouter()
   const { signUp, signInWithGoogle, signInWithMicrosoft } = useAuth()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [name, setName] = useState('')
-  const [error, setError] = useState('')
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [name, setName] = useState("")
+  const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
 
   const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
+    setError("")
     setLoading(true)
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match')
+      setError("Passwords do not match")
       setLoading(false)
       return
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters')
+      setError("Password must be at least 6 characters")
       setLoading(false)
       return
     }
@@ -45,34 +52,38 @@ export default function SignUpPage() {
       await signUp(email, password, { name })
       setSuccess(true)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create account')
+      setError(err instanceof Error ? err.message : "Failed to create account")
     } finally {
       setLoading(false)
     }
   }
 
-  const handleSocialLogin = async (provider: 'google' | 'microsoft') => {
-    setError('')
+  const handleSocialLogin = async (provider: "google" | "microsoft") => {
+    setError("")
     setLoading(true)
 
     try {
-      if (provider === 'google') {
+      if (provider === "google") {
         await signInWithGoogle()
       } else {
         await signInWithMicrosoft()
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : `Failed to sign in with ${provider}`)
+      setError(
+        err instanceof Error
+          ? err.message
+          : `Failed to sign in with ${provider}`
+      )
       setLoading(false)
     }
   }
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center text-green-600">
+            <CardTitle className="text-center text-2xl font-bold text-green-600">
               Check your email!
             </CardTitle>
             <CardDescription className="text-center">
@@ -81,14 +92,15 @@ export default function SignUpPage() {
           </CardHeader>
           <CardContent>
             <p className="text-center text-sm text-muted-foreground">
-              Please check your email and click the confirmation link to activate your account.
+              Please check your email and click the confirmation link to
+              activate your account.
             </p>
           </CardContent>
           <CardFooter>
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => router.push('/login')}
+              onClick={() => router.push("/login")}
             >
               Back to Login
             </Button>
@@ -99,10 +111,12 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Create an account</CardTitle>
+          <CardTitle className="text-center text-2xl font-bold">
+            Create an account
+          </CardTitle>
           <CardDescription className="text-center">
             Enter your details to get started
           </CardDescription>
@@ -114,7 +128,7 @@ export default function SignUpPage() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            
+
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>
               <Input
@@ -127,7 +141,7 @@ export default function SignUpPage() {
                 disabled={loading}
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -140,7 +154,7 @@ export default function SignUpPage() {
                 disabled={loading}
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
@@ -153,7 +167,7 @@ export default function SignUpPage() {
                 minLength={6}
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm Password</Label>
               <Input
@@ -167,11 +181,7 @@ export default function SignUpPage() {
               />
             </div>
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={loading}
-            >
+            <Button type="submit" className="w-full" disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -191,14 +201,16 @@ export default function SignUpPage() {
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+              <span className="bg-background px-2 text-muted-foreground">
+                Or continue with
+              </span>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <Button
               variant="outline"
-              onClick={() => handleSocialLogin('google')}
+              onClick={() => handleSocialLogin("google")}
               disabled={loading}
             >
               <FcGoogle className="mr-2 h-4 w-4" />
@@ -206,7 +218,7 @@ export default function SignUpPage() {
             </Button>
             <Button
               variant="outline"
-              onClick={() => handleSocialLogin('microsoft')}
+              onClick={() => handleSocialLogin("microsoft")}
               disabled={loading}
             >
               <BsMicrosoft className="mr-2 h-4 w-4" />
@@ -215,9 +227,12 @@ export default function SignUpPage() {
           </div>
         </CardContent>
         <CardFooter>
-          <p className="text-center text-sm text-muted-foreground w-full">
-            Already have an account?{' '}
-            <Link href="/login" className="font-medium text-primary hover:underline">
+          <p className="w-full text-center text-sm text-muted-foreground">
+            Already have an account?{" "}
+            <Link
+              href="/login"
+              className="font-medium text-primary hover:underline"
+            >
               Sign in
             </Link>
           </p>

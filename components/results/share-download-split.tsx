@@ -1,12 +1,12 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Share2 } from 'lucide-react'
-import { ShareDialog } from './share-dialog'
-import { DownloadOptions } from './download-options'
-import { useDensity } from '@/contexts/density'
-import { getDensityString } from '@/lib/ui/density'
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Share2 } from "lucide-react"
+import { ShareDialog } from "./share-dialog"
+import { DownloadOptions } from "./download-options"
+import { useDensity } from "@/contexts/density"
+import { getDensityString } from "@/lib/ui/density"
 
 interface ShareDownloadSplitProps {
   enhancementId: string
@@ -27,7 +27,7 @@ export function ShareDownloadSplit({
   const { mode } = useDensity()
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
-    if (event.key === 'Enter' || event.key === ' ') {
+    if (event.key === "Enter" || event.key === " ") {
       event.preventDefault()
       setShareDialogOpen(true)
     }
@@ -45,7 +45,7 @@ export function ShareDownloadSplit({
           onKeyDown={handleKeyDown}
           aria-label="Share enhancement results"
         >
-          <Share2 className="h-4 w-4 mr-2" />
+          <Share2 className="mr-2 h-4 w-4" />
           Share
         </Button>
 
